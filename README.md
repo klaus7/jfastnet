@@ -14,7 +14,7 @@ client.blockingWaitUntilConnected();
 server.send(new PrintMessage("Hello Client!"));
 client.send(new PrintMessage("Hello Server!"));
 ```
-[Click to see full sample code of HelloWorld.java](./src/test/java/com/jfastnet/examples/HelloWorld.java)
+[Click to see full sample code of HelloWorld.java](https://github.com/klaus7/jfastnet/blob/master/src/test/java/com/jfastnet/examples/HelloWorld.java)
 
 # Documentation
 The documentation is still a work-in-progress.
@@ -48,3 +48,5 @@ Processing will not continue until all required messages are received.
 
 It's usually advisable to use sequence numbers, as there will be less overhead and also the ordered delivery is guaranteed.
 
+# Contact
+Post issues to [the issues page](https://github.com/klaus7/jfastnet/issues) or contact me via email at [support@jfastnet.com](mailto:support@jfastnet.com) for other inquiries.
