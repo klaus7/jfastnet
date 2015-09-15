@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <title>JFastNet by klaus7</title>
+  </head>
+
+  <body>
+    <header>
+      <div class="inner">
+        <h1>JFastNet</h1>
+        <h2>Fast, reliable UDP messaging for Java. Designed for games.</h2>
+        <a href="https://github.com/klaus7/jfastnet" class="button"><small>View project on</small> GitHub</a>
+      </div>
+    </header>
+
+    <div id="content-wrapper">
+      <div class="inner clearfix">
+        <section id="main-content">
+          <h1>
+<a id="jfastnet" class="anchor" href="#jfastnet" aria-hidden="true"><span class="octicon octicon-link"></span></a>JFastNet</h1>
+
+<p>Fast, reliable and easy UDP messaging for Java. Designed for games.</p>
+
+<h1>
+<a id="example" class="anchor" href="#example" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example</h1>
+
+<p>The following code shows the important parts of a server-client communication:</p>
+
+<div class="highlight highlight-source-java"><pre><span class="pl-smi">Server</span> server <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">Server</span>(<span class="pl-k">new</span> <span class="pl-smi">Config</span>()<span class="pl-k">.</span>setBindPort(<span class="pl-c1">15150</span>));
+<span class="pl-smi">Client</span> client <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">Client</span>(<span class="pl-k">new</span> <span class="pl-smi">Config</span>()<span class="pl-k">.</span>setPort(<span class="pl-c1">15150</span>));
+
+server<span class="pl-k">.</span>start();
+client<span class="pl-k">.</span>start();
+client<span class="pl-k">.</span>blockingWaitUntilConnected();
+
+server<span class="pl-k">.</span>send(<span class="pl-k">new</span> <span class="pl-smi">PrintMessage</span>(<span class="pl-s"><span class="pl-pds">"</span>Hello Client!<span class="pl-pds">"</span></span>));
+client<span class="pl-k">.</span>send(<span class="pl-k">new</span> <span class="pl-smi">PrintMessage</span>(<span class="pl-s"><span class="pl-pds">"</span>Hello Server!<span class="pl-pds">"</span></span>));</pre></div>
+
+<p><a href="./src/test/java/com/jfastnet/examples/HelloWorld.java">Click to see full sample code of HelloWorld.java</a></p>
+
+<h1>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h1>
+
+<p>The documentation is still a work-in-progress.</p>
+
+<p>The most important classes to look for in the beginning are the <code>Config</code> and the <code>Message</code> class. The JavaDoc there should provide you with the basic configuration possibilities of the library.</p>
+
+<h2>
+<a id="reliable-sending" class="anchor" href="#reliable-sending" aria-hidden="true"><span class="octicon octicon-link"></span></a>Reliable sending</h2>
+
+<p>There are currently two ways you can use to send a message in a reliable way. Sending the message unreliably is of course also an option.</p>
+
+<ol>
+<li>Acknowledge packet</li>
+<li>Sequence number</li>
+</ol>
+
+<h3>
+<a id="acknowledge-packet" class="anchor" href="#acknowledge-packet" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledge packet</h3>
+
+<p>The receiver of a message with reliable mode set to <code>ACK_PACKET</code> will send an acknowledge packet to the other end upon receipt of the message.
+As long as the sender of the prior mentioned message doesn't receive an acknowledge packet it will keep resending the message.</p>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th align="center">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reliable</td>
+<td align="center">yes</td>
+</tr>
+<tr>
+<td>Ordered</td>
+<td align="center">no</td>
+</tr>
+</tbody>
+</table>
+
+<h3>
+<a id="sequence-number" class="anchor" href="#sequence-number" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sequence number</h3>
+
+<p>The receiver of a message with reliable mode set to <code>SEQUENCE_NUMBER</code> will do nothing as long as the messages arrive in the expected order.
+But if a message with an id greater than expected is received, the receiver will stop processing the messages and send a <code>RequestSeqIdsMessage</code> to the other end.
+Processing will not continue until all required messages are received.</p>
+
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th align="center">Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reliable</td>
+<td align="center">yes</td>
+</tr>
+<tr>
+<td>Ordered</td>
+<td align="center">yes</td>
+</tr>
+</tbody>
+</table>
+
+<p>It's usually advisable to use sequence numbers, as there will be less overhead and also the ordered delivery is guaranteed.</p>
+        </section>
+
+        <aside id="sidebar">
+          <a href="https://github.com/klaus7/jfastnet/zipball/master" class="button">
+            <small>Download</small>
+            .zip file
+          </a>
+          <a href="https://github.com/klaus7/jfastnet/tarball/master" class="button">
+            <small>Download</small>
+            .tar.gz file
+          </a>
+
+          <p class="repo-owner"><a href="https://github.com/klaus7/jfastnet"></a> is maintained by <a href="https://github.com/klaus7">klaus7</a>.</p>
+
+          <p>This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the Architect theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.</p>
+        </aside>
+      </div>
+    </div>
+
+            <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-38988195-2");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
