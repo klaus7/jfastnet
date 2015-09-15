@@ -1,6 +1,50 @@
 # JFastNet
-Fast, reliable UDP messaging for Java. Designed for games.
+Fast, reliable and easy UDP messaging for Java. Designed for games.
 
-# Changelog
+# Example
+The following code shows the important parts of a server-client communication:
+```java
+Server server = new Server(new Config().setBindPort(15150));
+Client client = new Client(new Config().setPort(15150));
 
+server.start();
+client.start();
+client.blockingWaitUntilConnected();
+
+server.send(new PrintMessage("Hello Client!"));
+client.send(new PrintMessage("Hello Server!"));
+```
+[Click to see full sample code of HelloWorld.java](./src/test/java/com/jfastnet/examples/HelloWorld.java)
+
+# Documentation
+The documentation is still a work-in-progress.
+
+The most important classes to look for in the beginning are the `Config` and the `Message` class. The JavaDoc there should provide you with the basic configuration possibilities of the library.
+
+## Reliable sending
+There are currently two ways you can use to send a message in a reliable way. Sending the message unreliably is of course also an option.
+
+1. Acknowledge packet
+2. Sequence number
+
+### Acknowledge packet
+The receiver of a message with reliable mode set to `ACK_PACKET` will send an acknowledge packet to the other end upon receipt of the message.
+As long as the sender of the prior mentioned message doesn't receive an acknowledge packet it will keep resending the message.
+
+ Attribute | Value
+ --------- |:---:
+ Reliable  | yes
+ Ordered   | no
+
+### Sequence number
+The receiver of a message with reliable mode set to `SEQUENCE_NUMBER` will do nothing as long as the messages arrive in the expected order.
+But if a message with an id greater than expected is received, the receiver will stop processing the messages and send a `RequestSeqIdsMessage` to the other end.
+Processing will not continue until all required messages are received.
+
+ Attribute | Value
+ --------- |:---:
+ Reliable  | yes
+ Ordered   | yes
+
+It's usually advisable to use sequence numbers, as there will be less overhead and also the ordered delivery is guaranteed.
 
