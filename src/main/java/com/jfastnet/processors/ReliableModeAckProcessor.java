@@ -105,11 +105,13 @@ public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageRec
 				Map.Entry<MessageKey, MessageContainer> entry = iterator.next();
 				MessageContainer messageContainer = entry.getValue();
 				Message message = messageContainer.message;
-				if (messageContainer.nextResendTry < currentTimeMillis) {
+				if (message == null) {
+					log.error("Message from message container was null.");
+				} else if (messageContainer.nextResendTry < currentTimeMillis) {
 					iterator.remove();
-					log.info("Resend UDP message {}", message);
 					// For server side: only send to players where message is missing
 					message.setReceiverId(entry.getKey().clientId);
+					log.info("Resend UDP message {}", message);
 					message.setResendMessage(true);
 					if (!config.connected && !(message instanceof ConnectRequest)) {
 						log.info("Don't resend {} - not connected!", message);
