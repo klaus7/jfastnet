@@ -42,11 +42,11 @@ public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageRec
 
 	/** Resend message where we didn't receive an ack packet in X ms. */
 	@Setter
-	private long resendTimeThreshold = 200;
+	private long resendTimeThreshold = 400;
 
 	/** Don't grow the resent time after reaching this limit. */
 	@Setter
-	private long resendTimeThresholdUpperLimit = 5000;
+	private long resendTimeThresholdUpperLimit = 10_000;
 
 	/** Discard messages hitting the resent time limit. Reliable messages
 	 * could get lost! */
@@ -145,14 +145,14 @@ public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageRec
 		log.trace("PUT: {}, {}", key, message);
 		Long oldValue = sentMsgIds.get(key);
 		// Increase resend time continually
-		if (oldValue != null && oldValue > resendTimeThresholdUpperLimit) {
+		long newValue = (oldValue != null ? oldValue * 2L : resendTimeThreshold);
+		if (newValue > resendTimeThresholdUpperLimit) {
 			if (discardOnResendTimeLimitOutrun) {
 				// That was the last try to send this message then.
 				return null;
 			}
-			oldValue = resendTimeThresholdUpperLimit;
+			newValue = resendTimeThresholdUpperLimit;
 		}
-		long newValue = (oldValue != null ? oldValue * 2L : resendTimeThreshold);
 		sentMsgIds.put(key, newValue);
 		return messagesAwaitingAck.put(key,
 				new MessageContainer(System.currentTimeMillis() + newValue, message, newValue));

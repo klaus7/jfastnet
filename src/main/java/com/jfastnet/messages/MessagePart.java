@@ -130,18 +130,21 @@ public class MessagePart extends Message implements IDontFrame {
 		} else if (ReliableMode.ACK_PACKET.equals(getReliableMode())) {
 			SortedMap<Integer, MessagePart> byteArrayBuffer = getConfig().byteArrayBufferMap.get(id);
 			if (byteArrayBuffer == null) {
+				log.trace("byteArrayBuffer == null");
 				return false;
 			}
 			Collection<MessagePart> messageParts = byteArrayBuffer.values();
 			// Check if the last part was already received
 			boolean hasLastPart = messageParts.stream().filter(messagePart -> messagePart.last).count() > 0L;
 			if (!hasLastPart) {
+				log.trace("!hasLastPart");
 				return false;
 			}
 			// Check if all required messages are received
 			int expectedPartNumber = 0;
 			for (MessagePart messagePart : messageParts) {
 				if (messagePart.partNumber != expectedPartNumber) {
+					log.trace("messagePart.partNumber != expectedPartNumber: {} != {}", messagePart.partNumber, expectedPartNumber);
 					return false;
 				}
 				expectedPartNumber++;
