@@ -1,7 +1,22 @@
 # JFastNet
 Fast, reliable and easy UDP messaging for Java. Designed for games.
 
-# Example
+# Build
+It is planned to upload artifacts to Maven Central and do proper releases, but this will take a few more days. Until then you can just clone the repository and use maven to install it to your local repository.
+```bash
+mvn install
+```
+
+And the dependency for your POM:
+```xml
+<dependency>
+    <groupId>com.jfastnet</groupId>
+    <artifactId>jfastnet</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+</dependency>
+```
+
+# Example code
 The following code shows the important parts of a server-client communication:
 ```java
 Server server = new Server(new Config().setBindPort(15150));
@@ -47,6 +62,11 @@ Processing will not continue until all required messages are received.
  Ordered   | yes
 
 It's usually advisable to use sequence numbers, as there will be less overhead and also the ordered delivery is guaranteed.
+
+# Thanks
+[Kryo](https://github.com/EsotericSoftware/kryo) is the default serialiser used in JFastNet and is a pleasure to work with! Thanks very much for this awesome library!
+
+[Project Lombok](https://projectlombok.org/) also deserves a mention, as it makes working with Java much more comfortable and the code looks cleaner. Check it out if you don't have already.
 
 # Contact
 Post issues to [the issues page](https://github.com/klaus7/jfastnet/issues) or contact me via email at [support@jfastnet.com](mailto:support@jfastnet.com) for other inquiries.
