@@ -38,16 +38,17 @@ public class MessageLog {
 	public List<Message> sent = new SizeLimitedList<>(3000);
 	public Map<MessageKey, Message> sentMap = new ConcurrentSizeLimitedMap<>(3000);
 
-	public Predicate<Message> filter = new ReliableMessagesPredicate();
+	public Predicate<Message> receiveFilter = new NoMessagesPredicate();
+	public Predicate<Message> sendFilter = new ReliableMessagesPredicate();
 
 	public void addReceived(Message message) {
-		if (filter.test(message)) {
+		if (receiveFilter.test(message)) {
 			received.add(message);
 		}
 	}
 
 	public void addSent(Message message) {
-		if (filter.test(message)) {
+		if (sendFilter.test(message)) {
 			sent.add(message);
 			MessageKey messageKey = MessageKey.newKey(message.getReliableMode(), message.getReceiverId(), message.getMsgId());
 			log.trace("Put into sent-log: {} -- {}", messageKey, message);
@@ -60,6 +61,14 @@ public class MessageLog {
 		@Override
 		public boolean test(Message message) {
 			return true;
+		}
+	}
+
+	/** No messages are logged. */
+	public static class NoMessagesPredicate implements Predicate<Message> {
+		@Override
+		public boolean test(Message message) {
+			return false;
 		}
 	}
 
