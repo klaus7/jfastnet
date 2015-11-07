@@ -25,7 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** Used for bigger messages to be transferred in parts.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class MessagePart extends Message implements IDontFrame {
 

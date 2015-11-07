@@ -18,7 +18,7 @@ package com.jfastnet.util;
 
 import java.util.TreeMap;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class SizeLimitedMap<K, V> extends TreeMap<K, V> {
 
 	private int maximumSize;

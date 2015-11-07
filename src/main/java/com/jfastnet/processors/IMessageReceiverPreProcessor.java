@@ -19,7 +19,7 @@ package com.jfastnet.processors;
 import com.jfastnet.messages.Message;
 
 /** Called before the message is handed over to the external receiver.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IMessageReceiverPreProcessor {
 
 	/** Called before the message is handed over to the external receiver. */

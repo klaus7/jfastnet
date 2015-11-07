@@ -24,7 +24,7 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class Server extends PeerController {
 

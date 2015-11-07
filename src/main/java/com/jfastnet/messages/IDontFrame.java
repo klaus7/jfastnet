@@ -18,5 +18,5 @@ package com.jfastnet.messages;
 
 /** The message implementing this marker interface will not be processed
  * within the boundaries of the lockstepping mechanism.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IDontFrame {}

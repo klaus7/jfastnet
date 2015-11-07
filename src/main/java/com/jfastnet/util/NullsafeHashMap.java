@@ -19,7 +19,7 @@ package com.jfastnet.util;
 import java.util.HashMap;
 
 /** If on "get" the map is null, a new object is inserted.
- * @author Klaus Pfeiffer <klaus@allpiper.com>
+ * @author Klaus Pfeiffer - klaus@allpiper.com
  * @param <E> key for this map containing another Object of entities and their ids.
  * @param <F> value of this map */
 public abstract class NullsafeHashMap<E, F> extends HashMap<E, F> {

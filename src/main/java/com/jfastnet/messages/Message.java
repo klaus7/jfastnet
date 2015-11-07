@@ -31,7 +31,7 @@ import java.io.Serializable;
 import java.net.InetSocketAddress;
 
 /** The base class for all messages. Subclass this class for your own messages.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 @Getter
 @EqualsAndHashCode

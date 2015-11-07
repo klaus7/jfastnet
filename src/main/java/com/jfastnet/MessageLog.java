@@ -27,10 +27,10 @@ import java.util.function.Predicate;
 
 /** Logs incoming and outgoing messages. Per default only reliable messages
  * get logged and an upper bound for the message log is used.
- * <br/>
+ *
  * The reliable sequence processor will grab required messages from the message
  * log. So don't change the filter unless you know what you're doing.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class MessageLog {
 

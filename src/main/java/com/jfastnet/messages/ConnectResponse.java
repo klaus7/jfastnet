@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 /** Sent from the server to the client to confirm the connection.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class ConnectResponse extends Message implements IDontFrame, IInstantProcessable, IAckMessage {
 

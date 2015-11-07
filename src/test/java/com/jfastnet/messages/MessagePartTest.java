@@ -25,7 +25,7 @@ import java.util.Random;
 
 import static org.junit.Assert.*;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class MessagePartTest extends AbstractTest {
 
 	static class BigMessage extends Message {

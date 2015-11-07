@@ -27,7 +27,7 @@ import java.util.Map;
 
 /** This message is sent from the server to the client and then back to the
  * server. It is used to measure the round trip time.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class TimerSyncMessage extends Message implements IInstantServerProcessable, IDontFrame {
 

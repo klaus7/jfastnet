@@ -19,5 +19,5 @@ package com.jfastnet.messages;
 /** Marker interface to determine, that a message should be processed, before
  * sending it to the receiver. Use with caution, this will easily get you
  * into trouble when using the lockstep system.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IInstantOnSendProcessable {}

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Ids begin with 1. Every reliable mode has its stream of ids.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class ReliableModeIdProvider implements IIdProvider {
 

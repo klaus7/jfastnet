@@ -18,7 +18,7 @@ package com.jfastnet.messages;
 
 import java.util.Collection;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IBatchable<E> {
 	void set(Collection<E> batch);
 }

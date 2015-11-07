@@ -18,7 +18,7 @@ package com.jfastnet;
 
 import com.jfastnet.messages.Message;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IMessageReceiver {
 
 	/** Receive message. */

@@ -33,7 +33,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 /** Blazing fast kryo serialiser. Strongly recommended!
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class KryoSerialiser implements ISerialiser{
 

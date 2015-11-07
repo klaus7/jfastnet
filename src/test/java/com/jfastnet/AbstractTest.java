@@ -30,7 +30,7 @@ import org.objenesis.strategy.StdInstantiatorStrategy;
 import java.util.ArrayList;
 import java.util.List;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public abstract class AbstractTest {
 	public interface Callable<V> {

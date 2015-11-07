@@ -20,5 +20,5 @@ package com.jfastnet.messages;
  * retrieved. Without sending this message one peer could be stuck, because
  * it never retrieves the last message and also has no way of detecting,
  * because a message with an higher id is not sent.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class SequenceKeepAlive extends Message implements IDontFrame {}

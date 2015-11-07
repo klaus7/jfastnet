@@ -19,7 +19,7 @@ package com.jfastnet.processors;
 import com.jfastnet.messages.Message;
 import com.jfastnet.messages.features.ChecksumFeature;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class AddChecksumProcessor implements IMessageSenderPreProcessor {
 
 	/** WIP! */

@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /** Provides a new id for every message. Usually not advisable to use this
  * provider.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class SimpleIdProvider implements IIdProvider {
 
 	AtomicLong id = new AtomicLong();

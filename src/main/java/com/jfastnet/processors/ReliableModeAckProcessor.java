@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /** Retrieval of messages with the reliable mode set to ACK must be confirmed
  * by sending an ACK message. This processor controls the resending of
  * messages and the retrieval of ACK messages.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageReceiverPostProcessor, IMessageSenderPreProcessor, IServerHooks {
 

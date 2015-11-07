@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class MessageFeatures implements Serializable, MessageFeature {
 
 	private Set<MessageFeature> features = new HashSet<>();

@@ -17,7 +17,7 @@
 package com.jfastnet.messages;
 
 /** Used to send a plain object.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class GenericMessage extends Message {
 
 	public Object object;

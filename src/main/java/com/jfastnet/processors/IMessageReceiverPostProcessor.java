@@ -18,7 +18,7 @@ package com.jfastnet.processors;
 
 import com.jfastnet.messages.Message;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IMessageReceiverPostProcessor {
 
 	/** Message is received and forwarded to the external receiver at this time. */

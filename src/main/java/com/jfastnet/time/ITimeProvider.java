@@ -16,7 +16,7 @@
 
 package com.jfastnet.time;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface ITimeProvider {
 
 	/** @return current time in ms. */

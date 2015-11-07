@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class Client extends PeerController {
 

@@ -17,7 +17,7 @@
 package com.jfastnet.messages;
 
 /** Sent from the client to the server.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class LeaveRequest extends Message implements IDontFrame {
 
 	@Override

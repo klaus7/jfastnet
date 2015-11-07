@@ -18,5 +18,5 @@ package com.jfastnet;
 
 /** Controls a peer interface by behaving like a peer, client or server. Every
  * peer controller can send and receive messages.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IPeerController extends IMessageSender, IMessageReceiver, ISimpleProcessable, IStartStop {}

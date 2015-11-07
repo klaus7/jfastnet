@@ -20,7 +20,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /** Sent from the client to the server.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class ConnectRequest extends Message implements IDontFrame {
 

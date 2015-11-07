@@ -21,7 +21,7 @@ import com.jfastnet.messages.Message;
 import java.util.Comparator;
 
 /** Compares the id of messages.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class MessageIdComparator implements Comparator<Message> {
 
 	public static final MessageIdComparator INSTANCE = new MessageIdComparator();

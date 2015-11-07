@@ -24,7 +24,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 @Accessors(chain = true)
 public class FutureGenericFutureListener implements GenericFutureListener<Future<? super Void>> {

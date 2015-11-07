@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class ConcurrentSizeLimitedMap<K extends Comparable<K>, V> extends ConcurrentHashMap<K, V> {
 
 	/** Maximum number of entries in this map. */

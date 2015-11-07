@@ -20,7 +20,7 @@ import com.jfastnet.messages.Message;
 import com.jfastnet.messages.features.ChecksumFeature;
 
 /** Check incoming messages for correct checksums.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class DiscardWrongChecksumMessagesHandler implements IMessageReceiverPreProcessor {
 
 	@Override

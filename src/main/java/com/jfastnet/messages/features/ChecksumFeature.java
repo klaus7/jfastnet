@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.zip.CRC32;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class ChecksumFeature implements MessageFeature {
 

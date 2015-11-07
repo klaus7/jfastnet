@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /** <b>Attention!</b> This won't work with Lockstepping, because the
  * lockstepping impl requires the same id for messages on all clients.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class ClientIdReliableModeIdProvider implements IIdProvider {
 
 	private Map<Integer, Map<Message.ReliableMode, AtomicLong>> idMap = new NullsafeHashMap<Integer, Map<Message.ReliableMode, AtomicLong>>() {

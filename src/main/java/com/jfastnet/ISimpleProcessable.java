@@ -16,7 +16,7 @@
 
 package com.jfastnet;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface ISimpleProcessable {
 	void process();
 }

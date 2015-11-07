@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Statistics about the network traffic.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class NetStats {
 	public static final DateFormat FILE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss_SSS");

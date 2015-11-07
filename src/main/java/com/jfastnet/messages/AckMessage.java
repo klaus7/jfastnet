@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class AckMessage extends Message implements IBatchable<Long>, IAckMessage {
 

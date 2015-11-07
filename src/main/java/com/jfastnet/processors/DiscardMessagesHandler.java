@@ -22,7 +22,7 @@ import lombok.EqualsAndHashCode;
 import java.util.HashMap;
 import java.util.Map;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class DiscardMessagesHandler implements IMessageReceiverPreProcessor{
 
 	// TODO potentially growing over time

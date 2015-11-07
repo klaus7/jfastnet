@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.CRC32;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface ISerialiser {
 
 	byte[] serialise(Message message);

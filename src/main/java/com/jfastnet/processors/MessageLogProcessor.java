@@ -20,7 +20,7 @@ import com.jfastnet.Config;
 import com.jfastnet.messages.Message;
 
 /** Puts filtered messages into the message log.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class MessageLogProcessor implements IMessageSenderPostProcessor, IMessageReceiverPreProcessor {
 
 	Config config;

@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com>
+/** @author Klaus Pfeiffer - klaus@allpiper.com
  * @deprecated use a ReliableSequenceMessage instead */
 @Deprecated
 public class OrderedUdpHandler implements IMessageReceiverPreProcessor, IMessageReceiverPostProcessor {

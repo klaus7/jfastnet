@@ -18,7 +18,7 @@ package com.jfastnet.util;
 
 import java.util.ArrayList;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class SizeLimitedList<E> extends ArrayList<E> {
 
 	private int maximumSize;

@@ -18,7 +18,7 @@ package com.jfastnet.processors;
 
 import com.jfastnet.messages.Message;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IMessageSenderPostProcessor {
 	/** Called after the message was successfully sent. */
 	Message afterSend(Message message);

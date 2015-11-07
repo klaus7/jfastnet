@@ -19,7 +19,7 @@ package com.jfastnet.messages;
 import lombok.extern.slf4j.Slf4j;
 
 /** Sent when client is ready.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class IsReadyMessage extends Message implements IDontFrame {
 

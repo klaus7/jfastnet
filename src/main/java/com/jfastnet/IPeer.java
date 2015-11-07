@@ -18,7 +18,7 @@ package com.jfastnet;
 
 import com.jfastnet.messages.Message;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IPeer extends IStartStop, IMessageSender, ISimpleProcessable {
 
 	/** After the method call message.payload should be non-null.

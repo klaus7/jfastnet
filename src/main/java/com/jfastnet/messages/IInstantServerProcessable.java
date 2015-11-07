@@ -19,7 +19,7 @@ package com.jfastnet.messages;
 /** Marker interface for instant processable actions on the server side upon receiving.
  * Be cautious with concurrency!
  * <p>Can only be transferred unreliable, because all systems are skipped.</p>
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IInstantServerProcessable {
 	void process();
 }

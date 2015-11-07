@@ -28,7 +28,7 @@ import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.util.Random;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class JavaNetPeer implements IPeer {
 

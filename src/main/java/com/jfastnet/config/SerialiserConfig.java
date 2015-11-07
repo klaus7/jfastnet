@@ -16,7 +16,7 @@
 
 package com.jfastnet.config;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class SerialiserConfig {
 
 	/** Use basic Java's In-/Deflater compression. Can only be used when de-/

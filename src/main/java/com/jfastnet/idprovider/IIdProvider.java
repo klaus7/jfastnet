@@ -22,7 +22,7 @@ import java.util.Comparator;
 
 /** Provides the id for messages. It depends on the use case which provider
  * you should choose.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IIdProvider extends Comparator<Message> {
 
 	/** Get new id for message. */
@@ -33,7 +33,7 @@ public interface IIdProvider extends Comparator<Message> {
 
 	/** Return true, if broadcasted messages should resolve the message id
 	 * again after setting the correct receiver id.
-	 * <br/>
+	 *
 	 * Otherwise every client receives the same id for a particular message,
 	 * which is required for the lock stepping extension implementation. */
 	default boolean resolveEveryClientMessage() {

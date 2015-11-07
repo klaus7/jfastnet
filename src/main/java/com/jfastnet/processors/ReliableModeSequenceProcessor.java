@@ -32,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 /** Must be thread-safe.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageSenderPostProcessor, IServerHooks {
 

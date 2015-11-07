@@ -18,5 +18,5 @@ package com.jfastnet.messages;
 
 /** Message will not be forwarded to the external receiver. Instead it will
  * be immediately processed.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IInstantProcessable {}

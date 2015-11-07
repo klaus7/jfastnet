@@ -18,7 +18,7 @@ package com.jfastnet.processors;
 
 import com.jfastnet.messages.Message;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IMessageSenderPreProcessor {
 
 	/** Congestion control is not implemented until now! WIP!

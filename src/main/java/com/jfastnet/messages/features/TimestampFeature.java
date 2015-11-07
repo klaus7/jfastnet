@@ -18,7 +18,7 @@ package com.jfastnet.messages.features;
 
 import com.jfastnet.Config;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class TimestampFeature implements MessageFeature {
 
 	public long timestamp;

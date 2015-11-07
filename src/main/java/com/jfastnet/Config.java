@@ -34,7 +34,7 @@ import lombok.experimental.Accessors;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Setter
 @Accessors(chain = true)
 public class Config {

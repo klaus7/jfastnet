@@ -16,7 +16,7 @@
 
 package com.jfastnet.processors;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class ProcessFlags {
 
 	/** If set to true, the ReliableModeSequenceProcessor will not check a

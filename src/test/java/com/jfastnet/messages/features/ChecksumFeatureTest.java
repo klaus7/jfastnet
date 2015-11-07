@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class ChecksumFeatureTest extends AbstractTest {
 

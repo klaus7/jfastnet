@@ -18,7 +18,7 @@ package com.jfastnet.util;
 
 import java.util.TreeSet;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class SizeLimitedSet<E> extends TreeSet<E> {
 
 	private int maximumSize;

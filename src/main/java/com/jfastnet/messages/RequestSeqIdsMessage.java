@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /** This message is used to request missing sequenced ids from the other side.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class RequestSeqIdsMessage extends Message implements IDontFrame {
 

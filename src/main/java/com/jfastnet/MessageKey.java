@@ -20,7 +20,7 @@ import com.jfastnet.messages.Message;
 import lombok.ToString;
 
 /** Reliable mode / ClientID / MessageID - Key
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @ToString
 public class MessageKey implements Comparable<MessageKey>{
 	public Message.ReliableMode reliableMode;

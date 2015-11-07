@@ -19,10 +19,11 @@
 
 	<groupId>com.jfastnet</groupId>
 	<artifactId>jfastnet</artifactId>
-	<version>0.1.2-SNAPSHOT</version>
+	<version>0.1.2</version>
 	<packaging>jar</packaging>
 
 	<name>jfastnet</name>
+	<description>Fast, reliable UDP messaging for Java. Designed for games.</description>
 	<url>http://www.jfastnet.com</url>
 
 	<properties>
@@ -64,10 +65,10 @@
 
 	<developers>
 		<developer>
+			<id>klaus7</id>
 			<email>klaus@allpiper.com</email>
 			<name>Klaus Pfeiffer</name>
 			<url>http://www.allpiper.com</url>
-			<id>klaus7</id>
 		</developer>
 	</developers>
 
@@ -230,9 +231,10 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.9.1</version>
-				<configuration>
-					<failOnError>false</failOnError>
-				</configuration>
+				<!--<configuration>-->
+					<!--<additionalparam>-Xdoclint:none</additionalparam>-->
+					<!--<failOnError>false</failOnError>-->
+				<!--</configuration>-->
 				<executions>
 					<execution>
 						<id>attach-javadocs</id>

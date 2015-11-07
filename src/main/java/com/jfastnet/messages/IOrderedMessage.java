@@ -19,7 +19,7 @@ package com.jfastnet.messages;
 /** A message that needs to be received in a particular order has to implement
  * this interface and respect the conditions.
  * <br>Usually a better way is to use a reliable sequence instead.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IOrderedMessage {
 
 	/** @return the message id this message is based on. The message with this

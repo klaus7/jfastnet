@@ -20,7 +20,7 @@ import com.jfastnet.Config;
 
 import java.io.Serializable;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface MessageFeature extends Serializable {
 	/** Provide the config to the feature. */
 	default void resolveConfig(Config config) {}

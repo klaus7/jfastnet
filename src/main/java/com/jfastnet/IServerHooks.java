@@ -17,7 +17,7 @@
 package com.jfastnet;
 
 /** Server hooks are called on various occasions.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface IServerHooks {
 
 	/** Called when a client joins the server. */

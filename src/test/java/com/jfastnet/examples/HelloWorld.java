@@ -21,7 +21,7 @@ import com.jfastnet.Config;
 import com.jfastnet.Server;
 import com.jfastnet.messages.GenericMessage;
 
-/** @author Klaus Pfeiffer <klaus@allpiper.com> */
+/** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class HelloWorld {
 
 	public static int received = 0;

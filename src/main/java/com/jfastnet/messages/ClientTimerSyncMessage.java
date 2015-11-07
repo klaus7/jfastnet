@@ -22,7 +22,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /** Send the client his offsetToHost.
- * @author Klaus Pfeiffer <klaus@allpiper.com> */
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class ClientTimerSyncMessage extends Message implements IDontFrame {
 
