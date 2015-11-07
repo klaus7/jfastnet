@@ -277,7 +277,8 @@ public class ServerTest extends AbstractTest {
 		reset();
 		start(4, newServerConfig(), () -> {
 			Config config = newClientConfig();
-			config.messageLog.filter = message -> true; // don't filter messages
+			config.messageLog.receiveFilter = message -> true; // don't filter messages
+			config.messageLog.sendFilter = message -> true; // don't filter messages
 			return config;
 		});
 		server.send(new DefaultUnreliableMessage());
