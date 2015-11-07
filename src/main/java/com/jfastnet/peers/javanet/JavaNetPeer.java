@@ -94,6 +94,13 @@ public class JavaNetPeer implements IPeer {
 					new NetStats.Line(true, message.getSenderId(), frame, System.currentTimeMillis(), message.getClass(), (payload).length));
 		}
 
+		if (payload.length > config.maximumUdpPacketSize) {
+			// Write error message, but still try to send the message.
+			// OS could prevent too big messages from being sent.
+			log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
+					new Object[]{message, config.maximumUdpPacketSize, payload.length});
+		}
+
 		try {
 			log.trace("Payload length: {}", payload.length);
 			socket.send(new DatagramPacket(payload, payload.length, message.socketAddressRecipient));
