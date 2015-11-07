@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 @Slf4j
 public class MessageLog {
 
-	public List<Message> received = new SizeLimitedList<>(3000);
+	public List<Message> received = new SizeLimitedList<>(1000);
 	public List<Message> sent = new SizeLimitedList<>(3000);
 	public Map<MessageKey, Message> sentMap = new ConcurrentSizeLimitedMap<>(3000);
 
