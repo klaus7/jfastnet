@@ -180,6 +180,7 @@ public abstract class AbstractTest {
 //		config.udpPeer = new KryoNettyPeer(config);
 		config.externalReceiver = Message::process;
 		config.keepAliveInterval = 500;
+		config.messageLog.receiveFilter = message -> true;
 
 		return (config);
 	}

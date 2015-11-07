@@ -24,7 +24,7 @@ import java.util.HashSet;
 
 /** @author Klaus Pfeiffer <klaus@allpiper.com> */
 @Slf4j
-public class AckMessage extends Message implements IBatchable<Long> {
+public class AckMessage extends Message implements IBatchable<Long>, IAckMessage {
 
 	/** Message ids to acknowledge. */
 	public Collection<Long> batch;
@@ -48,5 +48,10 @@ public class AckMessage extends Message implements IBatchable<Long> {
 
 	public String toString() {
 		return "AckMessage(super=" + super.toString() + ", ids=" + Arrays.toString(batch.toArray()) + ")";
+	}
+
+	@Override
+	public Collection<Long> getAckIds() {
+		return batch;
 	}
 }

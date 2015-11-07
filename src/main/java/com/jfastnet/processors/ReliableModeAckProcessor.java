@@ -22,6 +22,7 @@ import com.jfastnet.ISimpleProcessable;
 import com.jfastnet.MessageKey;
 import com.jfastnet.messages.AckMessage;
 import com.jfastnet.messages.ConnectRequest;
+import com.jfastnet.messages.IAckMessage;
 import com.jfastnet.messages.Message;
 import lombok.Getter;
 import lombok.Setter;
@@ -162,12 +163,14 @@ public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageRec
 
 	@Override
 	public Message beforeReceive(Message message) {
-		if (message instanceof AckMessage) {
-			AckMessage ackMessages = (AckMessage) message;
-			for (Long id : ackMessages.batch) {
+		if (message instanceof IAckMessage) {
+			IAckMessage ackMessages = (IAckMessage) message;
+			for (Long id : ackMessages.getAckIds()) {
 				ack(MessageKey.newKey(Message.ReliableMode.ACK_PACKET, message.getSenderId(), id));
 			}
-			return null;
+			if (message instanceof AckMessage) {
+				return null;
+			}
 		}
 		if (Message.ReliableMode.ACK_PACKET.equals(message.getReliableMode())) {
 			MessageKey key = MessageKey.newKey(Message.ReliableMode.ACK_PACKET, message.getSenderId(), message.getMsgId());

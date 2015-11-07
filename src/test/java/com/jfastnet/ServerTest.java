@@ -397,7 +397,7 @@ public class ServerTest extends AbstractTest {
 		waitForCondition("Not all messages received.", timeoutInSeconds, () -> allClientsReceivedMessageTypeOf(DefaultReliableSeqMessage.class));
 
 		logBig("Send from clients to server");
-		log.info("Wait for every client to receive its proper message.");
+		log.info("Wait for every client to send its message and be received from the server.");
 		for (int i = 0; i < clients.size(); i++) {
 			Client client = clients.get(i);
 			client.send(new DefaultReliableSeqMessageSpecific(10 + i));

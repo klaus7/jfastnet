@@ -48,7 +48,7 @@ public class ConnectRequest extends Message implements IDontFrame {
 
 	@Override
 	public void process() {
-		final ConnectResponse connectResponse = new ConnectResponse();
+		final ConnectResponse connectResponse = new ConnectResponse(getMsgId());
 		DUMMY.setReceiverId(clientId);
 		connectResponse.lastReliableSeqId = getConfig().idProvider.getLastIdFor(DUMMY);
 		log.info("Last reliable ID: {} - send to {}", connectResponse.lastReliableSeqId, clientId);

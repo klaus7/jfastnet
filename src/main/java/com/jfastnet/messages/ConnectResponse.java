@@ -19,17 +19,24 @@ package com.jfastnet.messages;
 import com.jfastnet.processors.ReliableModeSequenceProcessor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /** Sent from the server to the client to confirm the connection.
  * @author Klaus Pfeiffer <klaus@allpiper.com> */
 @Slf4j
-public class ConnectResponse extends Message implements IDontFrame, IInstantProcessable {
+public class ConnectResponse extends Message implements IDontFrame, IInstantProcessable, IAckMessage {
 
 	/** Last used reliable sequence id on the server. */
 	long lastReliableSeqId;
 
-	public ConnectResponse() {}
+	long connectRequestMsgId;
+
+	public ConnectResponse(long connectRequestMsgId) {
+		this.connectRequestMsgId = connectRequestMsgId;
+	}
 
 	@Override
 	public ReliableMode getReliableMode() {
@@ -47,5 +54,12 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 		} else {
 			log.warn(" * Last reliable sequence id was already set to {}", lastId);
 		}
+	}
+
+	@Override
+	public Collection<Long> getAckIds() {
+		Set<Long> batch = new HashSet<>();
+		batch.add(connectRequestMsgId);
+		return batch;
 	}
 }
