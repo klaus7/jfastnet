@@ -1,18 +1,14 @@
 # JFastNet
 Fast, reliable and easy UDP messaging for Java. Designed for games.
 
-# Build
-It is planned to upload artifacts to Maven Central and do proper releases, but this will take a few more days. Until then you can just clone the repository and use maven to install it to your local repository.
-```bash
-mvn install
-```
+# Maven
 
-And the dependency for your POM:
+The dependency for your POM:
 ```xml
 <dependency>
     <groupId>com.jfastnet</groupId>
     <artifactId>jfastnet</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.2</version>
 </dependency>
 ```
 
@@ -62,6 +58,12 @@ Processing will not continue until all required messages are received.
  Ordered   | yes
 
 It's usually advisable to use sequence numbers, as there will be less overhead and also the ordered delivery is guaranteed.
+
+# Build
+Use maven to build JFastNet:
+```bash
+mvn clean install
+```
 
 # Thanks
 [Kryo](https://github.com/EsotericSoftware/kryo) is the default serialiser used in JFastNet and is a pleasure to work with! Thanks very much for this awesome library!
