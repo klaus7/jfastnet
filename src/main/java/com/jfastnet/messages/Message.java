@@ -173,7 +173,7 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	}
 
 	public String toString() {
-		return getClass().getSimpleName() + "(msgId=" + this.msgId + ", reliableMode=" + getReliableMode() + ", senderId=" + this.senderId + ", receiverId=" + this.receiverId + ")";
+		return getClass().getName() + "(msgId=" + this.msgId + ", reliableMode=" + getReliableMode() + ", senderId=" + this.senderId + ", receiverId=" + this.receiverId + ")";
 	}
 
 	public long getTimestamp() {

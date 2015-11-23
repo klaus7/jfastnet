@@ -233,8 +233,7 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 		for (int i = 0; i < Math.min(config.maximumRequestAbsentIds, requestIdsTmp.size()); i++) {
 			requestIds.add(requestIdsTmp.get(i));
 		}
-		RequestSeqIdsMessage requestSeqIdsMessage = new RequestSeqIdsMessage(requestIds);
-		requestSeqIdsMessage.setReceiverId(clientId);
+		RequestSeqIdsMessage requestSeqIdsMessage = new RequestSeqIdsMessage(requestIds, clientId);
 		config.sender.send(requestSeqIdsMessage);
 		config.netStats.requestedMissingMessages.addAndGet(clientAbsentMessageIds.size());
 	}

@@ -32,9 +32,10 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 	/** List of sequence message ids we require. */
 	private List<Long> absentIds = new ArrayList<>();
 
-	public RequestSeqIdsMessage(List<Long> absentIds) {
+	public RequestSeqIdsMessage(List<Long> absentIds, int receiverId) {
 		this.absentIds = absentIds;
-		log.info("Request absent-Ids: {}", Arrays.toString(absentIds.toArray()));
+		setReceiverId(receiverId);
+		log.info("Request absent-Ids from {}: {}", receiverId, Arrays.toString(absentIds.toArray()));
 	}
 
 	@Override
