@@ -103,7 +103,9 @@ public class JavaNetPeer implements IPeer {
 					parts.forEach(this::queue);
 					return true;
 				} else {
-					log.warn("Parts couldn't be created for message {}", message);
+					log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
+							new Object[]{message, config.maximumUdpPacketSize, payload.length});
+					log.error("Parts couldn't be created for message {}", message);
 				}
 			} else {
 				// Write error message, but still try to send the message.
