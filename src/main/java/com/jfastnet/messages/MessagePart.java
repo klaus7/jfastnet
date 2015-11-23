@@ -58,7 +58,7 @@ public class MessagePart extends Message implements IDontFrame {
 		// Depends on the UDP peer if this is possible.
 		if (message.payload instanceof byte[]) {
 			byte[] bytes = (byte[]) message.payload;
-			return createFromByteArray(id, bytes, chunkSize, reliableMode);
+			return createFromByteArray(id, bytes, chunkSize , reliableMode);
 		}
 		log.error("Message could not be created, because of missing byte array payload.");
 		return null;

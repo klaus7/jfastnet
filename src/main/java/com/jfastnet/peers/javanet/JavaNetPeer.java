@@ -20,12 +20,14 @@ import com.jfastnet.Config;
 import com.jfastnet.IPeer;
 import com.jfastnet.NetStats;
 import com.jfastnet.messages.Message;
+import com.jfastnet.messages.MessagePart;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Random;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -95,10 +97,20 @@ public class JavaNetPeer implements IPeer {
 		}
 
 		if (payload.length > config.maximumUdpPacketSize) {
-			// Write error message, but still try to send the message.
-			// OS could prevent too big messages from being sent.
-			log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
-					new Object[]{message, config.maximumUdpPacketSize, payload.length});
+			if (config.autoSplitTooBigMessages) {
+				final List<MessagePart> parts = MessagePart.createFromMessage(config, 0, message, config.maximumUdpPacketSize - Message.MESSAGE_HEADER_SIZE, message.getReliableMode());
+				if (parts != null) {
+					parts.forEach(this::queue);
+					return true;
+				} else {
+					log.warn("Parts couldn't be created for message {}", message);
+				}
+			} else {
+				// Write error message, but still try to send the message.
+				// OS could prevent too big messages from being sent.
+				log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
+						new Object[]{message, config.maximumUdpPacketSize, payload.length});
+			}
 		}
 
 		try {

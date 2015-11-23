@@ -123,7 +123,12 @@ public class Config {
 	public volatile boolean connected = false;
 	// END client config
 
+	/** Packets above this size will log an error or will be automatically
+	 * splitted into multiple messages. */
 	public int maximumUdpPacketSize = 1024;
+
+	/** Automatically split too big messages into multiple smaller messages. */
+	public boolean autoSplitTooBigMessages = true;
 
 	public int messageQueueThreshold = 37;
 	//SocketOption send buffer SO_SNDBUF
