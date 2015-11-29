@@ -154,6 +154,8 @@ public class JavaNetPeer implements IPeer {
 					new NetStats.Line(false, message.getSenderId(), frame, message.getTimestamp(), message.getClass(), ((byte[]) message.payload).length));
 		}
 
+		message.beforeExternalReceive();
+
 		// Let the controller receive the message.
 		// Processors are called there.
 		config.receiver.receive(message);

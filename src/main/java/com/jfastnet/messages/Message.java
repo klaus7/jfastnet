@@ -143,6 +143,9 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	/** Override if you need something done right before sending. */
 	public void prepareToSend() {}
 
+	/** Override if you need something done right before receiving. */
+	public void beforeExternalReceive() {}
+
 	/** Specify the reliable mode for this message. */
 	public ReliableMode getReliableMode() 		{ return ReliableMode.SEQUENCE_NUMBER; }
 
