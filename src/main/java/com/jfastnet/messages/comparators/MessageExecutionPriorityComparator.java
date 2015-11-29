@@ -20,7 +20,7 @@ import com.jfastnet.messages.Message;
 
 import java.util.Comparator;
 
-/** Higher priority messages will come first when used this comparator.
+/** Higher priority messages will come first when using this comparator.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
 public class MessageExecutionPriorityComparator implements Comparator<Message> {
 
