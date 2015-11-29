@@ -17,6 +17,7 @@
 package com.jfastnet.messages;
 
 import com.jfastnet.processors.ReliableModeSequenceProcessor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Collection;
@@ -34,8 +35,14 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 
 	long connectRequestMsgId;
 
-	public ConnectResponse(long connectRequestMsgId) {
+	/** The client id is sent back from the server to the client. If it was 0
+	 * before, the server assigend a new id. */
+	@Getter
+	int clientId;
+
+	public ConnectResponse(long connectRequestMsgId, int clientId) {
 		this.connectRequestMsgId = connectRequestMsgId;
+		this.clientId = clientId;
 	}
 
 	@Override

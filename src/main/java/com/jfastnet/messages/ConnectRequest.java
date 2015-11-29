@@ -17,6 +17,7 @@
 package com.jfastnet.messages;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /** Sent from the client to the server.
@@ -33,6 +34,7 @@ public class ConnectRequest extends Message implements IDontFrame {
 	};
 
 	@Getter
+	@Setter
 	int clientId;
 
 	public ConnectRequest() {}
@@ -48,7 +50,7 @@ public class ConnectRequest extends Message implements IDontFrame {
 
 	@Override
 	public void process() {
-		final ConnectResponse connectResponse = new ConnectResponse(getMsgId());
+		final ConnectResponse connectResponse = new ConnectResponse(getMsgId(), clientId);
 		DUMMY.setReceiverId(clientId);
 		connectResponse.lastReliableSeqId = getConfig().idProvider.getLastIdFor(DUMMY);
 		log.info("Last reliable ID: {} - send to {}", connectResponse.lastReliableSeqId, clientId);

@@ -380,8 +380,7 @@ public class ServerTest extends AbstractTest {
 	@Test
 	public void sendToMultipleClientsReliableSeqTest() {
 		reset();
-		start(8, newServerConfig()
-						.setIdProvider(new ReliableModeIdProvider()),
+		start(8, newServerConfig().setIdProvider(new ReliableModeIdProvider()),
 				() -> {
 					Config config = newClientConfig();
 					config.idProvider = new ReliableModeIdProvider();

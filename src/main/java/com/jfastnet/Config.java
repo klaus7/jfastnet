@@ -33,6 +33,7 @@ import lombok.experimental.Accessors;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Setter
@@ -56,6 +57,10 @@ public class Config {
 
 	/** Optional configured sender id. */
 	public int senderId;
+
+	/** Consumer is called when a new client id is retrieved through the
+	 * ConnectResponse message. */
+	public Consumer<Integer> newSenderIdConsumer = id -> {};
 
 	/** Set to true if you want that a CSV file is created after every run with
 	 * data about all the sent and received messages and their data size. */

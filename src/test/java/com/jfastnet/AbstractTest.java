@@ -49,7 +49,6 @@ public abstract class AbstractTest {
 	public List<Client> clients;
 	public Client client1;
 	public Client client2;
-	public int lastClientId = 0;
 
 	public void start() {
 		start(1);
@@ -65,8 +64,6 @@ public abstract class AbstractTest {
 		clients = new ArrayList<>();
 		for (int i = 0; i < clientCount; i++) {
 			Config config = clientConfig.call();
-			lastClientId++;
-			config.setSenderId(lastClientId);
 			clients.add(new Client(config));
 			if (i == 0) client1 = clients.get(i);
 			if (i == 1) client2 = clients.get(i);
@@ -94,7 +91,7 @@ public abstract class AbstractTest {
 		clients.forEach(Client::blockingWaitUntilConnected);
 		log.info("All clients connected successfully!");
 
-		waitForCondition("Not all clients joined.", 3, () -> server.clients.size() == clientCount);
+		waitForCondition("Not all clients joined.", 3, () -> server.clients.size() == clientCount, () -> "Clients: " + server.clients.size() + ", Expected: " + clientCount);
 	}
 
 	public Message getLastReceivedMessage() {

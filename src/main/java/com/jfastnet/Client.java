@@ -44,10 +44,10 @@ public class Client extends PeerController {
 
 	public Client(Config config) {
 		super(config.setHost(false));
-		if (config.senderId == 0) {
-			log.warn("SenderId 0 is reserved for the server! Setting to 1.");
-			config.senderId = 1;
-		}
+//		if (config.senderId == 0) {
+//			log.warn("SenderId 0 is reserved for the server! Setting to 1.");
+//			config.senderId = 1;
+//		}
 		clientId = config.senderId;
 	}
 
@@ -120,6 +120,9 @@ public class Client extends PeerController {
 		if (message instanceof ConnectResponse && !config.connected) {
 			((ConnectResponse) message).setLastReliableSeqIdInSequenceProcessor();
 			config.connected = true;
+			clientId = ((ConnectResponse) message).getClientId();
+			config.setSenderId(clientId);
+			config.newSenderIdConsumer.accept(clientId);
 		}
 		if (config.connected) {
 			if (message instanceof TimerSyncMessage) {

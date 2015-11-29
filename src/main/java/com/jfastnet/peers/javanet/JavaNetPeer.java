@@ -97,7 +97,7 @@ public class JavaNetPeer implements IPeer {
 		}
 
 		if (payload.length > config.maximumUdpPacketSize) {
-			if (config.autoSplitTooBigMessages) {
+			if (config.autoSplitTooBigMessages && !(message instanceof MessagePart)) {
 				final List<MessagePart> parts = MessagePart.createFromMessage(config, 0, message, config.maximumUdpPacketSize - Message.MESSAGE_HEADER_SIZE, message.getReliableMode());
 				if (parts != null) {
 					parts.forEach(this::queue);

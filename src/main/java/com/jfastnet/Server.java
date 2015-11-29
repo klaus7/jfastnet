@@ -21,7 +21,9 @@ import com.jfastnet.util.NullsafeHashMap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -83,8 +85,9 @@ public class Server extends PeerController {
 
 	@Override
 	public void receive(Message message) {
+		boolean isConnectRequest = message instanceof ConnectRequest;
 		if (!clients.containsValue(message.getSocketAddressSender())) {
-			if (!(message instanceof ConnectRequest)) {
+			if (!isConnectRequest) {
 				log.warn("No client found under {}", message.getSocketAddressSender());
 				return;
 			}
@@ -98,8 +101,31 @@ public class Server extends PeerController {
 
 		if (message instanceof LeaveRequest) {
 			unregister(message.getSenderId());
-		} else if (message instanceof ConnectRequest && config.timeProvider.get() - lastReceived > config.timeSinceLastConnectRequest) {
-			int clientId = ((ConnectRequest) message).getClientId();
+		} else if (isConnectRequest && config.timeProvider.get() - lastReceived > config.timeSinceLastConnectRequest) {
+			ConnectRequest connectRequest = (ConnectRequest) message;
+			int clientId = connectRequest.getClientId();
+
+			if (clientId == 0) {
+				// Sender (client) id was 0 and this is a connect request
+				// -> client needs an id
+
+				Optional<Map.Entry<Integer, InetSocketAddress>> socketAddressOptional = clients.entrySet().stream()
+						.filter(entry -> entry.getValue().equals(message.getSocketAddressSender()))
+						.findFirst();
+
+				if (socketAddressOptional.isPresent()) {
+					Map.Entry<Integer, InetSocketAddress> socketAddressEntry = socketAddressOptional.get();
+					clientId = socketAddressEntry.getKey();
+					log.info("Assign previous client id {} to {}.", clientId, message.getSocketAddressSender());
+				} else {
+					Integer maximumId = clients.keySet().stream().max(Comparator.naturalOrder()).orElse(0);
+					clientId = maximumId == null ? 1 : maximumId + 1;
+					log.info("Assign new client id {} to {}.", clientId, message.getSocketAddressSender());
+				}
+				connectRequest.setSenderId(clientId);
+				connectRequest.setClientId(clientId);
+				lastReceivedMap.put(clientId, config.timeProvider.get());
+			}
 
 			// Unregister if client was already added, maybe it's a re-connect
 			if (clients.containsKey(clientId)) {
@@ -111,7 +137,8 @@ public class Server extends PeerController {
 			}
 			clients.put(clientId, message.getSocketAddressSender());
 			log.info("Added {} with address {} to clients.", clientId, message.getSocketAddressSender());
-			config.processors.stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onRegister(clientId));
+			final int finalClientId = clientId;
+			config.processors.stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onRegister(finalClientId));
 			config.serverHooks.onRegister(clientId);
 		}
 
