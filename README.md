@@ -27,6 +27,10 @@ client.send(new PrintMessage("Hello Server!"));
 ```
 [Click to see full sample code of HelloWorld.java](https://github.com/klaus7/jfastnet/blob/master/src/test/java/com/jfastnet/examples/HelloWorld.java)
 
+# Roadmap
+
+* Implement new reliable sending mode, where all unacknowledged messages get stacked onto the most recent message
+
 # Documentation
 The documentation is still a work-in-progress.
 
