@@ -96,7 +96,7 @@ public class Config {
 
 	/** Used for receiving bigger messages. Only one byte array buffer may
 	 * be processed at any given time. */
-	public SortedMap<Integer, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
+	public SortedMap<Long, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
 
 	/** Compress MessagePart messages. */
 	public boolean compressBigMessages = false;

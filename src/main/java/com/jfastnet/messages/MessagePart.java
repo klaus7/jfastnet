@@ -37,7 +37,7 @@ public class MessagePart extends Message implements IDontFrame {
 
 	/** The id servers the purpose to allow receiving of multiple different
 	 * big messages. */
-	int id;
+	long id;
 
 	/** The number tells us which part of the message we received. */
 	int partNumber;
@@ -45,7 +45,7 @@ public class MessagePart extends Message implements IDontFrame {
 	/** The payload of the message part. */
 	byte[] bytes;
 
-	private MessagePart(int id, int partNumber, byte[] bytes) {
+	private MessagePart(long id, int partNumber, byte[] bytes) {
 		this.id = id;
 		this.partNumber = partNumber;
 		this.bytes = bytes;
@@ -98,7 +98,7 @@ public class MessagePart extends Message implements IDontFrame {
 	public void process() {
 		log.trace("Part number {} of id {} received.", partNumber, id);
 
-		SortedMap<Integer, SortedMap<Integer, MessagePart>> arrayBufferMap = getConfig().byteArrayBufferMap;
+		SortedMap<Long, SortedMap<Integer, MessagePart>> arrayBufferMap = getConfig().byteArrayBufferMap;
 		SortedMap<Integer, MessagePart> byteArrayBuffer = arrayBufferMap.get(id);
 		if (byteArrayBuffer == null) {
 			byteArrayBuffer = new TreeMap<>();
