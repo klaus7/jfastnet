@@ -98,6 +98,9 @@ public class Config {
 	 * be processed at any given time. */
 	public SortedMap<Integer, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
 
+	/** Compress MessagePart messages. */
+	public boolean compressBigMessages = true;
+
 	/** Required for the reliable sequence mode. Interval in ms. */
 	public int keepAliveInterval = 3000;
 
@@ -180,22 +183,6 @@ public class Config {
 		addProcessor(new ReliableModeSequenceProcessor(this));
 		//addProcessor(new OrderedUdpHandler(this));
 		addProcessor(new DiscardMessagesHandler());
-	}
-
-	/**
-	 * Copy constructor. Only primitve values are copied to prevent problems
-	 * with references to already used object instances.
-	 * @param copy config object to copy
-	 */
-	public Config(Config copy) {
-		this();
-		this.host = copy.host;
-		this.port = copy.port;
-		this.bindPort = copy.bindPort;
-		this.senderId = copy.senderId;
-		this.trackData = copy.trackData;
-		this.maximumUdpPacketSize = copy.maximumUdpPacketSize;
-		this.messageQueueThreshold = copy.messageQueueThreshold;
 	}
 
 	public void addProcessor(Object processor) {
