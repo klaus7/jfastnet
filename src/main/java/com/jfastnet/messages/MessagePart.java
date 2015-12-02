@@ -51,11 +51,11 @@ public class MessagePart extends Message implements IDontFrame {
 		this.bytes = bytes;
 	}
 
-	public static List<MessagePart> createFromMessage(Config config, int id, Message message, int chunkSize) {
+	public static List<MessagePart> createFromMessage(Config config, long id, Message message, int chunkSize) {
 		return createFromMessage(config, id, message, chunkSize, message.getReliableMode());
 	}
 
-	public static List<MessagePart> createFromMessage(Config config, int id, Message message, int chunkSize, ReliableMode reliableMode) {
+	public static List<MessagePart> createFromMessage(Config config, long id, Message message, int chunkSize, ReliableMode reliableMode) {
 		config.udpPeer.createPayload(message);
 		// createPayload has to create a byte array
 		// Depends on the UDP peer if this is possible.
@@ -70,7 +70,7 @@ public class MessagePart extends Message implements IDontFrame {
 		return null;
 	}
 
-	public static List<MessagePart> createFromByteArray(int id, byte[] bytes, int chunkSize, ReliableMode reliableMode) {
+	public static List<MessagePart> createFromByteArray(long id, byte[] bytes, int chunkSize, ReliableMode reliableMode) {
 		log.info("Create message with {} bytes and chunk size {}", bytes.length, chunkSize);
 
 		int from = 0;
@@ -197,7 +197,7 @@ public class MessagePart extends Message implements IDontFrame {
 
 	/** MessagePart with ACK reliable mode. */
 	public static class AckMessagePart extends MessagePart {
-		private AckMessagePart(int id, int partNumber, byte[] bytes) {
+		private AckMessagePart(long id, int partNumber, byte[] bytes) {
 			super(id, partNumber, bytes);
 		}
 		@Override
