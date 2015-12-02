@@ -19,7 +19,7 @@
 
 	<groupId>com.jfastnet</groupId>
 	<artifactId>jfastnet</artifactId>
-	<version>0.1.3-SNAPSHOT</version>
+	<version>0.1.3</version>
 	<packaging>jar</packaging>
 
 	<name>jfastnet</name>
