@@ -31,10 +31,10 @@ public class MessagePartTest extends AbstractTest {
 	static class BigMessage extends Message {
 		String s;
 
-		public BigMessage() {
+		public BigMessage(int lines) {
 			Random r = new Random(System.currentTimeMillis());
 			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < 50; i++) {
+			for (int i = 0; i < lines; i++) {
 				//sb.append("asdfasdfasdfasdasdfadfasdsadfa"); // 30 chars
 				for (int j = 0; j < 15; j++) {
 					sb.append((char) r.nextInt());
@@ -68,7 +68,7 @@ public class MessagePartTest extends AbstractTest {
 				bigMsgReceived = true;
 			}
 		};
-		BigMessage bigMessage = new BigMessage();
+		BigMessage bigMessage = new BigMessage(150);
 		List<MessagePart> messageParts = MessagePart.createFromMessage(config, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
 
 		assertNotNull("message parts are null", messageParts);
@@ -89,6 +89,17 @@ public class MessagePartTest extends AbstractTest {
 		});
 		assertTrue(bigMsgReceived);
 
+	}
+
+	@Test
+	public void testCompression() {
+		String input = "This is a compression test";
+		byte[] bytes = input.getBytes();
+		byte[] compressed = MessagePart.compress(bytes);
+		byte[] decompressed = MessagePart.decompress(compressed);
+		String s = new String(decompressed);
+		System.out.println(s);
+		assertEquals(input, s);
 	}
 
 }

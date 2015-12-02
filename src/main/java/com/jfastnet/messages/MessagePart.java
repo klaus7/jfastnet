@@ -19,10 +19,13 @@ package com.jfastnet.messages;
 import com.jfastnet.Config;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.DeflaterOutputStream;
+import java.util.zip.InflaterInputStream;
 
 /** Used for bigger messages to be transferred in parts.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -58,7 +61,10 @@ public class MessagePart extends Message implements IDontFrame {
 		// Depends on the UDP peer if this is possible.
 		if (message.payload instanceof byte[]) {
 			byte[] bytes = (byte[]) message.payload;
-			return createFromByteArray(id, bytes, chunkSize , reliableMode);
+			if (config.compressBigMessages) {
+				bytes = compress(bytes);
+			}
+			return createFromByteArray(id, bytes, chunkSize, reliableMode);
 		}
 		log.error("Message could not be created, because of missing byte array payload.");
 		return null;
@@ -110,7 +116,10 @@ public class MessagePart extends Message implements IDontFrame {
 				}
 				bos.flush();
 				byte[] byteArray = bos.toByteArray();
-				Message messageFromByteArray = getConfig().serialiser.deserialise(getConfig(), byteArray, 0, bos.size());
+				if (getConfig().compressBigMessages) {
+					byteArray = decompress(byteArray);
+				}
+				Message messageFromByteArray = getConfig().serialiser.deserialise(getConfig(), byteArray, 0, byteArray.length);
 				if (messageFromByteArray == null) {
 					log.error("Deserialised message was null! See previous errors.");
 				} else {
@@ -153,6 +162,37 @@ public class MessagePart extends Message implements IDontFrame {
 		} else {
 			throw new UnsupportedOperationException("Unsupported reliable mode.");
 		}
+	}
+
+	public static byte[] compress(byte[] bytes) {
+		log.info("Compress byte array of size {}", bytes.length);
+		try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(bytes.length);
+			 DeflaterOutputStream deflaterOutputStream = new DeflaterOutputStream(byteArrayOutputStream)) {
+			deflaterOutputStream.write(bytes);
+			deflaterOutputStream.close();
+			byteArrayOutputStream.close();
+			bytes = byteArrayOutputStream.toByteArray();
+		} catch (IOException e) {
+			log.error("Couldn't compress byte array.", e);
+		}
+		return bytes;
+	}
+
+	public static byte[] decompress(byte[] bytes) {
+		try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+			 InflaterInputStream inflaterInputStream = new InflaterInputStream(byteArrayInputStream)) {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream(2048);
+			int b;
+			while ((b = inflaterInputStream.read()) != -1) {
+				bout.write(b);
+			}
+			inflaterInputStream.close();
+			bout.close();
+			return bout.toByteArray();
+		} catch (IOException e) {
+			log.error("Couldn't decompress byte array.", e);
+		}
+		return bytes;
 	}
 
 	/** MessagePart with ACK reliable mode. */

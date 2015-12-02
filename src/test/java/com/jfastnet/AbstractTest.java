@@ -178,6 +178,7 @@ public abstract class AbstractTest {
 		config.externalReceiver = Message::process;
 		config.keepAliveInterval = 500;
 		config.messageLog.receiveFilter = message -> true;
+		config.compressBigMessages = true;
 
 		return (config);
 	}

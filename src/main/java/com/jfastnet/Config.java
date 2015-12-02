@@ -99,7 +99,7 @@ public class Config {
 	public SortedMap<Integer, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
 
 	/** Compress MessagePart messages. */
-	public boolean compressBigMessages = true;
+	public boolean compressBigMessages = false;
 
 	/** Required for the reliable sequence mode. Interval in ms. */
 	public int keepAliveInterval = 3000;
