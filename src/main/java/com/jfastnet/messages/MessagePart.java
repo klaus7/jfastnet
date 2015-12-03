@@ -32,6 +32,9 @@ import java.util.zip.InflaterInputStream;
 @Slf4j
 public class MessagePart extends Message implements IDontFrame {
 
+	/** Message size in bytes without bytes payload. */
+	public static final int MESSAGE_HEADER_SIZE = 120;
+
 	/** Whether this is the last part to construct the message. */
 	boolean last;
 

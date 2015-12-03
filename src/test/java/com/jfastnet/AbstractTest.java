@@ -179,6 +179,7 @@ public abstract class AbstractTest {
 		config.keepAliveInterval = 500;
 		config.messageLog.receiveFilter = message -> true;
 		config.compressBigMessages = true;
+		config.autoSplitTooBigMessages = true;
 
 		return (config);
 	}

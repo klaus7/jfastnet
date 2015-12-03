@@ -40,8 +40,6 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	/** */
 	private static final long serialVersionUID = 1L;
 
-	public static final int MESSAGE_HEADER_SIZE = 36;
-
 	/** Unique message id. */
 	@Getter
 	private long msgId;
@@ -113,7 +111,7 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 
 	/** Resolve id via id provider. */
 	public void resolveId() {
-		this.msgId = config.idProvider.getFor(this);
+		this.msgId = config.idProvider.createIdFor(this);
 		//log.info(" * Resolved ID {} for {}", msgId, this);
 	}
 

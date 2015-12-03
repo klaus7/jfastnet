@@ -36,7 +36,7 @@ public class ReliableModeIdProvider implements IIdProvider {
 	};
 
 	@Override
-	public long getFor(Message message) {
+	public long createIdFor(Message message) {
 		final long newId = idMap.get(message.getReliableMode()).incrementAndGet();
 		log.trace("Created new id {} for {}", newId, message);
 		return newId;
@@ -45,6 +45,11 @@ public class ReliableModeIdProvider implements IIdProvider {
 	@Override
 	public long getLastIdFor(Message message) {
 		return idMap.get(message.getReliableMode()).get();
+	}
+
+	@Override
+	public long stepBack(Message message) {
+		return idMap.get(message.getReliableMode()).decrementAndGet();
 	}
 
 	@Override

@@ -40,13 +40,18 @@ public class ClientIdReliableModeIdProvider implements IIdProvider {
 	};
 
 	@Override
-	public long getFor(Message message) {
+	public long createIdFor(Message message) {
 		return idMap.get(message.getReceiverId()).get(message.getReliableMode()).incrementAndGet();
 	}
 
 	@Override
 	public long getLastIdFor(Message message) {
 		return idMap.get(message.getReceiverId()).get(message.getReliableMode()).get();
+	}
+
+	@Override
+	public long stepBack(Message message) {
+		return idMap.get(message.getReceiverId()).get(message.getReliableMode()).decrementAndGet();
 	}
 
 	@Override

@@ -193,6 +193,22 @@ public class ServerTest extends AbstractTest {
 	}
 
 	@Test
+	public void testAutoSplit() {
+		reset();
+		start(1);
+
+		log.info("Send big message.");
+		BigMessage bigMessage = new BigMessage();
+		String forLaterCheck = bigMessage.s;
+		client1.send(bigMessage);
+
+		waitForCondition("Big message after sending not received.", 3, () -> received == 1);
+		checkReceived();
+
+		assertThat("Received message not the same.", receivedBigMessage.s, is(equalTo(forLaterCheck)));
+	}
+
+	@Test
 	public void testBigMessageAckQueuing() {
 		reset();
 		start(1, newServerConfig(), () -> newClientConfig().setDebug(true).setDebugLostPackagePercentage(20));

@@ -26,10 +26,13 @@ import java.util.Comparator;
 public interface IIdProvider extends Comparator<Message> {
 
 	/** Get new id for message. */
-	long getFor(Message message);
+	long createIdFor(Message message);
 
 	/** Get last created id for message type. */
 	long getLastIdFor(Message message);
+
+	/** Revert last id. */
+	long stepBack(Message message);
 
 	/** Return true, if broadcasted messages should resolve the message id
 	 * again after setting the correct receiver id.

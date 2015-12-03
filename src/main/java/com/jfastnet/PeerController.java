@@ -19,6 +19,7 @@ package com.jfastnet;
 import com.jfastnet.messages.IInstantProcessable;
 import com.jfastnet.messages.LeaveRequest;
 import com.jfastnet.messages.Message;
+import com.jfastnet.messages.MessagePart;
 import com.jfastnet.processors.IMessageReceiverPostProcessor;
 import com.jfastnet.processors.IMessageReceiverPreProcessor;
 import com.jfastnet.processors.IMessageSenderPostProcessor;
@@ -102,6 +103,9 @@ public class PeerController implements IPeerController {
 		if (!beforeSend(message)) {
 			return false;
 		}
+		if (!checkPayloadSize(message)) {
+			return false;
+		}
 
 		config.udpPeer.send(message);
 		log.trace("Sent message: {}", message);
@@ -110,6 +114,35 @@ public class PeerController implements IPeerController {
 			return false;
 		}
 
+		return true;
+	}
+
+	private boolean checkPayloadSize(Message message) {
+		if (message.payload instanceof byte[]) {
+			byte[] payload = (byte[]) message.payload;
+			if (payload.length > config.maximumUdpPacketSize && !(message instanceof MessagePart)) {
+				config.idProvider.stepBack(message);
+				if (config.autoSplitTooBigMessages) {
+					log.info("Auto splitting message: {}", message);
+					final List<MessagePart> parts = MessagePart.createFromMessage(config, message.getMsgId(), message, config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());
+					if (parts != null && parts.size() > 0) {
+						parts.forEach(this::queue);
+					} else {
+						log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
+								new Object[]{message, config.maximumUdpPacketSize, payload.length});
+						log.error("Parts couldn't be created for message {}", message);
+					}
+				} else {
+					// Write error message
+					// OS could prevent too big messages from being sent.
+					log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
+							new Object[]{message, config.maximumUdpPacketSize, payload.length});
+				}
+				return false;
+			}
+		} else {
+			log.error("Payload is no byte array.");
+		}
 		return true;
 	}
 

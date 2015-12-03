@@ -28,13 +28,18 @@ public class SimpleIdProvider implements IIdProvider {
 	AtomicLong id = new AtomicLong();
 
 	@Override
-	public long getFor(Message message) {
+	public long createIdFor(Message message) {
 		return id.incrementAndGet();
 	}
 
 	@Override
 	public long getLastIdFor(Message message) {
 		return id.get();
+	}
+
+	@Override
+	public long stepBack(Message message) {
+		return id.decrementAndGet();
 	}
 
 	@Override
