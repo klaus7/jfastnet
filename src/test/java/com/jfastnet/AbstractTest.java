@@ -165,6 +165,7 @@ public abstract class AbstractTest {
 			protected Kryo initialValue() {
 				Kryo kryo = new Kryo();
 				kryo.setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
+				customizeKryo(kryo);
 				return kryo;
 			}
 		};
@@ -183,6 +184,8 @@ public abstract class AbstractTest {
 
 		return (config);
 	}
+
+	public void customizeKryo(Kryo kryo) {}
 
 	public Config newServerConfig() {
 		return newClientConfig().setBindPort(15150).setPort(0);

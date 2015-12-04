@@ -40,6 +40,8 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	/** */
 	private static final long serialVersionUID = 1L;
 
+	public static final MessageFeatures DEFAULT_MESSAGE_FEATURES = new MessageFeatures();
+
 	/** Unique message id. */
 	@Getter
 	private long msgId;
@@ -48,12 +50,6 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	 * as it will always be the host's id! */
 	@Setter
 	private int senderId;
-
-	/** Additional features can be specified for every message.
-	 * E.g. when a message should contain a timestamp or when the message
-	 * has to be secured with a hash value. */
-	@Getter
-	private MessageFeatures features = new MessageFeatures();
 
 	/** Received id is only used during sending. */
 	@Setter
@@ -93,15 +89,22 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 
 	public ProcessFlags getProcessFlags() {
 		if (processFlags == null) {
-			processFlags = new ProcessFlags();
+			processFlags =  new ProcessFlags();
 		}
 		return processFlags;
+	}
+
+	/** Additional features can be specified for every message.
+	 * E.g. when a message should contain a timestamp or when the message
+	 * has to be secured with a hash value. */
+	public MessageFeatures getFeatures() {
+		return DEFAULT_MESSAGE_FEATURES;
 	}
 
 	public void resolveConfig(Config config) {
 		this.config = config;
 		this.senderId = config.senderId;
-		this.features.resolveConfig(config);
+		getFeatures().resolveConfig(config);
 	}
 
 	/** Clear id. */
@@ -180,7 +183,7 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	}
 
 	public long getTimestamp() {
-		TimestampFeature timestampFeature = features.get(TimestampFeature.class);
+		TimestampFeature timestampFeature = getFeatures().get(TimestampFeature.class);
 		if (timestampFeature != null) {
 			return timestampFeature.timestamp;
 		}
