@@ -117,7 +117,7 @@ public class PeerController implements IPeerController {
 		return true;
 	}
 
-	private boolean checkPayloadSize(Message message) {
+	public boolean checkPayloadSize(Message message) {
 		if (message.payload instanceof byte[]) {
 			byte[] payload = (byte[]) message.payload;
 			if (payload.length > config.maximumUdpPacketSize && !(message instanceof MessagePart)) {
@@ -149,7 +149,7 @@ public class PeerController implements IPeerController {
 	protected boolean afterSend(Message message) {
 		for (IMessageSenderPostProcessor processor : config.messageSenderPostProcessors) {
 			if (processor.afterSend(message) == null) {
-				log.info("Processor {} discarded message {} at afterSend", processor, message);
+				log.trace("Processor {} discarded message {} at afterSend", processor, message);
 				return false;
 			}
 		}
@@ -162,7 +162,7 @@ public class PeerController implements IPeerController {
 	public boolean beforeSend(Message message) {
 		for (IMessageSenderPreProcessor processor : config.messageSenderPreProcessors) {
 			if (processor.beforeCongestionControl(message) == null) {
-				log.info("Processor {} discarded message {} at beforeCongestionControl", processor, message);
+				log.trace("Processor {} discarded message {} at beforeCongestionControl", processor, message);
 				return false;
 			}
 		}
@@ -171,7 +171,7 @@ public class PeerController implements IPeerController {
 
 		for (IMessageSenderPreProcessor processor : config.messageSenderPreProcessors) {
 			if (processor.beforeSend(message) == null) {
-				log.info("Processor {} discarded message {} at beforeSend", processor, message);
+				log.trace("Processor {} discarded message {} at beforeSend", processor, message);
 				return false;
 			}
 		}

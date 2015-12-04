@@ -43,11 +43,8 @@ public class Client extends PeerController {
 	private InetSocketAddress serverSocketAddress;
 
 	public Client(Config config) {
-		super(config.setHost(false));
-//		if (config.senderId == 0) {
-//			log.warn("SenderId 0 is reserved for the server! Setting to 1.");
-//			config.senderId = 1;
-//		}
+		super(config);
+		config.state.setHost(false);
 		clientId = config.senderId;
 	}
 

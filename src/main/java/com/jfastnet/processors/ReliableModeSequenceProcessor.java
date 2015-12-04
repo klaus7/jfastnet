@@ -139,10 +139,12 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 
 			if (!handleReceivedMessage(key)) {
 				// Don't handle out of order messages yet
+				log.trace("Last received message: {}", message);
 				heldBackMessages.get(senderId).add(message);
 				return null;
 			}
 
+			heldBackMessages.get(senderId).removeIf(heldBackMsg -> heldBackMsg.getMsgId() <= message.getMsgId());
 			lastInOrderMessageId.put(senderId, message.getMsgId());
 
 			return message;
@@ -169,7 +171,7 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 				return true;
 
 			} else if (messageId > expectedMessageId) {
-				//heldBackMessages.get(clientId).add(message);
+
 				List<Message> clientHeldBackMessages = heldBackMessages.get(clientId);
 				for (long i = expectedMessageId; i < messageId; i++) {
 					boolean hasIt = false;
@@ -188,15 +190,14 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 				// catch up with held back messages
 				Set<Message> removes = new HashSet<>();
 				for (int i = 0; i < clientHeldBackMessages.size(); i++) {
-					Message hbMessage = clientHeldBackMessages.get(i);
-					if (hbMessage.getMsgId() == expectedMessageId) {
-						log.trace("Catch up with {}", hbMessage);
-						// lastMessageId gets set in receive
-						hbMessage.getProcessFlags().passReliableModeSequenceProcessor = true;
-						config.receiver.receive(hbMessage);
+					Message heldBackMsg = clientHeldBackMessages.get(i);
+					if (heldBackMsg.getMsgId() == expectedMessageId) {
+						log.trace("Catch up with {}", heldBackMsg);
+						heldBackMsg.getProcessFlags().passReliableModeSequenceProcessor = true;
+						config.receiver.receive(heldBackMsg);
 						lastMessageIdMap.put(clientId, expectedMessageId);
 						expectedMessageId++;
-						removes.add(hbMessage);
+						removes.add(heldBackMsg);
 					}
 				}
 				clientHeldBackMessages.removeAll(removes);
@@ -208,13 +209,6 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 				if (!outOfSync) {
 					// skipped message
 					log.warn("Skipped message: received messageId: {}, lastMsgId: {}", new Object[]{messageId, lastMsgId});
-
-//						// find missing message ids
-//						for (long i = Math.min(messageId, expectedMessageId); i < Math.max(messageId, expectedMessageId); i++) {
-//							if (i != messageId && !receivedMsgIds.get(clientId).contains(MessageKey.newKey(clientId, messageId))) {
-//								clientAbsentMessageIds.add(i);
-//							}
-//						}
 					if (clientAbsentMessageIds.size() > 0) {
 						requestAbsentIds(clientId, clientAbsentMessageIds);
 					}

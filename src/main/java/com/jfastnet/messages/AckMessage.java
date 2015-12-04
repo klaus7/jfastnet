@@ -24,21 +24,15 @@ import java.util.HashSet;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
-public class AckMessage extends Message implements IBatchable<Long>, IAckMessage {
+public class AckMessage extends Message implements IAckMessage {
 
-	/** Message ids to acknowledge. */
-	public Collection<Long> batch;
+	/** Message id to acknowledge. */
+	public long id;
 
 	public AckMessage() {}
 
 	public AckMessage(long id) {
-		batch = new HashSet<>();
-		batch.add(id);
-	}
-
-	@Override
-	public void set(Collection<Long> batch) {
-		this.batch = batch;
+		this.id = id;
 	}
 
 	@Override
@@ -47,11 +41,11 @@ public class AckMessage extends Message implements IBatchable<Long>, IAckMessage
 	}
 
 	public String toString() {
-		return "AckMessage(super=" + super.toString() + ", ids=" + Arrays.toString(batch.toArray()) + ")";
+		return "AckMessage(super=" + super.toString() + ", id=" + id + ")";
 	}
 
 	@Override
-	public Collection<Long> getAckIds() {
-		return batch;
+	public long getAckId() {
+		return id;
 	}
 }

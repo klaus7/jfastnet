@@ -74,7 +74,7 @@ public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageRec
 	/** To determine new resend time interval. */
 	private Map<MessageKey, Long> sentMsgIds = new ConcurrentHashMap<>();
 
-	public Config config;
+	private Config config;
 
 	public ReliableModeAckProcessor(Config config) {
 		this.config = config;
@@ -165,9 +165,7 @@ public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageRec
 	public Message beforeReceive(Message message) {
 		if (message instanceof IAckMessage) {
 			IAckMessage ackMessages = (IAckMessage) message;
-			for (Long id : ackMessages.getAckIds()) {
-				ack(MessageKey.newKey(Message.ReliableMode.ACK_PACKET, message.getSenderId(), id));
-			}
+			ack(MessageKey.newKey(Message.ReliableMode.ACK_PACKET, message.getSenderId(), ackMessages.getAckId()));
 			if (message instanceof AckMessage) {
 				return null;
 			}

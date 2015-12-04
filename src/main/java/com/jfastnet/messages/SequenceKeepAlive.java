@@ -21,4 +21,9 @@ package com.jfastnet.messages;
  * it never retrieves the last message and also has no way of detecting,
  * because a message with an higher id is not sent.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
-public class SequenceKeepAlive extends Message implements IDontFrame {}
+public class SequenceKeepAlive extends Message implements IDontFrame {
+	@Override
+	public boolean stackable() {
+		return getConfig().stackKeepAliveMessages;
+	}
+}

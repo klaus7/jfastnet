@@ -63,6 +63,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 				continue;
 			}
 			message.setReceiverId(senderId);
+			message.setResendMessage(true);
 			log.info("Resend {} to {}", message, senderId);
 			getConfig().sender.send(message);
 			getConfig().netStats.resentMessages.incrementAndGet();

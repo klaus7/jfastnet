@@ -64,9 +64,8 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 	}
 
 	@Override
-	public Collection<Long> getAckIds() {
-		Set<Long> batch = new HashSet<>();
-		batch.add(connectRequestMsgId);
-		return batch;
+	public long getAckId() {
+		return connectRequestMsgId;
 	}
+
 }

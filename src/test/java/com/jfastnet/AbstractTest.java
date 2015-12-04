@@ -34,12 +34,6 @@ import java.util.List;
 @Slf4j
 public abstract class AbstractTest {
 	public interface Callable<V> {
-		/**
-		 * Computes a result, or throws an exception if unable to do so.
-		 *
-		 * @return computed result
-		 * @throws Exception if unable to compute a result
-		 */
 		V call();
 	}
 
@@ -91,7 +85,7 @@ public abstract class AbstractTest {
 		clients.forEach(Client::blockingWaitUntilConnected);
 		log.info("All clients connected successfully!");
 
-		waitForCondition("Not all clients joined.", 3, () -> server.clients.size() == clientCount, () -> "Clients: " + server.clients.size() + ", Expected: " + clientCount);
+		waitForCondition("Not all clients joined.", 3, () -> server.config.state.clients.size() == clientCount, () -> "Clients: " + server.config.state.clients.size() + ", Expected: " + clientCount);
 	}
 
 	public Message getLastReceivedMessage() {
@@ -123,6 +117,7 @@ public abstract class AbstractTest {
 				if (message instanceof AckMessage) continue;
 				if (message instanceof ConnectResponse) continue;
 				if (message instanceof RequestSeqIdsMessage) continue;
+				if (message instanceof StackedMessage) continue;
 			}
 			return message;
 		}

@@ -43,8 +43,8 @@ public class Config {
 	/** Message receiver that will simply call process on the message. */
 	public static final IMessageReceiver DEFAULT_MESSAGE_RECEIVER = Message::process;
 
-	/** Are we the host? UdpServer sets this to true on creation. */
-	public boolean isHost;
+	/** Current state information. */
+	public State state = new State();
 
 	/** Hostname or IP address. */
 	public String host = "127.0.0.1";
@@ -103,6 +103,12 @@ public class Config {
 
 	/** Required for the reliable sequence mode. Interval in ms. */
 	public int keepAliveInterval = 3000;
+
+	/** If keepalive messages can be stacked. */
+	public boolean stackKeepAliveMessages = false;
+
+	/** After X received stacked messages we send an ack packet. */
+	public int stackedMessagesAckThreshold = 7;
 
 	/** Time in ms when peer considers other side as not reachable. */
 	public int timeoutThreshold = keepAliveInterval * 6; //2;
@@ -176,9 +182,8 @@ public class Config {
 		// add default processors in the order in which they get called
 		addProcessor(new AddChecksumProcessor());
 		addProcessor(new DiscardWrongChecksumMessagesHandler());
-
 		addProcessor(new MessageLogProcessor(this));
-
+		addProcessor(new StackedMessageProcessor(this));
 		addProcessor(new ReliableModeAckProcessor(this));
 		addProcessor(new ReliableModeSequenceProcessor(this));
 		//addProcessor(new OrderedUdpHandler(this));

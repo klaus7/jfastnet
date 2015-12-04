@@ -24,7 +24,7 @@ public interface IMessageSenderPreProcessor {
 	/** Congestion control is not implemented until now! WIP!
 	 * @param message message about to be handed to congestion control
 	 * @return null if message processing should not be continued, message otherwise. */
-	Message beforeCongestionControl(Message message);
+	default Message beforeCongestionControl(Message message) { return message; }
 
 	/** Called before sending the message. */
 	Message beforeSend(Message message);

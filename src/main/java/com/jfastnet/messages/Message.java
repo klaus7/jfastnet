@@ -150,6 +150,9 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	/** Specify the reliable mode for this message. */
 	public ReliableMode getReliableMode() 		{ return ReliableMode.SEQUENCE_NUMBER; }
 
+	/** If this message can be stacked. Only use in conjunction with SEQUENCE_NUMBER. */
+	public boolean stackable() 					{ return false; }
+
 	/** If this message should be broadcasted by the server upon receipt. */
 	public boolean broadcast() 					{ return false; }
 

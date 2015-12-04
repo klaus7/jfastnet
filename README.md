@@ -30,6 +30,7 @@ client.send(new PrintMessage("Hello Server!"));
 # Roadmap
 
 * Implement new reliable sending mode, where all unacknowledged messages get stacked onto the most recent message
+* Split config and state
 
 # Documentation
 The documentation is still a work-in-progress.
