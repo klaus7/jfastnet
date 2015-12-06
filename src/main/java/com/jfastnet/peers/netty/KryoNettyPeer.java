@@ -161,7 +161,7 @@ public class KryoNettyPeer implements IPeer {
 
 		// Let the controller receive the message.
 		// Processors are called there.
-		config.receiver.receive(message);
+		config.internalReceiver.receive(message);
 	}
 
 	@Override

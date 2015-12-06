@@ -55,6 +55,6 @@ public class ConnectRequest extends Message implements IDontFrame {
 		connectResponse.lastReliableSeqId = getConfig().idProvider.getLastIdFor(DUMMY);
 		log.info("Last reliable ID: {} - send to {}", connectResponse.lastReliableSeqId, clientId);
 		connectResponse.setReceiverId(clientId);
-		getConfig().sender.send(connectResponse);
+		getConfig().internalSender.send(connectResponse);
 	}
 }

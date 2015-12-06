@@ -141,7 +141,7 @@ public class ServerTest extends AbstractTest {
 		client1.start();
 		client1.blockingWaitUntilConnected();
 
-		assertThat(server.state.clients.size(), is(1));
+		assertThat(server.state.getClients().size(), is(1));
 
 		DefaultUnreliableMessage msg1 = new DefaultUnreliableMessage();
 		client1.send(msg1);

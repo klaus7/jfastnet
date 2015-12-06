@@ -36,7 +36,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-/** @author Klaus Pfeiffer - klaus@allpiper.com */
+/** Configure JFastNet with this configuration class. We don't care much about
+ * visibility here, because it's only used for configuration of the system and
+ * access to the fields look much cleaner without the setter/getter boilerplate.
+ *
+ * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Setter
 @Accessors(chain = true)
 public class Config {
@@ -86,10 +90,10 @@ public class Config {
 	public IIdProvider idProvider = new ClientIdReliableModeIdProvider();
 
 	/** JFastNet internal message sender. */
-	public IMessageSender sender;
+	public IMessageSender internalSender;
 
 	/** JFastNet internal message receiver for received messages. */
-	public IMessageReceiver receiver;
+	public IMessageReceiver internalReceiver;
 
 	/** Configure an external receiver for incoming messages. Must be thread-safe. */
 	public IMessageReceiver externalReceiver = DEFAULT_MESSAGE_RECEIVER;

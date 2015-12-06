@@ -64,7 +64,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 				Message lastReceivedMessage = stackedMessage.getMessages().get(stackedMessage.getMessages().size() - 1);
 				long lastReceivedId = lastReceivedMessage.getMsgId();
 				if (lastReceivedId - myLastAckMessageId >= config.stackedMessagesAckThreshold) {
-					config.sender.send(new StackAckMessage(lastReceivedId));
+					config.internalSender.send(new StackAckMessage(lastReceivedId));
 					myLastAckMessageId = lastReceivedId;
 					log.trace("Send acknowledge message for id: {}", lastReceivedId);
 				}
@@ -78,7 +78,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 		for (Message message : stackedMessage.getMessages()) {
 			message.copyAttributesFrom(stackedMessage);
 			log.trace("Received stack message: {}", message);
-			config.receiver.receive(message);
+			config.internalReceiver.receive(message);
 		}
 	}
 
@@ -89,7 +89,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 			cleanUpUnacknowledgedSentMessagesMap();
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);
 			if (sentToAllFromServer(message.getReceiverId())) {
-				Set<Integer> clientIds = state.clients.keySet();
+				Set<Integer> clientIds = state.getClients().keySet();
 				clientIds.forEach(id -> createStackForReceiver(message, id));
 			} else if (createStackForReceiver(message, message.getReceiverId())) {
 				return null;
@@ -99,8 +99,8 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 	}
 
 	private void cleanUpUnacknowledgedSentMessagesMap() {
-		if (state.isHost) {
-			Set<Integer> clientIds = state.clients.keySet();
+		if (state.isHost()) {
+			Set<Integer> clientIds = state.getClients().keySet();
 			long maxAckId = 0L;
 			for (Integer clientId : clientIds) {
 				long clientLastAckId = lastAckMessageIdMap.getOrDefault(clientId, 0L);
@@ -136,7 +136,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 				// Discard message and send stacked message instead
 				StackedMessage stackedMessage = new StackedMessage(messages);
 				stackedMessage.setReceiverId(receiverId);
-				config.sender.send(stackedMessage);
+				config.internalSender.send(stackedMessage);
 				return true;
 			}
 		}

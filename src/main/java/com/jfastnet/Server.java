@@ -61,7 +61,7 @@ public class Server extends PeerController {
 		super.process();
 
 		long currentTime = config.timeProvider.get();
-		if (state.clients.size() > 0 && lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
+		if (state.getClients().size() > 0 && lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
 
 			// Potentially "Keep Alive" will be sent, when first client joins.
 			// This can lead to clients that join a few milliseconds later that
@@ -84,7 +84,7 @@ public class Server extends PeerController {
 	@Override
 	public void receive(Message message) {
 		boolean isConnectRequest = message instanceof ConnectRequest;
-		Map<Integer, InetSocketAddress> clients = state.clients;
+		Map<Integer, InetSocketAddress> clients = state.getClients();
 		if (!clients.containsValue(message.getSocketAddressSender())) {
 			if (!isConnectRequest) {
 				log.warn("No client found under {}", message.getSocketAddressSender());
@@ -162,7 +162,7 @@ public class Server extends PeerController {
 	}
 
 	public void registerClientAtProcessors(int finalClientId) {
-		state.processors.stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onRegister(finalClientId));
+		state.getProcessors().stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onRegister(finalClientId));
 	}
 
 	@Override
@@ -196,7 +196,7 @@ public class Server extends PeerController {
 
 		boolean beforeSendState = true;
 		boolean afterSendState = true;
-		for (Map.Entry<Integer, InetSocketAddress> entry : state.clients.entrySet()) {
+		for (Map.Entry<Integer, InetSocketAddress> entry : state.getClients().entrySet()) {
 			Integer clientId = entry.getKey();
 			if (exceptId > 0 && exceptId == clientId) {
 				continue;
@@ -213,7 +213,7 @@ public class Server extends PeerController {
 			boolean beforeSend = super.beforeSend(message);
 			beforeSendState &= beforeSend;
 			if (beforeSend) {
-				state.udpPeer.send(message);
+				state.getUdpPeer().send(message);
 			}
 			afterSendState &= super.afterSend(message);
 //			beforeSendState &= super.beforeSend(message);
@@ -257,14 +257,14 @@ public class Server extends PeerController {
 		}
 
 
-		for (Map.Entry<Integer, InetSocketAddress> entry : state.clients.entrySet()) {
+		for (Map.Entry<Integer, InetSocketAddress> entry : state.getClients().entrySet()) {
 			Integer clientId = entry.getKey();
 			if (exceptId > 0 && exceptId == clientId) {
 				continue;
 			}
 			message.setReceiverId(clientId);
 			message.socketAddressRecipient = entry.getValue();
-			state.udpPeer.send(message);
+			state.getUdpPeer().send(message);
 		}
 		log.trace("Sent message: {}", message);
 
@@ -274,7 +274,7 @@ public class Server extends PeerController {
 	}
 
 	public boolean send(int clientId, Message message) {
-		InetSocketAddress client = state.clients.get(clientId);
+		InetSocketAddress client = state.getClients().get(clientId);
 		if (client == null) {
 			log.warn("Client with id {} not found.", clientId);
 			return false;
@@ -284,8 +284,8 @@ public class Server extends PeerController {
 	}
 
 	public void unregister(int clientId) {
-		log.info("Bye {}", state.clients.get(clientId));
-		state.clients.remove(clientId);
+		log.info("Bye {}", state.getClients().get(clientId));
+		state.getClients().remove(clientId);
 		lastReceivedMap.remove(clientId);
 		config.requiredClients.remove(clientId);
 		unregisterClientAtProcessors(clientId);
@@ -293,7 +293,7 @@ public class Server extends PeerController {
 	}
 
 	public void unregisterClientAtProcessors(int clientId) {
-		state.processors.stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onUnregister(clientId));
+		state.getProcessors().stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onUnregister(clientId));
 	}
 
 	public static class Counter {

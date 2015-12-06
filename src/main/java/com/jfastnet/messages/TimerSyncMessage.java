@@ -80,7 +80,7 @@ public class TimerSyncMessage extends Message implements IInstantServerProcessab
 		// send information back to client, so he can compute actions accordingly
 		ClientTimerSyncMessage clientTimerSyncMessage = new ClientTimerSyncMessage(offsetToHost, roundTripTime);
 		clientTimerSyncMessage.setReceiverId(clientId);
-		getConfig().sender.send(clientTimerSyncMessage);
+		getConfig().internalSender.send(clientTimerSyncMessage);
 
 		synchronized (checkStartedLock) {
 			if (!started && getConfig().requiredClients.size() > 0) {

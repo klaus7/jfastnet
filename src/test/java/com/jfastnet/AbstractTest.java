@@ -85,11 +85,11 @@ public abstract class AbstractTest {
 		clients.forEach(Client::blockingWaitUntilConnected);
 		log.info("All clients connected successfully!");
 
-		waitForCondition("Not all clients joined.", 3, () -> server.state.clients.size() == clientCount, () -> "Clients: " + server.getState().clients.size() + ", Expected: " + clientCount);
+		waitForCondition("Not all clients joined.", 3, () -> server.state.getClients().size() == clientCount, () -> "Clients: " + server.getState().getClients().size() + ", Expected: " + clientCount);
 	}
 
 	public Message getLastReceivedMessage() {
-		return getLastReceivedMessageFromLog(server.getState().messageLog.received, true, null);
+		return getLastReceivedMessageFromLog(server.getState().getMessageLog().received, true, null);
 	}
 	public Message getLastReceivedMessage(int clientIndex) {
 		return getLastReceivedMessage(clientIndex, true, null);
@@ -98,7 +98,7 @@ public abstract class AbstractTest {
 		return getLastReceivedMessage(clientIndex, true, messageType);
 	}
 	public Message getLastReceivedMessage(int clientIndex, boolean ignoreSystemMessages, Class messageType) {
-		List<Message> received = clients.get(clientIndex).getState().messageLog.received;
+		List<Message> received = clients.get(clientIndex).getState().getMessageLog().received;
 		return getLastReceivedMessageFromLog(received, ignoreSystemMessages, messageType);
 	}
 

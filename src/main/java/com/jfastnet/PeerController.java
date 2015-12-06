@@ -54,24 +54,24 @@ public class PeerController implements IPeerController {
 		assert config != null : "Config may not be null!";
 		this.config = config;
 		this.state = new State(config);
-		if (config.receiver == null) {
-			config.receiver = this;
+		if (config.internalReceiver == null) {
+			config.internalReceiver = this;
 		}
-		if (config.sender == null) {
-			config.sender = this;
+		if (config.internalSender == null) {
+			config.internalSender = this;
 		}
 	}
 
 	@Override
 	public boolean start() {
-		return this.state.udpPeer.start();
+		return this.state.getUdpPeer().start();
 	}
 
 	@Override
 	public void stop() {
 		log.info("Stopping UDP peer controller.");
 		send(new LeaveRequest());
-		this.state.udpPeer.stop();
+		this.state.getUdpPeer().stop();
 	}
 
 	@Override
@@ -83,8 +83,8 @@ public class PeerController implements IPeerController {
 			send(firstMessage);
 			queueDelayInc = 0;
 		}
-		state.processables.forEach(ISimpleProcessable::process);
-		state.udpPeer.process();
+		state.getProcessables().forEach(ISimpleProcessable::process);
+		state.getUdpPeer().process();
 	}
 
 	private void retrieveTimeDelta() {
@@ -113,7 +113,7 @@ public class PeerController implements IPeerController {
 			return false;
 		}
 
-		state.udpPeer.send(message);
+		state.getUdpPeer().send(message);
 		log.trace("Sent message: {}", message);
 
 		if (!afterSend(message)) {
@@ -153,7 +153,7 @@ public class PeerController implements IPeerController {
 	}
 
 	protected boolean afterSend(Message message) {
-		for (IMessageSenderPostProcessor processor : state.messageSenderPostProcessors) {
+		for (IMessageSenderPostProcessor processor : state.getMessageSenderPostProcessors()) {
 			if (processor.afterSend(message) == null) {
 				log.trace("Processor {} discarded message {} at afterSend", processor, message);
 				return false;
@@ -166,7 +166,7 @@ public class PeerController implements IPeerController {
 	 * @param message message about to send
 	 * @return true if we are ready to send the message, false otherwise */
 	public boolean beforeSend(Message message) {
-		for (IMessageSenderPreProcessor processor : state.messageSenderPreProcessors) {
+		for (IMessageSenderPreProcessor processor : state.getMessageSenderPreProcessors()) {
 			if (processor.beforeCongestionControl(message) == null) {
 				log.trace("Processor {} discarded message {} at beforeCongestionControl", processor, message);
 				return false;
@@ -175,7 +175,7 @@ public class PeerController implements IPeerController {
 
 		// TODO: congestion control
 
-		for (IMessageSenderPreProcessor processor : state.messageSenderPreProcessors) {
+		for (IMessageSenderPreProcessor processor : state.getMessageSenderPreProcessors()) {
 			if (processor.beforeSend(message) == null) {
 				log.trace("Processor {} discarded message {} at beforeSend", processor, message);
 				return false;
@@ -199,7 +199,7 @@ public class PeerController implements IPeerController {
 
 	/** Create payload for message. */
 	public boolean createPayload(Message message) {
-		if (!state.udpPeer.createPayload(message)) {
+		if (!state.getUdpPeer().createPayload(message)) {
 			log.error("Creation of payload for {} failed.", message);
 			return false;
 		}
@@ -210,7 +210,7 @@ public class PeerController implements IPeerController {
 	public void receive(Message message) {
 		message.getFeatures().resolve();
 
-		for (IMessageReceiverPreProcessor processor : state.messageReceiverPreProcessors) {
+		for (IMessageReceiverPreProcessor processor : state.getMessageReceiverPreProcessors()) {
 			if (processor.beforeReceive(message) == null) {
 				log.trace("Processor {} discarded message {} at beforeReceive", processor, message);
 				return;
@@ -225,7 +225,7 @@ public class PeerController implements IPeerController {
 			config.externalReceiver.receive(message);
 		}
 
-		for (IMessageReceiverPostProcessor processor : state.messageReceiverPostProcessors) {
+		for (IMessageReceiverPostProcessor processor : state.getMessageReceiverPostProcessors()) {
 			if (processor.afterReceive(message) == null) {
 				log.trace("Processor {} discarded message {} at afterReceive", processor, message);
 				return;

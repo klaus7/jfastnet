@@ -35,38 +35,40 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
-@Setter
+@Getter
 @Accessors(chain = true)
 public class State {
 
 	/** UDP peer system to use. (e.g. KryoNetty) */
-	public IPeer udpPeer;
+	private IPeer udpPeer;
 
 	/** Are we the host? Server sets this to true on creation. */
-	public boolean isHost;
+	@Setter
+	private boolean isHost;
 
 	/** The server holds track of its clients. */
-	public Map<Integer, InetSocketAddress> clients = new ConcurrentHashMap<>();
+	private Map<Integer, InetSocketAddress> clients = new ConcurrentHashMap<>();
 
 	/** Reliable UDP connection established. */
-	public boolean connectionEstablished;
+	@Setter
+	private boolean connectionEstablished;
 
 	/** Used for receiving bigger messages. Only one byte array buffer may
 	 * be processed at any given time. */
-	public SortedMap<Long, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
+	private SortedMap<Long, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
 
 	/** Message log collects messages for resending. */
-	public MessageLog messageLog;
+	private MessageLog messageLog;
 
 	/** List of all added processors. */
-	public List<Object> processors = new ArrayList<>();
+	private List<Object> processors = new ArrayList<>();
 
 	/** List of systems that need to be processed every tick. */
-	public List<ISimpleProcessable> processables = new ArrayList<>();
-	public List<IMessageSenderPreProcessor> messageSenderPreProcessors = new ArrayList<>();
-	public List<IMessageSenderPostProcessor> messageSenderPostProcessors = new ArrayList<>();
-	public List<IMessageReceiverPreProcessor> messageReceiverPreProcessors = new ArrayList<>();
-	public List<IMessageReceiverPostProcessor> messageReceiverPostProcessors = new ArrayList<>();
+	private List<ISimpleProcessable> processables = new ArrayList<>();
+	private List<IMessageSenderPreProcessor> messageSenderPreProcessors = new ArrayList<>();
+	private List<IMessageSenderPostProcessor> messageSenderPostProcessors = new ArrayList<>();
+	private List<IMessageReceiverPreProcessor> messageReceiverPreProcessors = new ArrayList<>();
+	private List<IMessageReceiverPostProcessor> messageReceiverPostProcessors = new ArrayList<>();
 
 	@Getter
 	private Config config;

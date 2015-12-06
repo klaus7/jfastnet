@@ -101,7 +101,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor impl
 								if (message.getMsgId() == expectedMessageId) {
 									log.trace("Catch up with {}", message);
 									// lastMessageId gets set in receive
-									config.receiver.receive(message);
+									config.internalReceiver.receive(message);
 									expectedMessageId++;
 									removes.add(message);
 								}
@@ -210,7 +210,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor impl
 					if (heldBackMsg.getMsgId() == (lastMsgIdAtomicLong.get() + 1)) {
 						log.trace("Catch up with {}", heldBackMsg);
 //						heldBackMsg.getProcessFlags().passReliableModeSequenceProcessor = true; // to not increment again
-						config.receiver.receive(heldBackMsg);
+						config.internalReceiver.receive(heldBackMsg);
 //						lastMsgIdAtomicLong.incrementAndGet();
 						removes.add(heldBackMsg);
 					} else if (heldBackMsg.getMsgId() < (lastMsgIdAtomicLong.get() + 1)) {
@@ -247,7 +247,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor impl
 			requestIds.add(requestIdsTmp.get(i));
 		}
 		RequestSeqIdsMessage requestSeqIdsMessage = new RequestSeqIdsMessage(requestIds, clientId);
-		config.sender.send(requestSeqIdsMessage);
+		config.internalSender.send(requestSeqIdsMessage);
 		config.netStats.requestedMissingMessages.addAndGet(clientAbsentMessageIds.size());
 	}
 
