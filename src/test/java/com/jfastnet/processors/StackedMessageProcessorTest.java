@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -38,7 +39,8 @@ public class StackedMessageProcessorTest extends AbstractTest {
 	public static class UnStackableMsg1 extends Message {
 		@Override
 		public void process() {
-			unstackableReceived.incrementAndGet();
+			log.info("########### UNSTACKABLE: " + unstackableReceived.incrementAndGet());
+			printMsg(this);
 			if (getConfig() != null && unstackableIds.containsKey(getConfig().senderId)) {
 				if (unstackableIds.get(getConfig().senderId).contains(getMsgId())) {
 					log.error("Stackables already contained {}, {}", getConfig().senderId, getMsgId());
@@ -46,6 +48,16 @@ public class StackedMessageProcessorTest extends AbstractTest {
 				}
 			}
 		}
+
+	}
+
+	private static void printMsg(Message msg) {
+//		log.info("+++++++++++++ msg-id: " + msg.getMsgId());
+//		try {
+//			throw new Exception();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public static class StackableMsg1 extends Message {
@@ -56,7 +68,13 @@ public class StackedMessageProcessorTest extends AbstractTest {
 
 		@Override
 		public void process() {
-			stackableReceived.incrementAndGet();
+//			stackableReceived.incrementAndGet();
+			log.info("########### STACKABLE: " + stackableReceived.incrementAndGet());
+			printMsg(this);
+			if (stackableReceived.get() <= unstackableReceived.get()) {
+				log.error("Stackable must have a greater id!");
+				fail = true;
+			}
 			if (getConfig() != null && stackableIds.containsKey(getConfig().senderId)) {
 				if (stackableIds.get(getConfig().senderId).contains(getMsgId())) {
 					log.error("Stackables already contained {}, {}", getConfig().senderId, getMsgId());
@@ -76,7 +94,6 @@ public class StackedMessageProcessorTest extends AbstractTest {
 
 	@Test
 	public void testStacking() {
-
 		reset();
 		start(8,
 				newServerConfig().setStackKeepAliveMessages(true),
@@ -105,7 +122,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 	@Test
 	public void testStackingWithUnstackables() {
 		reset();
-		start(8,
+		start(4,
 				newServerConfig(),
 				() -> {
 					Config config = newClientConfig();
@@ -115,14 +132,14 @@ public class StackedMessageProcessorTest extends AbstractTest {
 				});
 		logBig("Send broadcast messages to clients");
 
-		int messageCount = 40;
+		int messageCount = 10;
 		for (int i = 0; i < messageCount; i++) {
 			server.send(new StackableMsg1());
 			server.send(new UnStackableMsg1());
 		}
 		server.send(new StackableMsg2());
 
-		int timeoutInSeconds = 15;
+		int timeoutInSeconds = 5;
 		waitForCondition("Not all messages received.", timeoutInSeconds, () -> closeMsgReceived.get() == clients.size(), () -> "Received close messages: " + closeMsgReceived);
 
 		assertThat(stackableReceived.get(), is(messageCount * clients.size()));
@@ -140,6 +157,5 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		stackableIds.clear();
 		unstackableIds.clear();
 		fail = false;
-
 	}
 }

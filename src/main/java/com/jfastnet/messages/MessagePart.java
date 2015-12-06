@@ -66,6 +66,7 @@ public class MessagePart extends Message implements IDontFrame {
 			byte[] bytes = (byte[]) message.payload;
 			if (config.compressBigMessages) {
 				bytes = compress(bytes);
+				// TODO can potentially fail!
 			}
 			return createFromByteArray(id, bytes, chunkSize, reliableMode);
 		}

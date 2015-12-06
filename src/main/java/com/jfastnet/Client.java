@@ -118,6 +118,7 @@ public class Client extends PeerController {
 			((ConnectResponse) message).setLastReliableSeqIdInSequenceProcessor();
 			config.connected = true;
 			clientId = ((ConnectResponse) message).getClientId();
+			log.info("Set client id to {}", clientId);
 			config.setSenderId(clientId);
 			config.newSenderIdConsumer.accept(clientId);
 		}

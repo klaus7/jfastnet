@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** Sent from the server to the client to confirm the connection.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -53,10 +54,10 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 	/** process() would be called too late. */
 	public void setLastReliableSeqIdInSequenceProcessor() {
 		log.info("Connection established! Last reliable sequence id is {}", lastReliableSeqId);
-		final Map<Integer, Long> lastMessageIdMap = getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap();
-		final Long lastId = lastMessageIdMap.getOrDefault(getSenderId(), 0L);
-		if (lastId == 0L) {
-			lastMessageIdMap.put(getSenderId(), lastReliableSeqId);
+		final Map<Integer, AtomicLong> lastMessageIdMap = getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap();
+		AtomicLong lastId = lastMessageIdMap.get(getSenderId());
+		if (lastId == null || lastId.get() == 0L) {
+			lastMessageIdMap.put(getSenderId(), new AtomicLong(lastReliableSeqId));
 			log.info(" * Last reliable sequence id set to {}", lastReliableSeqId);
 		} else {
 			log.warn(" * Last reliable sequence id was already set to {}", lastId);

@@ -123,8 +123,8 @@ public class Server extends PeerController {
 				}
 				connectRequest.setSenderId(clientId);
 				connectRequest.setClientId(clientId);
-				lastReceivedMap.put(clientId, config.timeProvider.get());
 			}
+			lastReceivedMap.put(clientId, config.timeProvider.get());
 
 			// Unregister if client was already added, maybe it's a re-connect
 			if (clients.containsKey(clientId)) {

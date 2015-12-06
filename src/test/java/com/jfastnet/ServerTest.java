@@ -25,11 +25,13 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -423,7 +425,11 @@ public class ServerTest extends AbstractTest {
 		}
 
 		logBig("Check re-connect of client");
-		long lastSeqIdFromServer = client1.getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().getOrDefault(0, 0L);
+		AtomicLong atomicLong = client1.getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().get(0);
+		if (atomicLong == null) {
+			Assert.fail();
+		}
+		long lastSeqIdFromServer = (long) atomicLong.get();
 		log.info("Last Seq-Id from server: {}", lastSeqIdFromServer);
 		client1.stop();
 		clients.remove(client1);
@@ -438,7 +444,11 @@ public class ServerTest extends AbstractTest {
 
 		client1.start();
 		client1.blockingWaitUntilConnected();
-		long lastSeqIdFromServer2 = client1.getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().getOrDefault(0, 0L);
+		AtomicLong atomicLong2 = client1.getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().get(0);
+		if (atomicLong2 == null) {
+			Assert.fail();
+		}
+		long lastSeqIdFromServer2 = (long) atomicLong2.get();
 		log.info("Last Seq-Id from server: {}", lastSeqIdFromServer2);
 
 		assertThat("Didn't retrieve current reliable sequence id from server.", lastSeqIdFromServer2, is(greaterThanOrEqualTo(lastSeqIdFromServer)));

@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2015 Klaus Pfeiffer <klaus@allpiper.com>
- *
+ * <p/>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,29 +30,43 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-/** Must be thread-safe.
- * @author Klaus Pfeiffer - klaus@allpiper.com */
+/**
+ * Must be thread-safe.
+ *
+ * @author Klaus Pfeiffer - klaus@allpiper.com
+ */
 @Slf4j
 public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageSenderPostProcessor, IServerHooks {
 
+	public static final AtomicLong ZERO_ATOMIC_LONG = new AtomicLong();
 	@Getter
-	Map<Integer, Long> lastMessageIdMap = new ConcurrentHashMap<>();
+	private final Map<Integer, AtomicLong> lastMessageIdMap = new HashMap<>();
 
 	@Getter
-	Map<Integer, Long> lastInOrderMessageId = new ConcurrentHashMap<>();
+	private final Map<Integer, AtomicLong> lastInOrderMessageId = new HashMap<>();
 
-	Map<Integer, Set<Long>> absentMessageIds = new NullsafeHashMap<Integer, Set<Long>>() {
+	private final Map<Integer, Set<Long>> absentMessageIds = new NullsafeHashMap<Integer, Set<Long>>() {
 		@Override
 		protected Set<Long> newInstance() {
 			return new CopyOnWriteArraySet<>();
 		}
 	};
 
-	Map<Integer, List<Message>> heldBackMessages = new NullsafeHashMap<Integer, List<Message>>() {
+	private final Map<Integer, List<Message>> heldBackMessages = new NullsafeHashMap<Integer, List<Message>>() {
 		@Override
 		protected List<Message> newInstance() {
-			return new CopyOnWriteArrayList<>();
+			return new ArrayList<>();
+		}
+	};
+
+	private final Map<Integer, ReentrantLock> clientLock = new NullsafeHashMap<Integer, ReentrantLock>() {
+		@Override
+		protected ReentrantLock newInstance() {
+			return new ReentrantLock();
 		}
 	};
 
@@ -80,24 +94,31 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 		if (heldBackMessages.size() > 0) {
 			for (Map.Entry<Integer, List<Message>> entry : heldBackMessages.entrySet()) {
 				Integer clientId = entry.getKey();
-				List<Message> messages = entry.getValue();
-				Long lastMsgId = lastMessageIdMap.get(clientId);
-				if (lastMsgId != null && messages != null && !messages.isEmpty()) {
-					long expectedMessageId = lastMsgId + 1;
-					Collections.sort(messages);
-					// catch up with held back messages
-					Set<Message> removes = new HashSet<>();
-					for (int i = 0; i < messages.size(); i++) {
-						Message message = messages.get(i);
-						if (message.getMsgId() == expectedMessageId) {
-							log.trace("Catch up with {}", message);
-							// lastMessageId gets set in receive
-							config.receiver.receive(message);
-							expectedMessageId++;
-							removes.add(message);
+				ReentrantLock lock = clientLock.get(clientId);
+				if (lock.tryLock()) {
+					try {
+						List<Message> messages = entry.getValue();
+						Long lastMsgId = lastMessageIdMap.getOrDefault(clientId, ZERO_ATOMIC_LONG).get();
+						if (messages != null && !messages.isEmpty()) {
+							long expectedMessageId = lastMsgId + 1;
+							Collections.sort(messages);
+							// catch up with held back messages
+							Set<Message> removes = new HashSet<>();
+							for (int i = 0; i < messages.size(); i++) {
+								Message message = messages.get(i);
+								if (message.getMsgId() == expectedMessageId) {
+									log.trace("Catch up with {}", message);
+									// lastMessageId gets set in receive
+									config.receiver.receive(message);
+									expectedMessageId++;
+									removes.add(message);
+								}
+							}
+							messages.removeAll(removes);
 						}
+					} finally {
+						lock.unlock();
 					}
-					messages.removeAll(removes);
 				}
 			}
 		}
@@ -122,32 +143,35 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 	@Override
 	public Message beforeReceive(Message message) {
 		if (Message.ReliableMode.SEQUENCE_NUMBER.equals(message.getReliableMode())) {
-			if (message.getProcessFlags().passReliableModeSequenceProcessor) {
-				return message;
-			}
-
 			int senderId = message.getSenderId();
-			MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, senderId, message.getMsgId());
+			ReentrantLock lock = clientLock.get(senderId);
+			lock.lock();
+			try {
+				MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, senderId, message.getMsgId());
+				addReceivedMessage(key);
 
-			Long lastMsgId = lastMessageIdMap.getOrDefault(senderId, 0L);
-			if (message.getMsgId() <= lastMsgId) {
-				// Discard old messages - don't handle already received messages.
-				return null;
+				Long lastMsgId = lastMessageIdMap.getOrDefault(senderId, ZERO_ATOMIC_LONG).get();
+				if (message.getMsgId() <= lastMsgId) {
+					// Discard old messages - don't handle already received messages.
+					return null;
+				}
+
+				List<Message> clientHeldBackMessages = heldBackMessages.get(senderId);
+				if (!handleReceivedMessage(key)) {
+					// Don't handle out of order messages yet
+					log.trace("Last received message: {}", message);
+					clientHeldBackMessages.add(message);
+					return null;
+				}
+
+//				if (!message.getProcessFlags().passReliableModeSequenceProcessor) {
+					clientHeldBackMessages.removeIf(heldBackMsg -> heldBackMsg.getMsgId() <= message.getMsgId());
+//				}
+
+				return message;
+			} finally {
+				lock.unlock();
 			}
-
-			addReceivedMessage(key);
-
-			if (!handleReceivedMessage(key)) {
-				// Don't handle out of order messages yet
-				log.trace("Last received message: {}", message);
-				heldBackMessages.get(senderId).add(message);
-				return null;
-			}
-
-			heldBackMessages.get(senderId).removeIf(heldBackMsg -> heldBackMsg.getMsgId() <= message.getMsgId());
-			lastInOrderMessageId.put(senderId, message.getMsgId());
-
-			return message;
 		}
 		return message;
 	}
@@ -158,21 +182,21 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 		long messageId = key.messageId;
 		Set<Long> clientAbsentMessageIds = absentMessageIds.get(clientId);
 		if (!clientAbsentMessageIds.contains(messageId)) {
-			Long lastMsgId = lastMessageIdMap.get(clientId);
-			if (lastMsgId == null) {
-				lastMsgId = 0L;
-				lastMessageIdMap.put(clientId, lastMsgId);
+			AtomicLong lastMsgIdAtomicLong = lastMessageIdMap.get(clientId);
+			if (lastMsgIdAtomicLong == null) {
+				lastMsgIdAtomicLong = new AtomicLong();
+				lastMessageIdMap.put(clientId, lastMsgIdAtomicLong);
 			}
+			Long lastMsgId = lastMsgIdAtomicLong.get();
 			long expectedMessageId = lastMsgId + 1;
 			if (messageId == expectedMessageId) {
-
-				lastMessageIdMap.put(clientId, expectedMessageId);
+				lastMsgIdAtomicLong.incrementAndGet();
 				outOfSync = false;
 				return true;
 
 			} else if (messageId > expectedMessageId) {
 
-				List<Message> clientHeldBackMessages = heldBackMessages.get(clientId);
+				List<Message> clientHeldBackMessages = new ArrayList<>(heldBackMessages.get(clientId));
 				for (long i = expectedMessageId; i < messageId; i++) {
 					boolean hasIt = false;
 					for (Message clientHeldBackMessage : clientHeldBackMessages) {
@@ -191,20 +215,23 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 				Set<Message> removes = new HashSet<>();
 				for (int i = 0; i < clientHeldBackMessages.size(); i++) {
 					Message heldBackMsg = clientHeldBackMessages.get(i);
-					if (heldBackMsg.getMsgId() == expectedMessageId) {
+					if (heldBackMsg.getMsgId() == (lastMsgIdAtomicLong.get() + 1)) {
 						log.trace("Catch up with {}", heldBackMsg);
-						heldBackMsg.getProcessFlags().passReliableModeSequenceProcessor = true;
+//						heldBackMsg.getProcessFlags().passReliableModeSequenceProcessor = true; // to not increment again
 						config.receiver.receive(heldBackMsg);
-						lastMessageIdMap.put(clientId, expectedMessageId);
-						expectedMessageId++;
+//						lastMsgIdAtomicLong.incrementAndGet();
 						removes.add(heldBackMsg);
+					} else if (heldBackMsg.getMsgId() < (lastMsgIdAtomicLong.get() + 1)) {
+						removes.add(heldBackMsg);
+					} else {
+						break;
 					}
 				}
-				clientHeldBackMessages.removeAll(removes);
+				heldBackMessages.get(clientId).removeAll(removes);
 
-				if (messageId == expectedMessageId) {
-					return true;
-				}
+//				if (messageId == (lastMsgIdAtomicLong.get() + 1)) {
+//					return true; // FIXME -> problems with stackable + unstackable
+//				}
 
 				if (!outOfSync) {
 					// skipped message

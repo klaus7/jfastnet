@@ -63,7 +63,9 @@ public class StackedMessageProcessor implements IMessageReceiverPreProcessor, IM
 	private void receiveStackedMessage(StackedMessage stackedMessage) {
 		for (Message message : stackedMessage.getMessages()) {
 //			if (message.getMsgId() > lastReceivedStackedMessageChild) {
+				message.setConfig(stackedMessage.getConfig());
 				message.socketAddressSender = stackedMessage.socketAddressSender;
+				message.setSenderId(stackedMessage.getSenderId());
 				log.trace("Received stack message: {}", message);
 				config.receiver.receive(message);
 //				lastReceivedStackedMessageChild = message.getMsgId();

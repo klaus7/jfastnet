@@ -89,7 +89,7 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 
 	public ProcessFlags getProcessFlags() {
 		if (processFlags == null) {
-			processFlags =  new ProcessFlags();
+			processFlags = new ProcessFlags();
 		}
 		return processFlags;
 	}
