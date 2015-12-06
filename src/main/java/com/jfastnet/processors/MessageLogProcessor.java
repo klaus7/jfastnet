@@ -17,27 +17,27 @@
 package com.jfastnet.processors;
 
 import com.jfastnet.Config;
+import com.jfastnet.State;
 import com.jfastnet.messages.Message;
+import org.apache.log4j.lf5.util.StreamUtils;
 
 /** Puts filtered messages into the message log.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
-public class MessageLogProcessor implements IMessageSenderPostProcessor, IMessageReceiverPreProcessor {
+public class MessageLogProcessor extends AbstractMessageProcessor implements IMessageSenderPostProcessor, IMessageReceiverPreProcessor {
 
-	Config config;
-
-	public MessageLogProcessor(Config config) {
-		this.config = config;
+	public MessageLogProcessor(Config config, State state) {
+		super(config, state);
 	}
 
 	@Override
 	public Message beforeReceive(Message message) {
-		config.messageLog.addReceived(message);
+		state.messageLog.addReceived(message);
 		return message;
 	}
 
 	@Override
 	public Message afterSend(Message message) {
-		config.messageLog.addSent(message);
+		state.messageLog.addSent(message);
 		return message;
 	}
 }

@@ -54,7 +54,7 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 	/** process() would be called too late. */
 	public void setLastReliableSeqIdInSequenceProcessor() {
 		log.info("Connection established! Last reliable sequence id is {}", lastReliableSeqId);
-		final Map<Integer, AtomicLong> lastMessageIdMap = getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap();
+		final Map<Integer, AtomicLong> lastMessageIdMap = getState().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap();
 		AtomicLong lastId = lastMessageIdMap.get(getSenderId());
 		if (lastId == null || lastId.get() == 0L) {
 			lastMessageIdMap.put(getSenderId(), new AtomicLong(lastReliableSeqId));

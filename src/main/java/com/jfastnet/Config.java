@@ -34,6 +34,7 @@ import lombok.experimental.Accessors;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Setter
@@ -43,8 +44,17 @@ public class Config {
 	/** Message receiver that will simply call process on the message. */
 	public static final IMessageReceiver DEFAULT_MESSAGE_RECEIVER = Message::process;
 
-	/** Current state information. */
-	public State state = new State();
+	public static final List<Class> DEFAULT_MESSAGE_PROCESSORS = new ArrayList<>();
+	static {
+		// add default processors in the order in which they get called
+		DEFAULT_MESSAGE_PROCESSORS.add(AddChecksumProcessor.class);
+		DEFAULT_MESSAGE_PROCESSORS.add(DiscardWrongChecksumMessagesHandler.class);
+		DEFAULT_MESSAGE_PROCESSORS.add(MessageLogProcessor.class);
+		DEFAULT_MESSAGE_PROCESSORS.add(StackedMessageProcessor.class);
+		DEFAULT_MESSAGE_PROCESSORS.add(ReliableModeAckProcessor.class);
+		DEFAULT_MESSAGE_PROCESSORS.add(ReliableModeSequenceProcessor.class);
+		DEFAULT_MESSAGE_PROCESSORS.add(DiscardMessagesHandler.class);
+	}
 
 	/** Hostname or IP address. */
 	public String host = "127.0.0.1";
@@ -75,28 +85,21 @@ public class Config {
 	/** Provides the message ids. */
 	public IIdProvider idProvider = new ClientIdReliableModeIdProvider();
 
-	/** Library internal message sender. */
+	/** JFastNet internal message sender. */
 	public IMessageSender sender;
 
-	/** Library internal message receiver for received messages. */
+	/** JFastNet internal message receiver for received messages. */
 	public IMessageReceiver receiver;
 
 	/** Configure an external receiver for incoming messages. Must be thread-safe. */
 	public IMessageReceiver externalReceiver = DEFAULT_MESSAGE_RECEIVER;
 
 	/** UDP peer system to use. (e.g. KryoNetty) */
-	public IPeer udpPeer = new JavaNetPeer(this);
+	public Class<? extends IPeer> udpPeerClass = JavaNetPeer.class;
 
 	/** Serialisation system. Some peers require specific serialisation
 	 * return types. */
 	public ISerialiser serialiser = new KryoSerialiser(new SerialiserConfig(), new Kryo());
-
-	/** Reliable UDP connection established. */
-	public boolean connectionEstablished;
-
-	/** Used for receiving bigger messages. Only one byte array buffer may
-	 * be processed at any given time. */
-	public SortedMap<Long, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
 
 	/** Compress MessagePart messages. */
 	public boolean compressBigMessages = false;
@@ -165,61 +168,10 @@ public class Config {
 	 * every packet. */
 	public int debugLostPackagePercentage = 1;
 
-	/** Message log collects messages for resending. */
-	public MessageLog messageLog = new MessageLog();
-
 	/** List of all added processors. */
-	public List<Object> processors = new ArrayList<>();
+	public List<Class> processorClasses = DEFAULT_MESSAGE_PROCESSORS;
 
-	/** List of systems that need to be processed every tick. */
-	public List<ISimpleProcessable> processables = new ArrayList<>();
-	public List<IMessageSenderPreProcessor> messageSenderPreProcessors = new ArrayList<>();
-	public List<IMessageSenderPostProcessor> messageSenderPostProcessors = new ArrayList<>();
-	public List<IMessageReceiverPreProcessor> messageReceiverPreProcessors = new ArrayList<>();
-	public List<IMessageReceiverPostProcessor> messageReceiverPostProcessors = new ArrayList<>();
+	public Predicate<Message> messageLogReceiveFilter = new MessageLog.NoMessagesPredicate();
+	public Predicate<Message> messageLogSendFilter = new MessageLog.ReliableMessagesPredicate();
 
-	public Config() {
-		// add default processors in the order in which they get called
-		addProcessor(new AddChecksumProcessor());
-		addProcessor(new DiscardWrongChecksumMessagesHandler());
-		addProcessor(new MessageLogProcessor(this));
-		addProcessor(new StackedMessageProcessor(this));
-		addProcessor(new ReliableModeAckProcessor(this));
-		addProcessor(new ReliableModeSequenceProcessor(this));
-		//addProcessor(new OrderedUdpHandler(this));
-		addProcessor(new DiscardMessagesHandler());
-	}
-
-	public void addProcessor(Object processor) {
-		processors.add(processor);
-		if (processor instanceof ISimpleProcessable) {
-			ISimpleProcessable processable = (ISimpleProcessable) processor;
-			processables.add(processable);
-		}
-		if (processor instanceof IMessageSenderPreProcessor) {
-			IMessageSenderPreProcessor messageSenderPreProcessor = (IMessageSenderPreProcessor) processor;
-			messageSenderPreProcessors.add(messageSenderPreProcessor);
-		}
-		if (processor instanceof IMessageSenderPostProcessor) {
-			IMessageSenderPostProcessor messageSenderPostProcessor = (IMessageSenderPostProcessor) processor;
-			messageSenderPostProcessors.add(messageSenderPostProcessor);
-		}
-		if (processor instanceof IMessageReceiverPreProcessor) {
-			IMessageReceiverPreProcessor messageReceiverPreProcessor = (IMessageReceiverPreProcessor) processor;
-			messageReceiverPreProcessors.add(messageReceiverPreProcessor);
-		}
-		if (processor instanceof IMessageReceiverPostProcessor) {
-			IMessageReceiverPostProcessor messageReceiverPostProcessor = (IMessageReceiverPostProcessor) processor;
-			messageReceiverPostProcessors.add(messageReceiverPostProcessor);
-		}
-	}
-
-	public <E> E getProcessorOf(Class<E> clazz) {
-		for (Object processor : processors) {
-			if (clazz.isAssignableFrom(processor.getClass())) {
-				return (E) processor;
-			}
-		}
-		return null;
-	}
 }

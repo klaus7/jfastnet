@@ -30,7 +30,20 @@ client.send(new PrintMessage("Hello Server!"));
 # Roadmap
 
 * Implement new reliable sending mode, where all unacknowledged messages get stacked onto the most recent message
-* Split config and state
+* Individual configs for the processors
+
+# Changelog
+
+The API of this library is subject to change.
+
+## 0.2.0 (upcoming)
+
+* Stackable messages
+* Cleaner separation of config and state
+
+## 0.1.5
+
+* auto split bugfix
 
 # Documentation
 The documentation is still a work-in-progress.

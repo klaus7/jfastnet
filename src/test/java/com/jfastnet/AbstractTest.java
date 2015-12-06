@@ -85,11 +85,11 @@ public abstract class AbstractTest {
 		clients.forEach(Client::blockingWaitUntilConnected);
 		log.info("All clients connected successfully!");
 
-		waitForCondition("Not all clients joined.", 3, () -> server.config.state.clients.size() == clientCount, () -> "Clients: " + server.config.state.clients.size() + ", Expected: " + clientCount);
+		waitForCondition("Not all clients joined.", 3, () -> server.state.clients.size() == clientCount, () -> "Clients: " + server.getState().clients.size() + ", Expected: " + clientCount);
 	}
 
 	public Message getLastReceivedMessage() {
-		return getLastReceivedMessageFromLog(server.getConfig().messageLog.received, true, null);
+		return getLastReceivedMessageFromLog(server.getState().messageLog.received, true, null);
 	}
 	public Message getLastReceivedMessage(int clientIndex) {
 		return getLastReceivedMessage(clientIndex, true, null);
@@ -98,7 +98,7 @@ public abstract class AbstractTest {
 		return getLastReceivedMessage(clientIndex, true, messageType);
 	}
 	public Message getLastReceivedMessage(int clientIndex, boolean ignoreSystemMessages, Class messageType) {
-		List<Message> received = clients.get(clientIndex).getConfig().messageLog.received;
+		List<Message> received = clients.get(clientIndex).getState().messageLog.received;
 		return getLastReceivedMessageFromLog(received, ignoreSystemMessages, messageType);
 	}
 
@@ -169,12 +169,12 @@ public abstract class AbstractTest {
 		config.port = 15150;
 		config.bindPort = 0;
 		config.serialiser = new KryoSerialiser(new SerialiserConfig(), kryos);
-		config.udpPeer = new JavaNetPeer(config);
+		config.udpPeerClass = JavaNetPeer.class;
 //		config.udpPeer = new KryoNettyPeer(config);
 		config.externalReceiver = Message::process;
 		config.keepAliveInterval = 500;
 //		config.keepAliveInterval = 1500;
-		config.messageLog.receiveFilter = message -> true;
+		config.messageLogReceiveFilter = message -> true;
 		config.compressBigMessages = true;
 		config.autoSplitTooBigMessages = true;
 

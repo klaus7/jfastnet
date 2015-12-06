@@ -44,7 +44,7 @@ public class Server extends PeerController {
 
 	public Server(Config config) {
 		super(config);
-		config.state.setHost(true);
+		state.setHost(true);
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class Server extends PeerController {
 		super.process();
 
 		long currentTime = config.timeProvider.get();
-		if (config.state.clients.size() > 0 && lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
+		if (state.clients.size() > 0 && lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
 
 			// Potentially "Keep Alive" will be sent, when first client joins.
 			// This can lead to clients that join a few milliseconds later that
@@ -84,7 +84,7 @@ public class Server extends PeerController {
 	@Override
 	public void receive(Message message) {
 		boolean isConnectRequest = message instanceof ConnectRequest;
-		Map<Integer, InetSocketAddress> clients = config.state.clients;
+		Map<Integer, InetSocketAddress> clients = state.clients;
 		if (!clients.containsValue(message.getSocketAddressSender())) {
 			if (!isConnectRequest) {
 				log.warn("No client found under {}", message.getSocketAddressSender());
@@ -137,7 +137,7 @@ public class Server extends PeerController {
 			clients.put(clientId, message.getSocketAddressSender());
 			log.info("Added {} with address {} to clients.", clientId, message.getSocketAddressSender());
 			final int finalClientId = clientId;
-			config.processors.stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onRegister(finalClientId));
+			registerClientAtProcessors(finalClientId);
 			config.serverHooks.onRegister(clientId);
 		}
 
@@ -159,6 +159,10 @@ public class Server extends PeerController {
 				internalSend(message, message.getSenderId());
 			}
 		}
+	}
+
+	public void registerClientAtProcessors(int finalClientId) {
+		state.processors.stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onRegister(finalClientId));
 	}
 
 	@Override
@@ -192,7 +196,7 @@ public class Server extends PeerController {
 
 		boolean beforeSendState = true;
 		boolean afterSendState = true;
-		for (Map.Entry<Integer, InetSocketAddress> entry : config.state.clients.entrySet()) {
+		for (Map.Entry<Integer, InetSocketAddress> entry : state.clients.entrySet()) {
 			Integer clientId = entry.getKey();
 			if (exceptId > 0 && exceptId == clientId) {
 				continue;
@@ -209,7 +213,7 @@ public class Server extends PeerController {
 			boolean beforeSend = super.beforeSend(message);
 			beforeSendState &= beforeSend;
 			if (beforeSend) {
-				config.udpPeer.send(message);
+				state.udpPeer.send(message);
 			}
 			afterSendState &= super.afterSend(message);
 //			beforeSendState &= super.beforeSend(message);
@@ -253,14 +257,14 @@ public class Server extends PeerController {
 		}
 
 
-		for (Map.Entry<Integer, InetSocketAddress> entry : config.state.clients.entrySet()) {
+		for (Map.Entry<Integer, InetSocketAddress> entry : state.clients.entrySet()) {
 			Integer clientId = entry.getKey();
 			if (exceptId > 0 && exceptId == clientId) {
 				continue;
 			}
 			message.setReceiverId(clientId);
 			message.socketAddressRecipient = entry.getValue();
-			config.udpPeer.send(message);
+			state.udpPeer.send(message);
 		}
 		log.trace("Sent message: {}", message);
 
@@ -270,7 +274,7 @@ public class Server extends PeerController {
 	}
 
 	public boolean send(int clientId, Message message) {
-		InetSocketAddress client = config.state.clients.get(clientId);
+		InetSocketAddress client = state.clients.get(clientId);
 		if (client == null) {
 			log.warn("Client with id {} not found.", clientId);
 			return false;
@@ -280,12 +284,16 @@ public class Server extends PeerController {
 	}
 
 	public void unregister(int clientId) {
-		log.info("Bye {}", config.state.clients.get(clientId));
-		config.state.clients.remove(clientId);
+		log.info("Bye {}", state.clients.get(clientId));
+		state.clients.remove(clientId);
 		lastReceivedMap.remove(clientId);
 		config.requiredClients.remove(clientId);
-		config.processors.stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onUnregister(clientId));
+		unregisterClientAtProcessors(clientId);
 		config.serverHooks.onUnregister(clientId);
+	}
+
+	public void unregisterClientAtProcessors(int clientId) {
+		state.processors.stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onUnregister(clientId));
 	}
 
 	public static class Counter {

@@ -44,7 +44,7 @@ public class Client extends PeerController {
 
 	public Client(Config config) {
 		super(config);
-		config.state.setHost(false);
+		state.setHost(false);
 		clientId = config.senderId;
 	}
 

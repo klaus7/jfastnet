@@ -2,6 +2,7 @@ package com.jfastnet.processors;
 
 import com.jfastnet.Config;
 import com.jfastnet.IServerHooks;
+import com.jfastnet.State;
 import com.jfastnet.messages.Message;
 import com.jfastnet.messages.StackAckMessage;
 import com.jfastnet.messages.StackedMessage;
@@ -12,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
-public class StackedMessageProcessor implements IMessageReceiverPreProcessor, IMessageSenderPreProcessor, IServerHooks {
+public class StackedMessageProcessor extends AbstractMessageProcessor implements IMessageReceiverPreProcessor, IMessageSenderPreProcessor, IServerHooks {
 
 	private Map<Integer, Long> lastAckMessageIdMap = new ConcurrentHashMap<>();
 
@@ -20,11 +21,8 @@ public class StackedMessageProcessor implements IMessageReceiverPreProcessor, IM
 
 	private Map<Long, Message> unacknowledgedSentMessagesMap = new ConcurrentHashMap<>();
 
-	private Config config;
-	//private long lastReceivedStackedMessageChild;
-
-	public StackedMessageProcessor(Config config) {
-		this.config = config;
+	public StackedMessageProcessor(Config config, State state) {
+		super(config, state);
 	}
 
 	@Override
@@ -62,14 +60,9 @@ public class StackedMessageProcessor implements IMessageReceiverPreProcessor, IM
 
 	private void receiveStackedMessage(StackedMessage stackedMessage) {
 		for (Message message : stackedMessage.getMessages()) {
-//			if (message.getMsgId() > lastReceivedStackedMessageChild) {
-				message.setConfig(stackedMessage.getConfig());
-				message.socketAddressSender = stackedMessage.socketAddressSender;
-				message.setSenderId(stackedMessage.getSenderId());
-				log.trace("Received stack message: {}", message);
-				config.receiver.receive(message);
-//				lastReceivedStackedMessageChild = message.getMsgId();
-//			}
+			message.copyAttributesFrom(stackedMessage);
+			log.trace("Received stack message: {}", message);
+			config.receiver.receive(message);
 		}
 	}
 
@@ -80,7 +73,7 @@ public class StackedMessageProcessor implements IMessageReceiverPreProcessor, IM
 			cleanUpUnacknowledgedSentMessagesMap();
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);
 			if (sentToAllFromServer(message.getReceiverId())) {
-				Set<Integer> clientIds = config.state.clients.keySet();
+				Set<Integer> clientIds = state.clients.keySet();
 				clientIds.forEach(id -> createStackForReceiver(message, id));
 			} else if (createStackForReceiver(message, message.getReceiverId())) {
 				return null;
@@ -90,8 +83,8 @@ public class StackedMessageProcessor implements IMessageReceiverPreProcessor, IM
 	}
 
 	private void cleanUpUnacknowledgedSentMessagesMap() {
-		if (config.state.isHost) {
-			Set<Integer> clientIds = config.state.clients.keySet();
+		if (state.isHost) {
+			Set<Integer> clientIds = state.clients.keySet();
 			long maxAckId = 0L;
 			for (Integer clientId : clientIds) {
 				long clientLastAckId = lastAckMessageIdMap.getOrDefault(clientId, 0L);

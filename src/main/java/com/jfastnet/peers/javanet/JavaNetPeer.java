@@ -19,15 +19,14 @@ package com.jfastnet.peers.javanet;
 import com.jfastnet.Config;
 import com.jfastnet.IPeer;
 import com.jfastnet.NetStats;
+import com.jfastnet.State;
 import com.jfastnet.messages.Message;
-import com.jfastnet.messages.MessagePart;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.Random;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -35,14 +34,17 @@ import java.util.Random;
 public class JavaNetPeer implements IPeer {
 
 	Config config;
+	State state;
+
 	private Random debugRandom = new Random();
 
 	private DatagramSocket socket;
 
 	private Thread receiveThread;
 
-	public JavaNetPeer(Config config) {
+	public JavaNetPeer(Config config, State state) {
 		this.config = config;
+		this.state = state;
 	}
 
 	@Override
@@ -113,10 +115,12 @@ public class JavaNetPeer implements IPeer {
 	}
 
 	public void receive(DatagramPacket packet) {
-		Message message = config.serialiser.deserialise(config, packet.getData(), packet.getOffset(), packet.getLength());
+		Message message = config.serialiser.deserialise(packet.getData(), packet.getOffset(), packet.getLength());
 		if (message == null) {
 			return;
 		}
+		message.setConfig(config);
+		message.setState(state);
 		if (message.getFeatures() != null) {
 			message.getFeatures().resolve();
 		}

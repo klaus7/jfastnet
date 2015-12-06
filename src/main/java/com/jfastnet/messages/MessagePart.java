@@ -16,7 +16,7 @@
 
 package com.jfastnet.messages;
 
-import com.jfastnet.Config;
+import com.jfastnet.State;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -54,17 +54,17 @@ public class MessagePart extends Message implements IDontFrame {
 		this.bytes = bytes;
 	}
 
-	public static List<MessagePart> createFromMessage(Config config, long id, Message message, int chunkSize) {
-		return createFromMessage(config, id, message, chunkSize, message.getReliableMode());
+	public static List<MessagePart> createFromMessage(State state, long id, Message message, int chunkSize) {
+		return createFromMessage(state, id, message, chunkSize, message.getReliableMode());
 	}
 
-	public static List<MessagePart> createFromMessage(Config config, long id, Message message, int chunkSize, ReliableMode reliableMode) {
-		config.udpPeer.createPayload(message);
+	public static List<MessagePart> createFromMessage(State state, long id, Message message, int chunkSize, ReliableMode reliableMode) {
+		state.udpPeer.createPayload(message);
 		// createPayload has to create a byte array
 		// Depends on the UDP peer if this is possible.
 		if (message.payload instanceof byte[]) {
 			byte[] bytes = (byte[]) message.payload;
-			if (config.compressBigMessages) {
+			if (state.getConfig().compressBigMessages) {
 				bytes = compress(bytes);
 				// TODO can potentially fail!
 			}
@@ -102,7 +102,7 @@ public class MessagePart extends Message implements IDontFrame {
 	public void process() {
 		log.trace("Part number {} of id {} received.", partNumber, id);
 
-		SortedMap<Long, SortedMap<Integer, MessagePart>> arrayBufferMap = getConfig().byteArrayBufferMap;
+		SortedMap<Long, SortedMap<Integer, MessagePart>> arrayBufferMap = getState().byteArrayBufferMap;
 		SortedMap<Integer, MessagePart> byteArrayBuffer = arrayBufferMap.get(id);
 		if (byteArrayBuffer == null) {
 			byteArrayBuffer = new TreeMap<>();
@@ -123,11 +123,12 @@ public class MessagePart extends Message implements IDontFrame {
 				if (getConfig().compressBigMessages) {
 					byteArray = decompress(byteArray);
 				}
-				Message messageFromByteArray = getConfig().serialiser.deserialise(getConfig(), byteArray, 0, byteArray.length);
+				Message messageFromByteArray = getConfig().serialiser.deserialise(byteArray, 0, byteArray.length);
 				if (messageFromByteArray == null) {
 					log.error("Deserialised message was null! See previous errors.");
 				} else {
 					log.info("Message created: {}", messageFromByteArray);
+					messageFromByteArray.copyAttributesFrom(this);
 					getConfig().externalReceiver.receive(messageFromByteArray);
 				}
 			} catch (IOException e) {
@@ -141,7 +142,7 @@ public class MessagePart extends Message implements IDontFrame {
 		if (ReliableMode.SEQUENCE_NUMBER.equals(getReliableMode())) {
 			return last;
 		} else if (ReliableMode.ACK_PACKET.equals(getReliableMode())) {
-			SortedMap<Integer, MessagePart> byteArrayBuffer = getConfig().byteArrayBufferMap.get(id);
+			SortedMap<Integer, MessagePart> byteArrayBuffer = getState().byteArrayBufferMap.get(id);
 			if (byteArrayBuffer == null) {
 				log.trace("byteArrayBuffer == null");
 				return false;

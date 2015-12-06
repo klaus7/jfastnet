@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 /** Logs incoming and outgoing messages. Per default only reliable messages
@@ -39,19 +38,22 @@ public class MessageLog {
 	public List<Message> sent = new SizeLimitedList<>(3000);
 
 	public Map<MessageKey, Message> sentMap = new ConcurrentSizeLimitedMap<>(3000);
-//	public Map<MessageKey, Message> sentMap = new ConcurrentHashMap<>(3000);
+	//	public Map<MessageKey, Message> sentMap = new ConcurrentHashMap<>(3000);
 
-	public Predicate<Message> receiveFilter = new NoMessagesPredicate();
-	public Predicate<Message> sendFilter = new ReliableMessagesPredicate();
+	private Config config;
+
+	public MessageLog(Config config) {
+		this.config = config;
+	}
 
 	public void addReceived(Message message) {
-		if (receiveFilter.test(message)) {
+		if (config.messageLogReceiveFilter.test(message)) {
 			received.add(message);
 		}
 	}
 
 	public void addSent(Message message) {
-		if (sendFilter.test(message)) {
+		if (config.messageLogSendFilter.test(message)) {
 			sent.add(message);
 			MessageKey messageKey = MessageKey.newKey(message.getReliableMode(), message.getReceiverId(), message.getMsgId());
 			log.trace("Put into sent-log: {} -- {}", messageKey, message);

@@ -134,10 +134,11 @@ public class KryoNettyPeer implements IPeer {
 
 	public void receive(ChannelHandlerContext ctx, DatagramPacket packet) {
 		ByteBuf content = packet.content();
-		Message message = config.serialiser.deserialiseWithStream(config, new ByteBufInputStream(content));
+		Message message = config.serialiser.deserialiseWithStream(new ByteBufInputStream(content));
 		if (message == null) {
 			return;
 		}
+		// TODO set config and state
 		message.payload = content;
 		if (message.getFeatures() != null) {
 			message.getFeatures().resolve();

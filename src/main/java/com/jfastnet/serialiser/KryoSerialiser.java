@@ -19,7 +19,6 @@ package com.jfastnet.serialiser;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
-import com.jfastnet.Config;
 import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.messages.Message;
 import lombok.extern.slf4j.Slf4j;
@@ -74,11 +73,10 @@ public class KryoSerialiser implements ISerialiser{
 	}
 
 	@Override
-	public Message deserialise(Config config, byte[] byteArray, int offset, int length) {
+	public Message deserialise(byte[] byteArray, int offset, int length) {
 		try (Input input = new Input(byteArray, offset, length)) {
 			Message message = (Message) getKryo().readClassAndObject(input);
 			if (message != null) {
-				message.setConfig(config);
 				message.payload = byteArray;
 				return message;
 			}
@@ -104,7 +102,7 @@ public class KryoSerialiser implements ISerialiser{
 	}
 
 	@Override
-	public Message deserialiseWithStream(Config config, InputStream _is) {
+	public Message deserialiseWithStream(InputStream _is) {
 		if (this.config.useBasicCompression) {
 			_is = new InflaterInputStream(_is);
 		}
@@ -112,7 +110,6 @@ public class KryoSerialiser implements ISerialiser{
 			Input input = new Input(is);
 			Message message = (Message) getKryo().readClassAndObject(input);
 			if (message != null) {
-				message.setConfig(config);
 				//message.payload = content;
 				return message;
 			}

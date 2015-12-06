@@ -16,7 +16,6 @@
 
 package com.jfastnet.serialiser;
 
-import com.jfastnet.Config;
 import com.jfastnet.messages.Message;
 
 import java.io.InputStream;
@@ -28,11 +27,11 @@ public interface ISerialiser {
 
 	byte[] serialise(Message message);
 
-	Message deserialise(Config config, byte[] serialisedMessage, int offset, int length);
+	Message deserialise(byte[] serialisedMessage, int offset, int length);
 
 	void serialiseWithStream(Message message, OutputStream _outputStream);
 
-	Message deserialiseWithStream(Config config, InputStream _is);
+	Message deserialiseWithStream(InputStream _is);
 
 	/** Setted payload is a requirement. */
 	CRC32 getChecksum(Message message, byte[] salt);

@@ -18,6 +18,7 @@ package com.jfastnet.messages;
 
 import com.jfastnet.Config;
 import com.jfastnet.ISimpleProcessable;
+import com.jfastnet.State;
 import com.jfastnet.messages.features.MessageFeatures;
 import com.jfastnet.messages.features.TimestampFeature;
 import com.jfastnet.processors.ProcessFlags;
@@ -81,6 +82,11 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	@Getter
 	private transient Config config;
 
+	/** State gets set upon sending / receiving of message. */
+	@Setter
+	@Getter
+	private transient State state;
+
 	public Message() {}
 
 	public Message(Config config) {
@@ -92,6 +98,14 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 			processFlags = new ProcessFlags();
 		}
 		return processFlags;
+	}
+
+	public Message copyAttributesFrom(Message message) {
+		config = message.config;
+		state = message.state;
+		socketAddressSender = message.socketAddressSender;
+		senderId = message.senderId;
+		return this;
 	}
 
 	/** Additional features can be specified for every message.

@@ -16,10 +16,7 @@
 
 package com.jfastnet.processors;
 
-import com.jfastnet.Config;
-import com.jfastnet.IServerHooks;
-import com.jfastnet.ISimpleProcessable;
-import com.jfastnet.MessageKey;
+import com.jfastnet.*;
 import com.jfastnet.messages.Message;
 import com.jfastnet.messages.RequestSeqIdsMessage;
 import com.jfastnet.util.NullsafeHashMap;
@@ -27,11 +24,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -40,7 +34,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Klaus Pfeiffer - klaus@allpiper.com
  */
 @Slf4j
-public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageSenderPostProcessor, IServerHooks {
+public class ReliableModeSequenceProcessor extends AbstractMessageProcessor implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageSenderPostProcessor, IServerHooks {
 
 	public static final AtomicLong ZERO_ATOMIC_LONG = new AtomicLong();
 	@Getter
@@ -72,13 +66,11 @@ public class ReliableModeSequenceProcessor implements ISimpleProcessable, IMessa
 
 	private long lastCheck;
 
-	private Config config;
-
 	/** Set to true when we receive an out-of-order message. */
 	private volatile boolean outOfSync;
 
-	public ReliableModeSequenceProcessor(Config config) {
-		this.config = config;
+	public ReliableModeSequenceProcessor(Config config, State state) {
+		super(config, state);
 	}
 
 	@Override

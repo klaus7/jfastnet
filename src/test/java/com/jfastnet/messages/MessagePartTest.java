@@ -18,6 +18,7 @@ package com.jfastnet.messages;
 
 import com.jfastnet.AbstractTest;
 import com.jfastnet.Config;
+import com.jfastnet.State;
 import org.junit.Test;
 
 import java.util.List;
@@ -69,10 +70,13 @@ public class MessagePartTest extends AbstractTest {
 			}
 		};
 		BigMessage bigMessage = new BigMessage(150);
-		List<MessagePart> messageParts = MessagePart.createFromMessage(config, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
+		bigMessage.setConfig(config);
+		State state = new State(config);
+		bigMessage.setState(state);
+		List<MessagePart> messageParts = MessagePart.createFromMessage(state, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
 
 		assertNotNull("message parts are null", messageParts);
-		messageParts.forEach(messagePart -> messagePart.setConfig(config));
+		messageParts.forEach(messagePart -> messagePart.copyAttributesFrom(bigMessage));
 		MessagePart lastPart = messageParts.get(messageParts.size() - 1);
 		assertTrue("last messag part must have set last flag to true", lastPart.last);
 

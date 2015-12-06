@@ -54,7 +54,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 			// Clear sender id, if every client receives the same id for a particular message
 			keySenderId = 0;
 		}
-		HashMap<MessageKey, Message> sentMap = new HashMap<>(getConfig().messageLog.sentMap);
+		HashMap<MessageKey, Message> sentMap = new HashMap<>(getState().messageLog.sentMap);
 		for (Long absentId : absentIds) {
 			MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, keySenderId, absentId);
 			Message message = sentMap.get(key);

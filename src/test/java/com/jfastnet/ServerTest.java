@@ -141,7 +141,7 @@ public class ServerTest extends AbstractTest {
 		client1.start();
 		client1.blockingWaitUntilConnected();
 
-		assertThat(server.config.state.clients.size(), is(1));
+		assertThat(server.state.clients.size(), is(1));
 
 		DefaultUnreliableMessage msg1 = new DefaultUnreliableMessage();
 		client1.send(msg1);
@@ -161,7 +161,7 @@ public class ServerTest extends AbstractTest {
 		log.info("Send big message.");
 		BigMessage bigMessage = new BigMessage();
 		String forLaterCheck = bigMessage.s;
-		List<MessagePart> messageParts = MessagePart.createFromMessage(client1.config, 0, bigMessage, 1024);
+		List<MessagePart> messageParts = MessagePart.createFromMessage(client1.state, 0, bigMessage, 1024);
 		// 41
 		log.info("Parts: {}", messageParts.size()); // 15 + 1
 		messageParts.forEach(client1::send);
@@ -182,7 +182,7 @@ public class ServerTest extends AbstractTest {
 		log.info("Send big message.");
 		BigMessage bigMessage = new BigMessage();
 		String forLaterCheck = bigMessage.s;
-		List<MessagePart> messageParts = MessagePart.createFromMessage(client1.config, 0, bigMessage, 1024);
+		List<MessagePart> messageParts = MessagePart.createFromMessage(client1.state, 0, bigMessage, 1024);
 		// 41
 		log.info("Parts: {}", messageParts.size()); // 15 + 1
 		log.info("Test queued sending of big message");
@@ -223,7 +223,7 @@ public class ServerTest extends AbstractTest {
 		receivedBigMessage = null;
 		bigMessage = new BigMessage(150);
 		forLaterCheck = bigMessage.s;
-		messageParts = MessagePart.createFromMessage(client1.config, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
+		messageParts = MessagePart.createFromMessage(client1.state, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
 
 		log.info("Parts: {}", messageParts.size()); // 15 + 1
 		log.info("Test queued sending of big message");
@@ -239,7 +239,7 @@ public class ServerTest extends AbstractTest {
 		receivedBigMessage = null;
 		bigMessage = new BigMessage(50);
 		forLaterCheck = bigMessage.s;
-		messageParts = MessagePart.createFromMessage(client1.config, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
+		messageParts = MessagePart.createFromMessage(client1.state, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
 
 		log.info("Parts: {}", messageParts.size()); // 15 + 1
 		log.info("Test queued sending of big message");
@@ -255,7 +255,7 @@ public class ServerTest extends AbstractTest {
 		receivedBigMessage = null;
 		bigMessage = new BigMessage(150);
 		forLaterCheck = bigMessage.s;
-		messageParts = MessagePart.createFromMessage(client1.config, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
+		messageParts = MessagePart.createFromMessage(client1.state, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
 
 		log.info("Parts: {}", messageParts.size()); // 15 + 1
 		log.info("Test queued sending of big message");
@@ -277,7 +277,7 @@ public class ServerTest extends AbstractTest {
 		received = 0;
 		bigMessage = new BigMessage(150);
 		forLaterCheck = bigMessage.s;
-		messageParts = MessagePart.createFromMessage(client1.config, 1, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
+		messageParts = MessagePart.createFromMessage(client1.state, 1, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
 
 		log.info("Parts: {}", messageParts.size()); // 15 + 1
 		log.info("Test queued sending of big message");
@@ -295,8 +295,8 @@ public class ServerTest extends AbstractTest {
 		reset();
 		start(4, newServerConfig(), () -> {
 			Config config = newClientConfig();
-			config.messageLog.receiveFilter = message -> true; // don't filter messages
-			config.messageLog.sendFilter = message -> true; // don't filter messages
+			config.messageLogReceiveFilter = message -> true; // don't filter messages
+			config.messageLogSendFilter = message -> true; // don't filter messages
 			return config;
 		});
 		server.send(new DefaultUnreliableMessage());
@@ -425,7 +425,7 @@ public class ServerTest extends AbstractTest {
 		}
 
 		logBig("Check re-connect of client");
-		AtomicLong atomicLong = client1.getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().get(0);
+		AtomicLong atomicLong = client1.getState().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().get(0);
 		if (atomicLong == null) {
 			Assert.fail();
 		}
@@ -444,7 +444,7 @@ public class ServerTest extends AbstractTest {
 
 		client1.start();
 		client1.blockingWaitUntilConnected();
-		AtomicLong atomicLong2 = client1.getConfig().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().get(0);
+		AtomicLong atomicLong2 = client1.getState().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().get(0);
 		if (atomicLong2 == null) {
 			Assert.fail();
 		}

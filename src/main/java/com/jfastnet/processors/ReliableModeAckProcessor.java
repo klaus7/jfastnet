@@ -16,10 +16,7 @@
 
 package com.jfastnet.processors;
 
-import com.jfastnet.Config;
-import com.jfastnet.IServerHooks;
-import com.jfastnet.ISimpleProcessable;
-import com.jfastnet.MessageKey;
+import com.jfastnet.*;
 import com.jfastnet.messages.AckMessage;
 import com.jfastnet.messages.ConnectRequest;
 import com.jfastnet.messages.IAckMessage;
@@ -39,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * messages and the retrieval of ACK messages.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
-public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageReceiverPostProcessor, IMessageSenderPreProcessor, IServerHooks {
+public class ReliableModeAckProcessor extends AbstractMessageProcessor implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageReceiverPostProcessor, IMessageSenderPreProcessor, IServerHooks {
 
 	/** Resend message where we didn't receive an ack packet in X ms. */
 	@Setter
@@ -74,10 +71,8 @@ public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageRec
 	/** To determine new resend time interval. */
 	private Map<MessageKey, Long> sentMsgIds = new ConcurrentHashMap<>();
 
-	private Config config;
-
-	public ReliableModeAckProcessor(Config config) {
-		this.config = config;
+	public ReliableModeAckProcessor(Config config, State state) {
+		super(config, state);
 	}
 
 	@Override
@@ -138,7 +133,7 @@ public class ReliableModeAckProcessor implements ISimpleProcessable, IMessageRec
 		messageContainer = messagesAwaitingAck.remove(key);
 		if (messageContainer != null && messageContainer.message instanceof ConnectRequest) {
 			log.info("Reliable UDP connection established!");
-			config.connectionEstablished = true;
+			state.connectionEstablished = true;
 		}
 	}
 

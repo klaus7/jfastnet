@@ -43,11 +43,17 @@ public class PeerController implements IPeerController {
 	/** List of queued messages. A FIFO queue. */
 	private List<Message> queuedMessages = new ArrayList<>();
 
+	/** Current state information. */
+	@Getter
+	protected State state;
+
 	@Getter
 	protected Config config;
 
 	public PeerController(Config config) {
+		assert config != null : "Config may not be null!";
 		this.config = config;
+		this.state = new State(config);
 		if (config.receiver == null) {
 			config.receiver = this;
 		}
@@ -58,14 +64,14 @@ public class PeerController implements IPeerController {
 
 	@Override
 	public boolean start() {
-		return this.config.udpPeer.start();
+		return this.state.udpPeer.start();
 	}
 
 	@Override
 	public void stop() {
 		log.info("Stopping UDP peer controller.");
 		send(new LeaveRequest());
-		this.config.udpPeer.stop();
+		this.state.udpPeer.stop();
 	}
 
 	@Override
@@ -77,8 +83,8 @@ public class PeerController implements IPeerController {
 			send(firstMessage);
 			queueDelayInc = 0;
 		}
-		config.processables.forEach(ISimpleProcessable::process);
-		config.udpPeer.process();
+		state.processables.forEach(ISimpleProcessable::process);
+		state.udpPeer.process();
 	}
 
 	private void retrieveTimeDelta() {
@@ -107,7 +113,7 @@ public class PeerController implements IPeerController {
 			return false;
 		}
 
-		config.udpPeer.send(message);
+		state.udpPeer.send(message);
 		log.trace("Sent message: {}", message);
 
 		if (!afterSend(message)) {
@@ -124,7 +130,7 @@ public class PeerController implements IPeerController {
 				config.idProvider.stepBack(message);
 				if (config.autoSplitTooBigMessages) {
 					log.info("Auto splitting message: {}", message);
-					final List<MessagePart> parts = MessagePart.createFromMessage(config, message.getMsgId(), message, config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());
+					final List<MessagePart> parts = MessagePart.createFromMessage(state, message.getMsgId(), message, config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());
 					if (parts != null && parts.size() > 0) {
 						parts.forEach(this::queue);
 					} else {
@@ -147,7 +153,7 @@ public class PeerController implements IPeerController {
 	}
 
 	protected boolean afterSend(Message message) {
-		for (IMessageSenderPostProcessor processor : config.messageSenderPostProcessors) {
+		for (IMessageSenderPostProcessor processor : state.messageSenderPostProcessors) {
 			if (processor.afterSend(message) == null) {
 				log.trace("Processor {} discarded message {} at afterSend", processor, message);
 				return false;
@@ -160,7 +166,7 @@ public class PeerController implements IPeerController {
 	 * @param message message about to send
 	 * @return true if we are ready to send the message, false otherwise */
 	public boolean beforeSend(Message message) {
-		for (IMessageSenderPreProcessor processor : config.messageSenderPreProcessors) {
+		for (IMessageSenderPreProcessor processor : state.messageSenderPreProcessors) {
 			if (processor.beforeCongestionControl(message) == null) {
 				log.trace("Processor {} discarded message {} at beforeCongestionControl", processor, message);
 				return false;
@@ -169,7 +175,7 @@ public class PeerController implements IPeerController {
 
 		// TODO: congestion control
 
-		for (IMessageSenderPreProcessor processor : config.messageSenderPreProcessors) {
+		for (IMessageSenderPreProcessor processor : state.messageSenderPreProcessors) {
 			if (processor.beforeSend(message) == null) {
 				log.trace("Processor {} discarded message {} at beforeSend", processor, message);
 				return false;
@@ -193,7 +199,7 @@ public class PeerController implements IPeerController {
 
 	/** Create payload for message. */
 	public boolean createPayload(Message message) {
-		if (!config.udpPeer.createPayload(message)) {
+		if (!state.udpPeer.createPayload(message)) {
 			log.error("Creation of payload for {} failed.", message);
 			return false;
 		}
@@ -204,7 +210,7 @@ public class PeerController implements IPeerController {
 	public void receive(Message message) {
 		message.getFeatures().resolve();
 
-		for (IMessageReceiverPreProcessor processor : config.messageReceiverPreProcessors) {
+		for (IMessageReceiverPreProcessor processor : state.messageReceiverPreProcessors) {
 			if (processor.beforeReceive(message) == null) {
 				log.trace("Processor {} discarded message {} at beforeReceive", processor, message);
 				return;
@@ -219,7 +225,7 @@ public class PeerController implements IPeerController {
 			config.externalReceiver.receive(message);
 		}
 
-		for (IMessageReceiverPostProcessor processor : config.messageReceiverPostProcessors) {
+		for (IMessageReceiverPostProcessor processor : state.messageReceiverPostProcessors) {
 			if (processor.afterReceive(message) == null) {
 				log.trace("Processor {} discarded message {} at afterReceive", processor, message);
 				return;

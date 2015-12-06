@@ -38,8 +38,8 @@ public class MessageLogTest {
 	@Test
 	public void testMessageLog() throws InterruptedException {
 		Config config = new Config();
-		MessageLog messageLog = new MessageLog();
-		messageLog.receiveFilter = new MessageLog.ReliableMessagesPredicate();
+		MessageLog messageLog = new MessageLog(config);
+		config.messageLogReceiveFilter = new MessageLog.ReliableMessagesPredicate();
 		assertThat(messageLog.received.size(), is(0));
 		messageLog.addReceived(new Message() {
 			@Override
