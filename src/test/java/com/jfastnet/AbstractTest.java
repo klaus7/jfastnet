@@ -69,19 +69,6 @@ public abstract class AbstractTest {
 		clients.forEach(Client::start);
 
 		log.info("Wait for clients to successfully connect to server");
-		final boolean[] proceed = {false};
-		while (!proceed[0]) {
-			proceed[0] = true;
-			server.process();
-			for (Client client : clients) {
-				client.process();
-				if (!client.isConnected()) {
-					proceed[0] = false;
-					log.info("Client {} not connected!", client.getConfig().senderId);
-				}
-			}
-			Thread.sleep(200);
-		}
 		clients.forEach(Client::blockingWaitUntilConnected);
 		log.info("All clients connected successfully!");
 

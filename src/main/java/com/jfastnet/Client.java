@@ -39,6 +39,9 @@ public class Client extends PeerController {
 	/** Timestamp of last keep alive check. */
 	private long lastKeepAliveCheck;
 
+	/** Timestamp of sent connect request. */
+	private long connectRequestTimestamp;
+
 	/** Address of the server. */
 	private InetSocketAddress serverSocketAddress;
 
@@ -66,23 +69,20 @@ public class Client extends PeerController {
 		if (start) {
 			log.info("Say hello to server at {}:{}.", config.host, config.port);
 			send(new ConnectRequest(clientId));
+			connectRequestTimestamp = config.timeProvider.get();
 		}
-		lastReceivedMessageTime = System.currentTimeMillis();
+		lastReceivedMessageTime = config.timeProvider.get();
 		return start;
 	}
 
 	/** Wait until connect response is received. */
 	public void blockingWaitUntilConnected() {
+		process();
 		try {
-			int time = 0;
-			final int interval = 100;
-			while (!config.connected) {
+			final int processTimeInterval = 100;
+			while (!config.connected && config.timeProvider.get() - connectRequestTimestamp < config.connectTimeout) {
 				process();
-				Thread.sleep(interval);
-				time += interval;
-				if (time > config.connectTimeout) {
-					break;
-				}
+				Thread.sleep(processTimeInterval);
 			}
 		} catch (InterruptedException e) {
 			log.error("Wait for connection interrupted.", e);
