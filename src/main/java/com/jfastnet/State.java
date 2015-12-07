@@ -16,10 +16,8 @@
 
 package com.jfastnet;
 
-import com.jfastnet.idprovider.ClientIdReliableModeIdProvider;
 import com.jfastnet.idprovider.IIdProvider;
 import com.jfastnet.messages.MessagePart;
-import com.jfastnet.peers.javanet.JavaNetPeer;
 import com.jfastnet.processors.IMessageReceiverPostProcessor;
 import com.jfastnet.processors.IMessageReceiverPreProcessor;
 import com.jfastnet.processors.IMessageSenderPostProcessor;
@@ -29,7 +27,6 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.naming.ConfigurationException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
@@ -45,8 +42,8 @@ public class State {
 	/** UDP peer system to use. (e.g. KryoNetty) */
 	private IPeer udpPeer;
 
-	/** Provides the message ids. TODO move to state */
-	public IIdProvider idProvider = new ClientIdReliableModeIdProvider();
+	/** Provides the message ids. */
+	public IIdProvider idProvider;
 
 	/** Are we the host? Server sets this to true on creation. */
 	@Setter
@@ -104,7 +101,6 @@ public class State {
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			log.error("Couldn't create id provider {}", config.udpPeerClass, e);
 		}
-
 	}
 
 	private void createUdpPeer(Config config) {

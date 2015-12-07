@@ -19,10 +19,7 @@ package com.jfastnet.messages;
 import com.jfastnet.MessageKey;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /** This message is used to request missing sequenced ids from the other side.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -54,7 +51,8 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 			// Clear sender id, if every client receives the same id for a particular message
 			keySenderId = 0;
 		}
-		HashMap<MessageKey, Message> sentMap = new HashMap<>(getState().getMessageLog().sentMap);
+		//HashMap<MessageKey, Message> sentMap = new HashMap<>(getState().getMessageLog().sentMap);
+		Map<MessageKey, Message> sentMap = getState().getMessageLog().sentMap;
 		for (Long absentId : absentIds) {
 			MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, keySenderId, absentId);
 			Message message = sentMap.get(key);

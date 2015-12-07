@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class StackedMessageProcessor extends AbstractMessageProcessor implements IMessageReceiverPreProcessor, IMessageSenderPreProcessor, IServerHooks {
 
+	/** Client id, Msg Id. */
 	private Map<Integer, Long> lastAckMessageIdMap = new ConcurrentHashMap<>();
 
 	private long myLastAckMessageId;
@@ -125,12 +126,13 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 		}
 	}
 
+	/** Create individual stack for receiver id. */
 	private boolean createStackForReceiver(Message newMessage, int receiverId) {
 		long startStackMsgId = lastAckMessageIdMap.getOrDefault(receiverId, -1L) + 1L;
 		if (newMessage.getMsgId() > startStackMsgId) {
 			List<Message> messages = new ArrayList<>();
 			log.trace( " ++++ begin stack ++++");
-			for (long msgId = startStackMsgId; msgId <= newMessage.getMsgId() && messages.size() < config.stackedMessagesAckThreshold * 2; msgId++) {
+			for (long msgId = startStackMsgId; msgId <= newMessage.getMsgId() && messages.size() < config.stackedMessagesAckThreshold * 1; msgId++) {
 				Message stackMsg = unacknowledgedSentMessagesMap.get(msgId);
 				if (stackMsg != null) {
 					// Be tolerant about missing ids.
@@ -148,9 +150,11 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 				StackedMessage stackedMessage = new StackedMessage(messages);
 				stackedMessage.setReceiverId(receiverId);
 				config.internalSender.send(stackedMessage);
-				// TODO double entries in message log
-				messages.forEach(message -> message.setReceiverId(stackedMessage.getReceiverId()));
-				messages.forEach(state.getMessageLog()::addSent);
+				if (!state.idProvider.resolveEveryClientMessage()) {
+					// Clear receiver id, if every client receives the same id for a particular message
+					messages.forEach(message -> message.setReceiverId(0));
+				}
+				messages.forEach(state.getProcessorOf(MessageLogProcessor.class)::afterSend);
 				return true;
 			}
 		}

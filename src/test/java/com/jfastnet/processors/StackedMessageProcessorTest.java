@@ -102,7 +102,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 				() -> {
 					Config config = newClientConfig().setStackKeepAliveMessages(true);
 					config.debug = true;
-					config.debugLostPackagePercentage = 0;
+					config.debugLostPackagePercentage = 15;
 					config.setIdProviderClass(ReliableModeIdProvider.class);
 					return config;
 				});
