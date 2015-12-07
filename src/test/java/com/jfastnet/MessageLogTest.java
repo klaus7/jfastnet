@@ -38,6 +38,7 @@ public class MessageLogTest {
 	@Test
 	public void testMessageLog() throws InterruptedException {
 		Config config = new Config();
+		State state = new State(config);
 		MessageLog messageLog = new MessageLog(config);
 		config.messageLogReceiveFilter = new MessageLog.ReliableMessagesPredicate();
 		assertThat(messageLog.received.size(), is(0));
@@ -60,7 +61,7 @@ public class MessageLogTest {
 			while (true) {
 				i++;
 				NumberMessage msg = new NumberMessage(i);
-				msg.resolveConfig(config);
+				msg.resolve(config, state);
 				msg.resolveId();
 				messageLog.addSent(msg);
 			}

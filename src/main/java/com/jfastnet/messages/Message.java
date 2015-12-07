@@ -89,10 +89,6 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 
 	public Message() {}
 
-	public Message(Config config) {
-		resolveConfig(config);
-	}
-
 	public ProcessFlags getProcessFlags() {
 		if (processFlags == null) {
 			processFlags = new ProcessFlags();
@@ -115,8 +111,9 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 		return DEFAULT_MESSAGE_FEATURES;
 	}
 
-	public void resolveConfig(Config config) {
+	public void resolve(Config config, State state) {
 		this.config = config;
+		this.state = state;
 		this.senderId = config.senderId;
 		getFeatures().resolveConfig(config);
 	}

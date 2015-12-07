@@ -186,8 +186,7 @@ public class PeerController implements IPeerController {
 
 	/** Set id in message and prepare to send. */
 	public boolean resolveMessage(Message message) {
-		message.resolveConfig(config);
-		message.setState(state);
+		message.resolve(config, state);
 		message.prepareToSend();
 		if (message.getMsgId() == 0L) {
 			message.resolveId();
