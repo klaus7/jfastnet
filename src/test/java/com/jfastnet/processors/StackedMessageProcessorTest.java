@@ -2,6 +2,7 @@ package com.jfastnet.processors;
 
 import com.jfastnet.AbstractTest;
 import com.jfastnet.Config;
+import com.jfastnet.idprovider.ReliableModeIdProvider;
 import com.jfastnet.messages.Message;
 import com.jfastnet.util.NullsafeHashMap;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,8 @@ public class StackedMessageProcessorTest extends AbstractTest {
 	public static class UnStackableMsg1 extends Message {
 		@Override
 		public void process() {
-			log.info("########### UNSTACKABLE: " + unstackableReceived.incrementAndGet());
+			log.info("########### UNSTACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
+					new Object[]{getConfig().senderId, getMsgId(), unstackableReceived.incrementAndGet()});
 			printMsg(this);
 			if (getConfig() != null && unstackableIds.containsKey(getConfig().senderId)) {
 				if (unstackableIds.get(getConfig().senderId).contains(getMsgId())) {
@@ -69,7 +71,8 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		@Override
 		public void process() {
 //			stackableReceived.incrementAndGet();
-			log.info("########### STACKABLE: " + stackableReceived.incrementAndGet());
+			log.info("########### STACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
+					new Object[]{getConfig().senderId, getMsgId(), stackableReceived.incrementAndGet()});
 			printMsg(this);
 			if (stackableReceived.get() <= unstackableReceived.get()) {
 				log.error("Stackable must have a greater id!");
@@ -96,23 +99,25 @@ public class StackedMessageProcessorTest extends AbstractTest {
 	public void testStacking() {
 		reset();
 		start(8,
-				newServerConfig().setStackKeepAliveMessages(true),
 				() -> {
 					Config config = newClientConfig().setStackKeepAliveMessages(true);
 					config.debug = true;
-					config.debugLostPackagePercentage = 50;
+					config.debugLostPackagePercentage = 0;
+					config.setIdProvider(new ReliableModeIdProvider());
 					return config;
 				});
 		logBig("Send broadcast messages to clients");
 
-		int messageCount = 140;
+		int messageCount = 40;
 		for (int i = 0; i < messageCount; i++) {
 			server.send(new StackableMsg1());
 		}
 		server.send(new StackableMsg2());
 
 		int timeoutInSeconds = 15;
-		waitForCondition("Not all messages received.", timeoutInSeconds, () -> closeMsgReceived.get() == clients.size(), () -> "Received close messages: " + closeMsgReceived);
+		waitForCondition("Not all messages received.", timeoutInSeconds,
+				() -> closeMsgReceived.get() == clients.size(),
+				() -> "Received close messages: " + closeMsgReceived);
 
 		assertThat(stackableReceived.get(), is(messageCount * clients.size()));
 
@@ -123,11 +128,11 @@ public class StackedMessageProcessorTest extends AbstractTest {
 	public void testStackingWithUnstackables() {
 		reset();
 		start(4,
-				newServerConfig(),
 				() -> {
 					Config config = newClientConfig();
 					config.debug = true;
-					config.debugLostPackagePercentage = 20;
+					config.debugLostPackagePercentage = 15;
+					config.setIdProvider(new ReliableModeIdProvider());
 					return config;
 				});
 		logBig("Send broadcast messages to clients");
@@ -140,7 +145,9 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		server.send(new StackableMsg2());
 
 		int timeoutInSeconds = 5;
-		waitForCondition("Not all messages received.", timeoutInSeconds, () -> closeMsgReceived.get() == clients.size(), () -> "Received close messages: " + closeMsgReceived);
+		waitForCondition("Not all messages received.", timeoutInSeconds,
+				() -> closeMsgReceived.get() == clients.size(),
+				() -> "Received close messages: " + closeMsgReceived);
 
 		assertThat(stackableReceived.get(), is(messageCount * clients.size()));
 		assertThat(unstackableReceived.get(), is(messageCount * clients.size()));
@@ -150,7 +157,6 @@ public class StackedMessageProcessorTest extends AbstractTest {
 
 
 	public void reset() {
-//		waitFor(1000);
 		stackableReceived.set(0);
 		unstackableReceived.set(0);
 		closeMsgReceived.set(0);

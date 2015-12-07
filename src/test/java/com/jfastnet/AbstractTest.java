@@ -20,6 +20,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.messages.*;
 import com.jfastnet.peers.javanet.JavaNetPeer;
+import com.jfastnet.processors.StackedMessageProcessorTest;
 import com.jfastnet.serialiser.KryoSerialiser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -49,15 +50,22 @@ public abstract class AbstractTest {
 	}
 
 	public void start(int clients ) {
-		start(clients, newServerConfig(), () -> newClientConfig());
+		start(clients, () -> newClientConfig());
 	}
 
 	@SneakyThrows
 	public void start(int clientCount, Config serverConfig, Callable<Config> clientConfig ) {
-		server = new Server(serverConfig);
+		start(clientCount, clientConfig);
+	}
+
+	@SneakyThrows
+	public void start(int clientCount, Callable<Config> clientConfig ) {
+		//server = new Server(serverConfig);
+		server = new Server(clientConfig.call().setBindPort(15150).setPort(0));
 		clients = new ArrayList<>();
 		for (int i = 0; i < clientCount; i++) {
 			Config config = clientConfig.call();
+			config.setSenderId(i + 1);
 			clients.add(new Client(config));
 			if (i == 0) client1 = clients.get(i);
 			if (i == 1) client2 = clients.get(i);
@@ -69,10 +77,32 @@ public abstract class AbstractTest {
 		clients.forEach(Client::start);
 
 		log.info("Wait for clients to successfully connect to server");
+
+		// We need this loop to also process the server while waiting for the clients to connect
+		final boolean[] proceed = {false};
+		while (!proceed[0]) {
+			proceed[0] = true;
+			server.process();
+			for (Client client : clients) {
+				client.process();
+				if (!client.isConnected()) {
+					proceed[0] = false;
+					log.info("Client {} not connected!", client.getConfig().senderId);
+				}
+			}
+			Thread.sleep(200);
+		}
+
 		clients.forEach(Client::blockingWaitUntilConnected);
+		long unconnectedClientCount = clients.stream().filter(client -> !client.isConnected()).count();
+		if (unconnectedClientCount > 0) {
+			Assert.fail(unconnectedClientCount + " clients could not connect!");
+		}
 		log.info("All clients connected successfully!");
 
-		waitForCondition("Not all clients joined.", 3, () -> server.state.getClients().size() == clientCount, () -> "Clients: " + server.getState().getClients().size() + ", Expected: " + clientCount);
+		waitForCondition("Not all clients joined.", 3,
+				() -> server.state.getClients().size() == clientCount,
+				() -> "Clients: " + server.getState().getClients().size() + ", Expected: " + clientCount);
 	}
 
 	public Message getLastReceivedMessage() {
@@ -215,13 +245,15 @@ public abstract class AbstractTest {
 					call = condition.call();
 				}
 				if (i <= 0 && !call) {
-					log.info(out.call());
+//					log.info(out.call());
+					System.err.println(out.call());
 					Assert.fail(errorMsg + " [Condition didn't evaluate to true in time. Timeout was " + timeoutInSeconds + "]");
 				}
 			}
 		} catch (Exception e) {
 			try {
-				log.info(out.call());
+				//log.error(out.call());
+				System.err.println(out.call());
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}

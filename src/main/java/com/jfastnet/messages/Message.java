@@ -41,7 +41,7 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	/** */
 	private static final long serialVersionUID = 1L;
 
-	public static final MessageFeatures DEFAULT_MESSAGE_FEATURES = new MessageFeatures();
+	public static final MessageFeatures DEFAULT_MESSAGE_FEATURES = new MessageFeatures.Immutable();
 
 	/** Unique message id. */
 	@Getter
@@ -155,14 +155,18 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 		return compare;
 	}
 
-	/** Override if you need something done right before sending. */
+	/** Override if you need something done before sending. */
 	public void prepareToSend() {}
 
-	/** Override if you need something done right before receiving. */
-	public void beforeExternalReceive() {}
+	/** Override if you need something done before receiving. */
+	public void beforeReceive() {}
 
 	/** Specify the reliable mode for this message. */
 	public ReliableMode getReliableMode() 		{ return ReliableMode.SEQUENCE_NUMBER; }
+
+	/** If this message is sent with the ACK reliable mode and is then
+	 * acknowledged from the other side, this callback is called. */
+	public void ackCallback() {}
 
 	/** If this message can be stacked. Only use in conjunction with SEQUENCE_NUMBER. */
 	public boolean stackable() 					{ return false; }

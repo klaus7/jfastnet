@@ -46,4 +46,15 @@ public class MessageFeatures implements Serializable, MessageFeature {
 		return (T) featureMap.get(featureClass);
 	}
 
+	public static class Immutable extends MessageFeatures {
+		@Override
+		public void add(MessageFeature feature) {
+			throw new UnsupportedOperationException(
+					"Add your own messageFeatures field with a getter to use " +
+					"additional features! This is done to spare precious payload" +
+					" size for messages that don't need additional features." +
+					"See com.jfastnet.messages.features.ChecksumFeatureTest.ChecksumTestMsg " +
+					"for an example.");
+		}
+	}
 }

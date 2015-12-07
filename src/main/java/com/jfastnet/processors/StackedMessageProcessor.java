@@ -19,6 +19,7 @@ package com.jfastnet.processors;
 import com.jfastnet.Config;
 import com.jfastnet.IServerHooks;
 import com.jfastnet.State;
+import com.jfastnet.idprovider.ReliableModeIdProvider;
 import com.jfastnet.messages.Message;
 import com.jfastnet.messages.StackAckMessage;
 import com.jfastnet.messages.StackedMessage;
@@ -39,6 +40,9 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 
 	public StackedMessageProcessor(Config config, State state) {
 		super(config, state);
+		if (!config.idProviderClass.equals(ReliableModeIdProvider.class)) {
+			log.error("StackedMessageProcessor only works with the ReliableModeIdProvider!");
+		}
 	}
 
 	@Override
@@ -137,6 +141,9 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 				StackedMessage stackedMessage = new StackedMessage(messages);
 				stackedMessage.setReceiverId(receiverId);
 				config.internalSender.send(stackedMessage);
+				// TODO double entries in message log
+				messages.forEach(message -> message.setReceiverId(stackedMessage.getReceiverId()));
+				messages.forEach(state.getMessageLog()::addSent);
 				return true;
 			}
 		}

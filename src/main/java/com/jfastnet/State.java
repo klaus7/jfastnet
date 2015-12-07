@@ -49,9 +49,9 @@ public class State {
 	/** The server holds track of its clients. */
 	private Map<Integer, InetSocketAddress> clients = new ConcurrentHashMap<>();
 
-	/** Reliable UDP connection established. */
-	@Setter
-	private boolean connectionEstablished;
+	/** Client will only receive messages, if connected. */
+	public volatile boolean connected = false;
+	public volatile boolean connectionFailed = false;
 
 	/** Used for receiving bigger messages. Only one byte array buffer may
 	 * be processed at any given time. */
@@ -76,6 +76,31 @@ public class State {
 	public State(Config config) {
 		this.config = config;
 		messageLog = new MessageLog(config);
+//		createIdProvider(config);
+		createUdpPeer(config);
+		createProcessors(config);
+	}
+
+	private void createIdProvider(Config config) {
+		try {
+			Constructor[] constructors = config.idProviderClass.getConstructors();
+			// Search full-blown constructor
+			for (Constructor constructor : constructors) {
+				Class[] parameterTypes = constructor.getParameterTypes();
+				if (parameterTypes.length == 2 && parameterTypes[0] == Config.class && parameterTypes[1] == State.class) {
+					udpPeer = (IPeer) constructor.newInstance(config, this);
+				}
+			}
+			if (udpPeer == null) {
+				// Try default constructor
+				udpPeer = config.udpPeerClass.newInstance();
+			}
+		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+			log.error("Couldn't create udp peer {}", config.udpPeerClass, e);
+		}
+	}
+
+	private void createUdpPeer(Config config) {
 		try {
 			Constructor[] constructors = config.udpPeerClass.getConstructors();
 			// Search full-blown constructor
@@ -92,6 +117,9 @@ public class State {
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			log.error("Couldn't create udp peer {}", config.udpPeerClass, e);
 		}
+	}
+
+	private void createProcessors(Config config) {
 		config.processorClasses.forEach(processorClass -> {
 			try {
 				Constructor[] constructors = processorClass.getConstructors();

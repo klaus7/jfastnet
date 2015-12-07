@@ -69,6 +69,12 @@ public class JavaNetPeer implements IPeer {
 			if (socket != null) {
 				socket.close();
 			}
+			if (receiveThread != null) {
+				receiveThread.join(3000);
+				if (receiveThread.isAlive()) {
+					log.error("Receiver thread should be destroyed by now.");
+				}
+			}
 		} catch (Exception e) {
 			log.error("Closing of socket failed.", e);
 		}
@@ -99,6 +105,7 @@ public class JavaNetPeer implements IPeer {
 		}
 
 		try {
+			log.trace("Send message: {}", message);
 			log.trace("Payload length: {}", payload.length);
 			socket.send(new DatagramPacket(payload, payload.length, message.socketAddressRecipient));
 		} catch (IOException e) {
@@ -119,6 +126,7 @@ public class JavaNetPeer implements IPeer {
 		if (message == null) {
 			return;
 		}
+		log.trace("Received message: {}", message);
 		message.setConfig(config);
 		message.setState(state);
 		if (message.getFeatures() != null) {
@@ -139,7 +147,7 @@ public class JavaNetPeer implements IPeer {
 					new NetStats.Line(false, message.getSenderId(), frame, message.getTimestamp(), message.getClass(), ((byte[]) message.payload).length));
 		}
 
-		message.beforeExternalReceive();
+		message.beforeReceive();
 
 		// Let the controller receive the message.
 		// Processors are called there.
@@ -162,12 +170,13 @@ public class JavaNetPeer implements IPeer {
 					}
 					socket.receive(receivePacket);
 					receive(receivePacket);
-				} catch (IOException e) {
+				} catch (Exception e) {
 					if (!socket.isClosed()) {
 						log.warn("Error receiving packet.", e);
 					}
 				}
 			}
+			log.info("Receiver thread ended");
 		}
 	}
 }

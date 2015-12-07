@@ -16,6 +16,7 @@
 
 package com.jfastnet.messages;
 
+import com.jfastnet.Config;
 import com.jfastnet.processors.ReliableModeSequenceProcessor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,15 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 	@Override
 	public ReliableMode getReliableMode() {
 		return ReliableMode.ACK_PACKET;
+	}
+
+	@Override
+	public void ackCallback() {
+		Config config = getConfig();
+		if (config.expectedClientIds.isEmpty() || config.expectedClientIds.contains(clientId)) {
+			config.requiredClients.put(clientId, false);
+		}
+		config.serverHooks.onRegister(clientId);
 	}
 
 	/** process() would be called too late. */

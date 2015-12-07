@@ -109,7 +109,7 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor implement
 					message.setReceiverId(entry.getKey().clientId);
 					log.info("Resend UDP message {}", message);
 					message.setResendMessage(true);
-					if (!config.connected && !(message instanceof ConnectRequest)) {
+					if (!state.connected && !(message instanceof ConnectRequest)) {
 						log.info("Don't resend {} - not connected!", message);
 						return;
 					}
@@ -131,9 +131,10 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor implement
 		log.trace("ACK: {}", key);
 		MessageContainer messageContainer;
 		messageContainer = messagesAwaitingAck.remove(key);
-		if (messageContainer != null && messageContainer.message instanceof ConnectRequest) {
-			log.info("Reliable UDP connection established!");
-			state.setConnectionEstablished(true);
+		if (messageContainer != null && messageContainer.message != null) {
+			messageContainer.message.setConfig(config);
+			messageContainer.message.setState(state);
+			messageContainer.message.ackCallback();
 		}
 	}
 

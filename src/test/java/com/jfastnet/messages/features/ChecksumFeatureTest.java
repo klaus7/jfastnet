@@ -18,6 +18,7 @@ package com.jfastnet.messages.features;
 
 import com.jfastnet.AbstractTest;
 import com.jfastnet.messages.Message;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
@@ -36,6 +37,9 @@ public class ChecksumFeatureTest extends AbstractTest {
 	static class ChecksumTestMsg extends Message {
 		long v1 = V1;
 		long v2 = V2;
+
+		@Getter
+		MessageFeatures features = new MessageFeatures();
 
 		public ChecksumTestMsg() {
 			getFeatures().add(new ChecksumFeature());

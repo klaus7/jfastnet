@@ -78,7 +78,7 @@ public class Config {
 
 	/** Set to true if you want that a CSV file is created after every run with
 	 * data about all the sent and received messages and their data size. */
-	public boolean trackData;
+	public boolean trackData = false;
 
 	/** Collected data. Only used if trackData is set to true. */
 	public NetStats netStats = new NetStats();
@@ -87,6 +87,9 @@ public class Config {
 	public ITimeProvider timeProvider = new SystemTimeProvider();
 
 	/** Provides the message ids. */
+	public Class<? extends IIdProvider> idProviderClass = ClientIdReliableModeIdProvider.class;
+
+	/** Provides the message ids. TODO move to state */
 	public IIdProvider idProvider = new ClientIdReliableModeIdProvider();
 
 	/** JFastNet internal message sender. */
@@ -139,9 +142,6 @@ public class Config {
 	// BEGIN client config
 	/** Time in ms the client tries to connect to the server. */
 	public int connectTimeout = 5000;
-
-	/** Client will only receive messages, if connected. */
-	public volatile boolean connected = false;
 	// END client config
 
 	/** Packets above this size will log an error or will be automatically

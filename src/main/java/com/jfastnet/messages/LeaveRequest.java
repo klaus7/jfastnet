@@ -22,7 +22,7 @@ public class LeaveRequest extends Message implements IDontFrame {
 
 	@Override
 	public ReliableMode getReliableMode() {
-		return ReliableMode.ACK_PACKET;
+		return ReliableMode.UNRELIABLE;
 	}
 
 }

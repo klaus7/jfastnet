@@ -42,7 +42,6 @@ public class ServerTest extends AbstractTest {
 
 	public static final int TEST_GLOBAL_TIMEOUT = 30;
 	public static int received = 0;
-	private boolean udpClientRunning = true;
 
 	private static BigMessage receivedBigMessage;
 
@@ -107,7 +106,6 @@ public class ServerTest extends AbstractTest {
 	public void reset() {
 		received = 0;
 		receivedBigMessage = null;
-		udpClientRunning = true;
 	}
 
 	@Test
@@ -128,9 +126,7 @@ public class ServerTest extends AbstractTest {
 		};
 		Client client1 = new Client(newClientConfig().setExternalReceiver(message -> {
 			// is called after all the processor magic
-			if (udpClientRunning) {
-				message.process();
-			}
+			message.process();
 		}));
 
 		this.server = server;
@@ -208,6 +204,18 @@ public class ServerTest extends AbstractTest {
 		checkReceived();
 
 		assertThat("Received message not the same.", receivedBigMessage.s, is(equalTo(forLaterCheck)));
+	}
+
+	@Test
+	public void testConnect() {
+		reset();
+		start(8);
+		tearDown();
+
+		start(8, newServerConfig(), () -> newClientConfig().setDebug(true).setDebugLostPackagePercentage(15));
+		tearDown();
+
+		start(8, newServerConfig(), () -> newClientConfig().setDebug(true).setDebugLostPackagePercentage(15));
 	}
 
 	@Test
@@ -356,8 +364,7 @@ public class ServerTest extends AbstractTest {
 	@Test
 	public void sendToMultipleClientsSpecificReliableSeqTest() {
 		reset();
-		start(8, newServerConfig()
-						.setIdProvider(new ClientIdReliableModeIdProvider()),
+		start(8,
 				() -> {
 					Config config = newClientConfig();
 					config.idProvider = new ClientIdReliableModeIdProvider();
@@ -398,8 +405,7 @@ public class ServerTest extends AbstractTest {
 	@Test
 	public void sendToMultipleClientsReliableSeqTest() {
 		reset();
-		start(8, newServerConfig().setIdProvider(new ReliableModeIdProvider()),
-				() -> {
+		start(8, () -> {
 					Config config = newClientConfig();
 					config.idProvider = new ReliableModeIdProvider();
 					config.debug = true;

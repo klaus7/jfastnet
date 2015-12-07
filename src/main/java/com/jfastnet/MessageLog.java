@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 /** Logs incoming and outgoing messages. Per default only reliable messages
@@ -37,8 +38,8 @@ public class MessageLog {
 	public List<Message> received = new SizeLimitedList<>(1000);
 	public List<Message> sent = new SizeLimitedList<>(3000);
 
-	public Map<MessageKey, Message> sentMap = new ConcurrentSizeLimitedMap<>(3000);
-	//	public Map<MessageKey, Message> sentMap = new ConcurrentHashMap<>(3000);
+	public Map<MessageKey, Message> sentMap = new ConcurrentSizeLimitedMap<>(6000);
+//	public Map<MessageKey, Message> sentMap = new ConcurrentHashMap<>(3000);
 
 	private Config config;
 

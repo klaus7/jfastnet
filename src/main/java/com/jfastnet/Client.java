@@ -23,6 +23,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -45,6 +46,8 @@ public class Client extends PeerController {
 	/** Address of the server. */
 	private InetSocketAddress serverSocketAddress;
 
+	private ReentrantLock connectLock = new ReentrantLock();
+
 	public Client(Config config) {
 		super(config);
 		state.setHost(false);
@@ -54,11 +57,16 @@ public class Client extends PeerController {
 	@Override
 	public void process() {
 		super.process();
+		sendKeepAliveSequencePacket();
+	}
 
-		long currentTime = config.timeProvider.get();
-		if (lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
-			lastKeepAliveCheck = currentTime;
-			send(new SequenceKeepAlive());
+	public void sendKeepAliveSequencePacket() {
+		if (state.isConnected()) {
+			long currentTime = config.timeProvider.get();
+			if (lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
+				lastKeepAliveCheck = currentTime;
+				send(new SequenceKeepAlive());
+			}
 		}
 	}
 
@@ -78,20 +86,28 @@ public class Client extends PeerController {
 	/** Wait until connect response is received. */
 	public void blockingWaitUntilConnected() {
 		process();
+		connectLock.lock();
 		try {
-			final int processTimeInterval = 100;
-			while (!config.connected && config.timeProvider.get() - connectRequestTimestamp < config.connectTimeout) {
-				process();
-				Thread.sleep(processTimeInterval);
+			try {
+				final int processTimeInterval = 100;
+				while (!state.connected && config.timeProvider.get() - connectRequestTimestamp < config.connectTimeout) {
+					connectLock.unlock();
+					process();
+					Thread.sleep(processTimeInterval);
+					connectLock.lock();
+				}
+			} catch (InterruptedException e) {
+				log.error("Wait for connection interrupted.", e);
 			}
-		} catch (InterruptedException e) {
-			log.error("Wait for connection interrupted.", e);
-		}
-		if (config.connected) {
-			log.info("Connection established!");
-		} else {
-			log.error("Connection failed!");
-			stop();
+			if (state.connected) {
+				log.info("Connection established!");
+			} else {
+				log.error("Connection failed!");
+				state.connectionFailed = true;
+				stop();
+			}
+		} finally {
+			connectLock.unlock();
 		}
 	}
 
@@ -114,15 +130,24 @@ public class Client extends PeerController {
 		log.trace("Received message: {}", message);
 
 		lastReceivedMessageTime = System.currentTimeMillis();
-		if (message instanceof ConnectResponse && !config.connected) {
-			((ConnectResponse) message).setLastReliableSeqIdInSequenceProcessor();
-			config.connected = true;
-			clientId = ((ConnectResponse) message).getClientId();
-			log.info("Set client id to {}", clientId);
-			config.setSenderId(clientId);
-			config.newSenderIdConsumer.accept(clientId);
+		if (message instanceof ConnectResponse && !state.connected) {
+			connectLock.lock();
+			try {
+				if (!state.connectionFailed) {
+					((ConnectResponse) message).setLastReliableSeqIdInSequenceProcessor();
+					state.connected = true;
+					clientId = ((ConnectResponse) message).getClientId();
+					log.info("Set client id to {}", clientId);
+					config.setSenderId(clientId);
+					config.newSenderIdConsumer.accept(clientId);
+				} else {
+					log.warn("ConnectResponse received, but connection failed already!");
+				}
+			} finally {
+				connectLock.unlock();
+			}
 		}
-		if (config.connected) {
+		if (state.connected) {
 			if (message instanceof TimerSyncMessage) {
 				// received timer sync message
 				// also used for the heart beat
@@ -141,10 +166,10 @@ public class Client extends PeerController {
 
 	/** @return true if timeout for last received message reached. */
 	public boolean noResponseFromServer() {
-		return System.currentTimeMillis() - lastReceivedMessageTime > config.timeoutThreshold;
+		return config.timeProvider.get() - lastReceivedMessageTime > config.timeoutThreshold;
 	}
 
 	public boolean isConnected() {
-		return config.connected;
+		return state.connected;
 	}
 }

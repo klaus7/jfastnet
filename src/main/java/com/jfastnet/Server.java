@@ -51,7 +51,7 @@ public class Server extends PeerController {
 	public boolean start() {
 		boolean started = super.start();
 		if (started) {
-			config.connected = true;
+			state.connected = true;
 		}
 		return started;
 	}
@@ -61,7 +61,8 @@ public class Server extends PeerController {
 		super.process();
 
 		long currentTime = config.timeProvider.get();
-		if (state.getClients().size() > 0 && lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
+		int clientSize = state.getClients().size();
+		if (clientSize > 0 && clientSize >= config.requiredClients.size() && lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
 
 			// Potentially "Keep Alive" will be sent, when first client joins.
 			// This can lead to clients that join a few milliseconds later that
@@ -88,6 +89,7 @@ public class Server extends PeerController {
 		if (!clients.containsValue(message.getSocketAddressSender())) {
 			if (!isConnectRequest) {
 				log.warn("No client found under {}", message.getSocketAddressSender());
+				log.warn("Message was: {}", message);
 				return;
 			}
 		}
@@ -126,19 +128,14 @@ public class Server extends PeerController {
 			}
 			lastReceivedMap.put(clientId, config.timeProvider.get());
 
-			// Unregister if client was already added, maybe it's a re-connect
-			if (clients.containsKey(clientId)) {
+			boolean clientAlreadyInMap = clients.containsKey(clientId);
+			if (clientAlreadyInMap) {
 				log.info("Client {} is already in list - could be a re-join.", clientId);
-				unregister(clientId);
-			}
-			if (config.expectedClientIds.isEmpty() || config.expectedClientIds.contains(clientId)) {
-				config.requiredClients.put(clientId, false);
+				unregisterClientAtProcessors(clientId);
 			}
 			clients.put(clientId, message.getSocketAddressSender());
 			log.info("Added {} with address {} to clients.", clientId, message.getSocketAddressSender());
-			final int finalClientId = clientId;
-			registerClientAtProcessors(finalClientId);
-			config.serverHooks.onRegister(clientId);
+			registerClientAtProcessors(clientId);
 		}
 
 		if (message instanceof IInstantServerProcessable) {
@@ -192,6 +189,9 @@ public class Server extends PeerController {
 			if (!createPayload(message)) {
 				return false;
 			}
+//			if (!checkPayloadSize(message)) {
+//				return false;
+//			}
 		}
 
 		boolean beforeSendState = true;
@@ -207,15 +207,17 @@ public class Server extends PeerController {
 				if (!createPayload(message)) {
 					beforeSendState = false;
 				}
+//				else if (!checkPayloadSize(message)) {
+//					return false;
+//				}
 			}
 			message.socketAddressRecipient = entry.getValue();
 
-			boolean beforeSend = super.beforeSend(message);
-			beforeSendState &= beforeSend;
-			if (beforeSend) {
+			beforeSendState &= super.beforeSend(message);
+			if (beforeSendState) {
 				state.getUdpPeer().send(message);
+				afterSendState &= super.afterSend(message);
 			}
-			afterSendState &= super.afterSend(message);
 //			beforeSendState &= super.beforeSend(message);
 //			config.udpPeer.send(message);
 //			afterSendState &= super.afterSend(message);
@@ -241,15 +243,15 @@ public class Server extends PeerController {
 		if (!resolveMessage(message)) {
 			return false;
 		}
-		if (!beforeSend(message)) {
-			return false;
-		}
 		if (!createPayload(message)) {
 			return false;
 		}
-//		if (!checkPayloadSize(message)) {
-//			return false;
-//		}
+		if (!beforeSend(message)) {
+			return false;
+		}
+		if (!checkPayloadSize(message)) {
+			return false;
+		}
 
 		if (!message.isResendMessage()) {
 			// only track messages sent to all players
