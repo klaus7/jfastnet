@@ -21,7 +21,6 @@ import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.messages.*;
 import com.jfastnet.peers.javanet.JavaNetPeer;
 import com.jfastnet.processors.MessageLogProcessor;
-import com.jfastnet.processors.StackedMessageProcessorTest;
 import com.jfastnet.serialiser.KryoSerialiser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +31,6 @@ import org.objenesis.strategy.StdInstantiatorStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -145,6 +143,23 @@ public abstract class AbstractTest {
 		return received.get(received.size() - 1);
 	}
 
+	public List<Message> getLastReceivedMessagesFromLog(Class type) {
+		List<Message> messages = new ArrayList<>();
+		CircularFifoQueue<Message> received = server.getState().getProcessorOf(MessageLogProcessor.class).getMessageLog().getReceived();
+		if (received.size() == 0) {
+			return null;
+		}
+		for (int i = received.size() - 1; i >= 0; i--) {
+			Message message = received.get(i);
+			if (type != null) {
+				if (type.isAssignableFrom(message.getClass())) {
+					messages.add(message);
+				}
+			}
+		}
+		return messages;
+	}
+
 	public boolean allClientsReceivedMessageTypeOf(Class msgClass) {
 		for (int i = 0; i < clients.size(); i++) {
 			Message msg = getLastReceivedMessage(i);
@@ -163,6 +178,27 @@ public abstract class AbstractTest {
 			}
 		}
 		return true;
+	}
+
+	public List<Message> getAllClientsReceivedMessageTypeOf(Class msgClass) {
+		List<Message> messages = new ArrayList<>();
+		for (int i = 0; i < clients.size(); i++) {
+			Message msg = getLastReceivedMessage(i);
+			if (msg == null) {
+				log.info("Message from client index {} was null", i);
+				log.info("Received count: {} / {}", i, clients.size());
+			}
+			if (!msgClass.isAssignableFrom(msg.getClass())) {
+				//log.info("{} is not assignable from {}", msgClass, msg.getClass());
+				log.info("Received count: {} / {}", i, clients.size());
+				for (int j = 0; j < clients.size(); j++) {
+					log.info(" -- {}: {}", clients.get(j).config.senderId, getLastReceivedMessage(j));
+				}
+			} else {
+				messages.add(msg);
+			}
+		}
+		return messages;
 	}
 
 	@After
@@ -188,12 +224,12 @@ public abstract class AbstractTest {
 		config.host = "localhost";
 		config.port = 15150;
 		config.bindPort = 0;
+		config.connectTimeout = 10000;
 		config.serialiser = new KryoSerialiser(new SerialiserConfig(), kryos);
 		config.udpPeerClass = JavaNetPeer.class;
 //		config.udpPeer = new KryoNettyPeer(config);
 		config.externalReceiver = Message::process;
-		config.keepAliveInterval = 500;
-//		config.keepAliveInterval = 1500;
+		config.keepAliveInterval = 700;
 		config.getAdditionalConfig(MessageLogProcessor.ProcessorConfig.class).messageLogReceiveFilter = message -> true;
 		config.compressBigMessages = true;
 		config.autoSplitTooBigMessages = true;

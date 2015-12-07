@@ -395,13 +395,19 @@ public class ServerTest extends AbstractTest {
 		for (int i = 0; i < clients.size(); i++) {
 			Client client = clients.get(i);
 			client.send(new DefaultReliableSeqMessageSpecific(10 + i));
-			final int finalI = i;
-			waitForCondition("Client message missing.", timeoutInSeconds,
-					() -> getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific
-							&& ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value == (10 + finalI),
-					() -> "Last received message: " + getLastReceivedMessage() + (getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific ? ", value: " + ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value : "") + ", i: " + (10 + finalI)
-			);
 		}
+
+		waitForCondition("Client message on server missing.", timeoutInSeconds, () -> {
+			List<Message> tmpMsgs = getLastReceivedMessagesFromLog(DefaultReliableSeqMessageSpecific.class);
+			for (int i = 0; i < clients.size(); i++) {
+				final int finalI = i;
+				if (tmpMsgs.stream().filter(message -> ((DefaultReliableSeqMessageSpecific) message).value == finalI + 10).count() == 0) {
+					return false;
+				}
+			}
+			return true;
+		});
+
 	}
 
 	/** Sending to multiple clients with specific ids disabled. */
@@ -427,17 +433,23 @@ public class ServerTest extends AbstractTest {
 		for (int i = 0; i < clients.size(); i++) {
 			Client client = clients.get(i);
 			client.send(new DefaultReliableSeqMessageSpecific(10 + i));
-			final int finalI = i;
-			waitForCondition("Client message on server missing.", timeoutInSeconds,
-					() -> getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific && ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value == (10 + finalI),
-					() -> "Last received message: " + getLastReceivedMessage() + (getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific ? ", value: " + ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value : "") + ", i: " + (10 + finalI));
 		}
+
+		waitForCondition("Client message on server missing.", timeoutInSeconds, () -> {
+			List<Message> tmpMsgs = getLastReceivedMessagesFromLog(DefaultReliableSeqMessageSpecific.class);
+			for (int i = 0; i < clients.size(); i++) {
+				final int finalI = i;
+				if (tmpMsgs.stream().filter(message -> ((DefaultReliableSeqMessageSpecific) message).value == finalI + 10).count() == 0) {
+					return false;
+				}
+			}
+			return true;
+		});
 
 		logBig("Check re-connect of client");
 		AtomicLong atomicLong = client1.getState().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().get(0);
-		if (atomicLong == null) {
-			Assert.fail();
-		}
+		assertThat(atomicLong, is(notNullValue()));
+
 		long lastSeqIdFromServer = (long) atomicLong.get();
 		log.info("Last Seq-Id from server: {}", lastSeqIdFromServer);
 		client1.stop();
@@ -454,10 +466,9 @@ public class ServerTest extends AbstractTest {
 		client1.start();
 		client1.blockingWaitUntilConnected();
 		AtomicLong atomicLong2 = client1.getState().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap().get(0);
-		if (atomicLong2 == null) {
-			Assert.fail();
-		}
-		long lastSeqIdFromServer2 = (long) atomicLong2.get();
+		assertThat(atomicLong2, is(notNullValue()));
+
+		long lastSeqIdFromServer2 = atomicLong2.get();
 		log.info("Last Seq-Id from server: {}", lastSeqIdFromServer2);
 
 		assertThat("Didn't retrieve current reliable sequence id from server.", lastSeqIdFromServer2, is(greaterThanOrEqualTo(lastSeqIdFromServer)));
