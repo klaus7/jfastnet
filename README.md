@@ -38,7 +38,11 @@ client.send(new PrintMessage("Hello Server!"));
 
 The API of this library is subject to change.
 
-## 0.2.0 (upcoming)
+## 0.2.1
+
+* TimerSyncMessage missing MessageFeatures bugfix
+
+## 0.2.0
 
 * Stackable messages (new reliable sending mode, where all unacknowledged messages get stacked onto the most recent message)
 * Cleaner separation of config and state
