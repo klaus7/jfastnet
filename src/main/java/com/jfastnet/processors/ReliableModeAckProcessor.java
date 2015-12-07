@@ -224,7 +224,7 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableM
 		 * could get lost! */
 		public boolean discardOnResendTimeLimitOutrun = false;
 
-		public boolean useAlternativeSenderOnResendTimeLimitOutrun = true;
+		//public boolean useAlternativeSenderOnResendTimeLimitOutrun = true;
 
 		/** Interval for checking if we need to resend a message. */
 		public int resendCheckInterval = 100;
