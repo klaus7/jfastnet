@@ -89,9 +89,6 @@ public class Config {
 	/** Provides the message ids. */
 	public Class<? extends IIdProvider> idProviderClass = ClientIdReliableModeIdProvider.class;
 
-	/** Provides the message ids. TODO move to state */
-	public IIdProvider idProvider = new ClientIdReliableModeIdProvider();
-
 	/** JFastNet internal message sender. */
 	public IMessageSender internalSender;
 

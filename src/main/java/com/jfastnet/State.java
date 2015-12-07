@@ -16,6 +16,8 @@
 
 package com.jfastnet;
 
+import com.jfastnet.idprovider.ClientIdReliableModeIdProvider;
+import com.jfastnet.idprovider.IIdProvider;
 import com.jfastnet.messages.MessagePart;
 import com.jfastnet.peers.javanet.JavaNetPeer;
 import com.jfastnet.processors.IMessageReceiverPostProcessor;
@@ -41,6 +43,9 @@ public class State {
 
 	/** UDP peer system to use. (e.g. KryoNetty) */
 	private IPeer udpPeer;
+
+	/** Provides the message ids. TODO move to state */
+	public IIdProvider idProvider = new ClientIdReliableModeIdProvider();
 
 	/** Are we the host? Server sets this to true on creation. */
 	@Setter
@@ -76,7 +81,7 @@ public class State {
 	public State(Config config) {
 		this.config = config;
 		messageLog = new MessageLog(config);
-//		createIdProvider(config);
+		createIdProvider(config);
 		createUdpPeer(config);
 		createProcessors(config);
 	}
@@ -88,12 +93,12 @@ public class State {
 			for (Constructor constructor : constructors) {
 				Class[] parameterTypes = constructor.getParameterTypes();
 				if (parameterTypes.length == 2 && parameterTypes[0] == Config.class && parameterTypes[1] == State.class) {
-					udpPeer = (IPeer) constructor.newInstance(config, this);
+					idProvider = (IIdProvider) constructor.newInstance(config, this);
 				}
 			}
-			if (udpPeer == null) {
+			if (idProvider == null) {
 				// Try default constructor
-				udpPeer = config.udpPeerClass.newInstance();
+				idProvider = config.idProviderClass.newInstance();
 			}
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
 			log.error("Couldn't create udp peer {}", config.udpPeerClass, e);

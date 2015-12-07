@@ -127,7 +127,7 @@ public class PeerController implements IPeerController {
 		if (message.payload instanceof byte[]) {
 			byte[] payload = (byte[]) message.payload;
 			if (payload.length > config.maximumUdpPacketSize && !(message instanceof MessagePart)) {
-				config.idProvider.stepBack(message);
+				getState().idProvider.stepBack(message);
 				if (config.autoSplitTooBigMessages) {
 					log.info("Auto splitting message: {}", message);
 					final List<MessagePart> parts = MessagePart.createFromMessage(state, message.getMsgId(), message, config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());

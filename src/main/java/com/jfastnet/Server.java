@@ -164,7 +164,7 @@ public class Server extends PeerController {
 
 	@Override
 	public boolean send(Message message) {
-		if (config.idProvider.resolveEveryClientMessage()) {
+		if (getState().idProvider.resolveEveryClientMessage()) {
 			return internalSend(message, 0);
 		} else {
 			return internalSendSameIds(message, 0);
@@ -185,7 +185,7 @@ public class Server extends PeerController {
 			// only track messages sent to all players
 			outgoingMessages.get(message.getClass()).value++;
 		}
-		if (!config.idProvider.resolveEveryClientMessage()) {
+		if (!getState().idProvider.resolveEveryClientMessage()) {
 			if (!createPayload(message)) {
 				return false;
 			}
@@ -202,7 +202,7 @@ public class Server extends PeerController {
 				continue;
 			}
 			message.setReceiverId(clientId);
-			if (config.idProvider.resolveEveryClientMessage()) {
+			if (getState().idProvider.resolveEveryClientMessage()) {
 				message.resolveId();
 				if (!createPayload(message)) {
 					beforeSendState = false;

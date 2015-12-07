@@ -328,11 +328,9 @@ public class ServerTest extends AbstractTest {
 	public void sendToClientReliableSeqTest() {
 		reset();
 		start(1,
-				newServerConfig()
-						.setIdProvider(new ClientIdReliableModeIdProvider()),
 				() -> {
 					Config config = newClientConfig();
-					config.idProvider = new ClientIdReliableModeIdProvider();
+					config.idProviderClass = ClientIdReliableModeIdProvider.class;
 					config.debug = true;
 					// 10 % Packet loss should be enough
 					config.debugLostPackagePercentage = 50;
@@ -367,7 +365,7 @@ public class ServerTest extends AbstractTest {
 		start(8,
 				() -> {
 					Config config = newClientConfig();
-					config.idProvider = new ClientIdReliableModeIdProvider();
+					config.idProviderClass = ClientIdReliableModeIdProvider.class;
 					config.debug = true;
 					config.debugLostPackagePercentage = 10;
 					return config;
@@ -407,7 +405,7 @@ public class ServerTest extends AbstractTest {
 		reset();
 		start(8, () -> {
 					Config config = newClientConfig();
-					config.idProvider = new ReliableModeIdProvider();
+					config.idProviderClass = ReliableModeIdProvider.class;
 					config.debug = true;
 					config.debugLostPackagePercentage = 10;
 					return config;

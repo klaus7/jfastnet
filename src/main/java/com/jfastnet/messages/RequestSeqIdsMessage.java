@@ -50,7 +50,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 		log.info("Resend absent ids: {} to {}", Arrays.toString(absentIds.toArray()), senderId);
 
 		int keySenderId = senderId;
-		if (!getConfig().idProvider.resolveEveryClientMessage()) {
+		if (!getState().idProvider.resolveEveryClientMessage()) {
 			// Clear sender id, if every client receives the same id for a particular message
 			keySenderId = 0;
 		}

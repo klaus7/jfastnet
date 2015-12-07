@@ -128,7 +128,7 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 
 	/** Resolve id via id provider. */
 	public void resolveId() {
-		this.msgId = config.idProvider.createIdFor(this);
+		this.msgId = state.idProvider.createIdFor(this);
 		//log.info(" * Resolved ID {} for {}", msgId, this);
 	}
 
@@ -138,7 +138,7 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 	@Override
 	public int compareTo(final Message o) {
 		if (config != null) {
-			return config.idProvider.compare(this, o);
+			return state.idProvider.compare(this, o);
 		}
 		// compare by player id
 		int compare = Integer.compare(getReceiverId(), o.getReceiverId());

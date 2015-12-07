@@ -103,7 +103,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 					Config config = newClientConfig().setStackKeepAliveMessages(true);
 					config.debug = true;
 					config.debugLostPackagePercentage = 0;
-					config.setIdProvider(new ReliableModeIdProvider());
+					config.setIdProviderClass(ReliableModeIdProvider.class);
 					return config;
 				});
 		logBig("Send broadcast messages to clients");
@@ -132,7 +132,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 					Config config = newClientConfig();
 					config.debug = true;
 					config.debugLostPackagePercentage = 15;
-					config.setIdProvider(new ReliableModeIdProvider());
+					config.setIdProviderClass(ReliableModeIdProvider.class);
 					return config;
 				});
 		logBig("Send broadcast messages to clients");

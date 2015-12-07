@@ -52,7 +52,7 @@ public class ConnectRequest extends Message implements IDontFrame {
 	public void process() {
 		final ConnectResponse connectResponse = new ConnectResponse(getMsgId(), clientId);
 		DUMMY.setReceiverId(clientId);
-		connectResponse.lastReliableSeqId = getConfig().idProvider.getLastIdFor(DUMMY);
+		connectResponse.lastReliableSeqId = getState().idProvider.getLastIdFor(DUMMY);
 		log.info("Last reliable ID: {} - send to {}", connectResponse.lastReliableSeqId, clientId);
 		connectResponse.setReceiverId(clientId);
 		getConfig().internalSender.send(connectResponse);
