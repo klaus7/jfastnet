@@ -60,11 +60,8 @@ public class State {
 	 * be processed at any given time. */
 	private SortedMap<Long, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
 
-	/** Message log collects messages for resending. */
-	private MessageLog messageLog;
-
-	/** List of all added processors. */
-	private List<Object> processors = new ArrayList<>();
+	/** Map of all added processors. */
+	private Map<Class, Object> processorMap = new HashMap<>();
 
 	/** List of systems that need to be processed every tick. */
 	private List<ISimpleProcessable> processables = new ArrayList<>();
@@ -78,7 +75,6 @@ public class State {
 
 	public State(Config config) {
 		this.config = config;
-		messageLog = new MessageLog(config);
 		createIdProvider(config);
 		createUdpPeer(config);
 		createProcessors(config);
@@ -143,7 +139,7 @@ public class State {
 	}
 
 	public void addProcessor(Object processor) {
-		processors.add(processor);
+		processorMap.put(processor.getClass(), processor);
 		if (processor instanceof ISimpleProcessable) {
 			ISimpleProcessable processable = (ISimpleProcessable) processor;
 			processables.add(processable);
@@ -167,11 +163,6 @@ public class State {
 	}
 
 	public <E> E getProcessorOf(Class<E> clazz) {
-		for (Object processor : processors) {
-			if (clazz.isAssignableFrom(processor.getClass())) {
-				return (E) processor;
-			}
-		}
-		return null;
+		return (E) processorMap.get(clazz);
 	}
 }

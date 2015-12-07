@@ -17,26 +17,54 @@
 package com.jfastnet.processors;
 
 import com.jfastnet.Config;
+import com.jfastnet.MessageLog;
 import com.jfastnet.State;
 import com.jfastnet.messages.Message;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+import java.util.function.Predicate;
 
 /** Puts filtered messages into the message log.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
-public class MessageLogProcessor extends AbstractMessageProcessor implements IMessageSenderPostProcessor, IMessageReceiverPreProcessor {
+public class MessageLogProcessor extends AbstractMessageProcessor<MessageLogProcessor.ProcessorConfig> implements IMessageSenderPostProcessor, IMessageReceiverPreProcessor {
+
+	/** Message log collects messages for resending. */
+	@Getter
+	private MessageLog messageLog;
 
 	public MessageLogProcessor(Config config, State state) {
 		super(config, state);
+		this.messageLog = new MessageLog(config, processorConfig);
 	}
 
 	@Override
 	public Message beforeReceive(Message message) {
-		state.getMessageLog().addReceived(message);
+		messageLog.addReceived(message);
 		return message;
 	}
 
 	@Override
 	public Message afterSend(Message message) {
-		state.getMessageLog().addSent(message);
+		messageLog.addSent(message);
 		return message;
 	}
+
+	@Override
+	public Class<ProcessorConfig> getConfigClass() {
+		return ProcessorConfig.class;
+	}
+
+	@Setter
+	@Getter
+	@Accessors(chain = true)
+	public static class ProcessorConfig {
+		public int receivedMessagesLimit = 1000;
+		public int sentMessagesLimit = 3000;
+		public int sentMessagesMapLimit = 6000;
+		public Predicate<Message> messageLogReceiveFilter = new MessageLog.NoMessagesPredicate();
+		public Predicate<Message> messageLogSendFilter = new MessageLog.ReliableMessagesPredicate();
+	}
+
 }

@@ -20,6 +20,7 @@ import com.jfastnet.idprovider.ClientIdReliableModeIdProvider;
 import com.jfastnet.idprovider.ReliableModeIdProvider;
 import com.jfastnet.messages.Message;
 import com.jfastnet.messages.MessagePart;
+import com.jfastnet.processors.MessageLogProcessor;
 import com.jfastnet.processors.ReliableModeSequenceProcessor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -303,8 +304,8 @@ public class ServerTest extends AbstractTest {
 		reset();
 		start(4, newServerConfig(), () -> {
 			Config config = newClientConfig();
-			config.messageLogReceiveFilter = message -> true; // don't filter messages
-			config.messageLogSendFilter = message -> true; // don't filter messages
+			config.getAdditionalConfig(MessageLogProcessor.ProcessorConfig.class).messageLogReceiveFilter = message -> true; // don't filter messages
+			config.getAdditionalConfig(MessageLogProcessor.ProcessorConfig.class).messageLogSendFilter = message -> true; // don't filter messages
 			return config;
 		});
 		server.send(new DefaultUnreliableMessage());
@@ -395,7 +396,8 @@ public class ServerTest extends AbstractTest {
 			Client client = clients.get(i);
 			client.send(new DefaultReliableSeqMessageSpecific(10 + i));
 			final int finalI = i;
-			waitForCondition("Client message missing.", timeoutInSeconds, () -> getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific && ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value == 10 + finalI);
+			waitForCondition("Client message missing.", timeoutInSeconds,
+					() -> getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific && ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value == 10 + finalI);
 		}
 	}
 

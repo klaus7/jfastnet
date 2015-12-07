@@ -81,16 +81,25 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- APACHE COMMONS -->
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.1</version>
+		</dependency>
+
 		<!-- NETTY -->
 		<dependency>
 			<groupId>io.netty</groupId>
 			<artifactId>netty-all</artifactId>
 			<version>4.0.25.Final</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency> <!-- improves netty's performance -->
 			<groupId>org.javassist</groupId>
 			<artifactId>javassist</artifactId>
 			<version>3.18.2-GA</version>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- KRYO -->

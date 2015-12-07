@@ -21,7 +21,6 @@ import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.idprovider.ClientIdReliableModeIdProvider;
 import com.jfastnet.idprovider.IIdProvider;
 import com.jfastnet.messages.Message;
-import com.jfastnet.messages.MessagePart;
 import com.jfastnet.peers.javanet.JavaNetPeer;
 import com.jfastnet.processors.*;
 import com.jfastnet.serialiser.ISerialiser;
@@ -35,8 +34,6 @@ import lombok.experimental.Accessors;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.ObjDoubleConsumer;
-import java.util.function.Predicate;
 
 /** Configure JFastNet with this configuration class. We don't care much about
  * visibility here, because it's only used for configuration of the system and
@@ -69,6 +66,7 @@ public class Config {
 		setAdditionalConfig(new StackedMessageProcessor.ProcessorConfig());
 		setAdditionalConfig(new ReliableModeAckProcessor.ProcessorConfig());
 		setAdditionalConfig(new ReliableModeSequenceProcessor.ProcessorConfig());
+		setAdditionalConfig(new MessageLogProcessor.ProcessorConfig());
 	}
 
 	/** Hostname or IP address. */
@@ -180,10 +178,10 @@ public class Config {
 	/** List of all added processors. */
 	public List<Class> processorClasses = DEFAULT_MESSAGE_PROCESSORS;
 
-	public Predicate<Message> messageLogReceiveFilter = new MessageLog.NoMessagesPredicate();
-	public Predicate<Message> messageLogSendFilter = new MessageLog.ReliableMessagesPredicate();
-
 	public <E> void setAdditionalConfig(E config) {
 		additionalConfigMap.put(config.getClass(), config);
+	}
+	public <E> E getAdditionalConfig(Class<E> configClass) {
+		return (E) additionalConfigMap.get(configClass);
 	}
 }

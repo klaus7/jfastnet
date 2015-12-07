@@ -17,16 +17,19 @@
 package com.jfastnet;
 
 import com.jfastnet.messages.Message;
+import com.jfastnet.processors.MessageLogProcessor;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertNotNull;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class MessageLogTest {
 
 	private volatile int i;
+	private volatile int j;
 
 	static class NumberMessage extends Message {
 		int number;
@@ -39,50 +42,55 @@ public class MessageLogTest {
 	public void testMessageLog() throws InterruptedException {
 		Config config = new Config();
 		State state = new State(config);
-		MessageLog messageLog = new MessageLog(config);
-		config.messageLogReceiveFilter = new MessageLog.ReliableMessagesPredicate();
-		assertThat(messageLog.received.size(), is(0));
+		MessageLogProcessor.ProcessorConfig processorConfig = new MessageLogProcessor.ProcessorConfig();
+		MessageLog messageLog = new MessageLog(config, processorConfig);
+		processorConfig.messageLogReceiveFilter = new MessageLog.ReliableMessagesPredicate();
+		assertThat(messageLog.getReceived().size(), is(0));
 		messageLog.addReceived(new Message() {
 			@Override
 			public ReliableMode getReliableMode() {
 				return ReliableMode.UNRELIABLE;
 			}
 		});
-		assertThat(messageLog.received.size(), is(0));
+		assertThat(messageLog.getReceived().size(), is(0));
 		messageLog.addReceived(new Message() {
 			@Override
 			public ReliableMode getReliableMode() {
 				return ReliableMode.SEQUENCE_NUMBER;
 			}
 		});
-		assertThat(messageLog.received.size(), is(1));
+		assertThat(messageLog.getReceived().size(), is(1));
 
 		Thread t1 = new Thread(() -> {
 			while (true) {
-				i++;
-				NumberMessage msg = new NumberMessage(i);
-				msg.resolve(config, state);
-				msg.resolveId();
-				messageLog.addSent(msg);
+				if (i < j + config.getAdditionalConfig(MessageLogProcessor.ProcessorConfig.class).getSentMessagesMapLimit() - 1500) {
+					i++;
+					NumberMessage msg = new NumberMessage(i);
+					msg.resolve(config, state);
+					msg.resolveId();
+					messageLog.addSent(msg);
+				}
 			}
 		});
 		t1.start();
 
 		int count = 4000;
+		// Wait for count number to be generated
 		while (i < count);
-		int j = 3000;
+		j = 3000;
 		while (j < count) {
 			j++;
-			while (j + 1000 > i);
+			while (i < j + 1000);
 
 			Message msg;
 
-			msg = messageLog.sentMap.get(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j));
-			assertNotNull("msg id: " + j, msg);
+			msg = messageLog.getSentMap().get(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j));
+			assertNotNull("msg id: " + j + ", i=" + i, msg);
 			assertThat(msg.getMsgId(), is((long) j));
 
 			int offset = 500;
-			msg = messageLog.sentMap.get(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j - offset));
+			msg = messageLog.getSentMap().get(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j - offset));
+			assertThat(msg, is(notNullValue()));
 			assertThat(msg.getMsgId(), is((long) j - offset));
 		}
 		t1.interrupt();

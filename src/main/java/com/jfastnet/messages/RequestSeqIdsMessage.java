@@ -17,6 +17,7 @@
 package com.jfastnet.messages;
 
 import com.jfastnet.MessageKey;
+import com.jfastnet.processors.MessageLogProcessor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -52,7 +53,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 			keySenderId = 0;
 		}
 		//HashMap<MessageKey, Message> sentMap = new HashMap<>(getState().getMessageLog().sentMap);
-		Map<MessageKey, Message> sentMap = getState().getMessageLog().sentMap;
+		Map<MessageKey, Message> sentMap = getState().getProcessorOf(MessageLogProcessor.class).getMessageLog().getSentMap();
 		for (Long absentId : absentIds) {
 			MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, keySenderId, absentId);
 			Message message = sentMap.get(key);

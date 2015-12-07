@@ -17,13 +17,18 @@
 package com.jfastnet;
 
 import com.jfastnet.messages.Message;
+import com.jfastnet.processors.MessageLogProcessor;
 import com.jfastnet.util.ConcurrentSizeLimitedMap;
+import com.jfastnet.util.LRUMap;
 import com.jfastnet.util.SizeLimitedList;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
@@ -36,27 +41,35 @@ import java.util.function.Predicate;
 @Slf4j
 public class MessageLog {
 
-	public List<Message> received = new SizeLimitedList<>(1000);
-	public List<Message> sent = new SizeLimitedList<>(3000);
+	@Getter
+	private CircularFifoQueue<Message> received;
 
-//	public Map<MessageKey, Message> sentMap = new HashMap<>(6000);
-	public Map<MessageKey, Message> sentMap = new ConcurrentSizeLimitedMap<>(6000);
-//	public Map<MessageKey, Message> sentMap = new ConcurrentHashMap<>(3000);
+	@Getter
+	private CircularFifoQueue<Message> sent;
+
+	@Getter
+	private LRUMap<MessageKey, Message> sentMap;
 
 	private Config config;
 
-	public MessageLog(Config config) {
+	private MessageLogProcessor.ProcessorConfig processorConfig;
+
+	public MessageLog(Config config, MessageLogProcessor.ProcessorConfig processorConfig) {
 		this.config = config;
+		this.processorConfig = processorConfig;
+		received = new CircularFifoQueue<>(processorConfig.receivedMessagesLimit);
+		sent = new CircularFifoQueue<>(processorConfig.sentMessagesLimit);
+		sentMap = new LRUMap<>(processorConfig.sentMessagesMapLimit);
 	}
 
-	public void addReceived(Message message) {
-		if (config.messageLogReceiveFilter.test(message)) {
+	public synchronized void addReceived(Message message) {
+		if (processorConfig.messageLogReceiveFilter.test(message)) {
 			received.add(message);
 		}
 	}
 
-	public void addSent(Message message) {
-		if (config.messageLogSendFilter.test(message)) {
+	public synchronized void addSent(Message message) {
+		if (processorConfig.messageLogSendFilter.test(message)) {
 			MessageKey messageKey = MessageKey.newKey(message.getReliableMode(), message.getReceiverId(), message.getMsgId());
 			if (sentMap.containsKey(messageKey)) {
 				log.trace("Message already in map! Skipping!");

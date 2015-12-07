@@ -159,7 +159,7 @@ public class Server extends PeerController {
 	}
 
 	public void registerClientAtProcessors(int finalClientId) {
-		state.getProcessors().stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onRegister(finalClientId));
+		state.getProcessorMap().values().stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onRegister(finalClientId));
 	}
 
 	@Override
@@ -295,7 +295,7 @@ public class Server extends PeerController {
 	}
 
 	public void unregisterClientAtProcessors(int clientId) {
-		state.getProcessors().stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onUnregister(clientId));
+		state.getProcessorMap().values().stream().filter(o -> o instanceof IServerHooks).forEach(o1 -> ((IServerHooks) o1).onUnregister(clientId));
 	}
 
 	public static class Counter {

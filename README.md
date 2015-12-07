@@ -43,6 +43,7 @@ The API of this library is subject to change.
 * Stackable messages (new reliable sending mode, where all unacknowledged messages get stacked onto the most recent message)
 * Cleaner separation of config and state
 * Individual configs for the processors
+* Faster message log
 
 ## 0.1.5
 

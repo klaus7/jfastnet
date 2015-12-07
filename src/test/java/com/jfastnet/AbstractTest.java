@@ -20,16 +20,19 @@ import com.esotericsoftware.kryo.Kryo;
 import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.messages.*;
 import com.jfastnet.peers.javanet.JavaNetPeer;
+import com.jfastnet.processors.MessageLogProcessor;
 import com.jfastnet.processors.StackedMessageProcessorTest;
 import com.jfastnet.serialiser.KryoSerialiser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.junit.After;
 import org.junit.Assert;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -106,7 +109,7 @@ public abstract class AbstractTest {
 	}
 
 	public Message getLastReceivedMessage() {
-		return getLastReceivedMessageFromLog(server.getState().getMessageLog().received, true, null);
+		return getLastReceivedMessageFromLog(server.getState().getProcessorOf(MessageLogProcessor.class).getMessageLog().getReceived(), true, null);
 	}
 	public Message getLastReceivedMessage(int clientIndex) {
 		return getLastReceivedMessage(clientIndex, true, null);
@@ -115,11 +118,11 @@ public abstract class AbstractTest {
 		return getLastReceivedMessage(clientIndex, true, messageType);
 	}
 	public Message getLastReceivedMessage(int clientIndex, boolean ignoreSystemMessages, Class messageType) {
-		List<Message> received = clients.get(clientIndex).getState().getMessageLog().received;
+		CircularFifoQueue<Message> received = clients.get(clientIndex).getState().getProcessorOf(MessageLogProcessor.class).getMessageLog().getReceived();
 		return getLastReceivedMessageFromLog(received, ignoreSystemMessages, messageType);
 	}
 
-	public Message getLastReceivedMessageFromLog(List<Message> received, boolean ignoreSystemMessages, Class type) {
+	public Message getLastReceivedMessageFromLog(CircularFifoQueue<Message> received, boolean ignoreSystemMessages, Class type) {
 		if (received.size() == 0) {
 			return null;
 		}
@@ -191,7 +194,7 @@ public abstract class AbstractTest {
 		config.externalReceiver = Message::process;
 		config.keepAliveInterval = 500;
 //		config.keepAliveInterval = 1500;
-		config.messageLogReceiveFilter = message -> true;
+		config.getAdditionalConfig(MessageLogProcessor.ProcessorConfig.class).messageLogReceiveFilter = message -> true;
 		config.compressBigMessages = true;
 		config.autoSplitTooBigMessages = true;
 
