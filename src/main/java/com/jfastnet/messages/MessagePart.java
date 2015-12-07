@@ -67,6 +67,10 @@ public class MessagePart extends Message implements IDontFrame {
 			if (state.getConfig().compressBigMessages) {
 				bytes = compress(bytes);
 				// TODO can potentially fail!
+				if (bytes == null) {
+					log.error("Compression failed for message: {}", message);
+					return null;
+				}
 			}
 			return createFromByteArray(id, bytes, chunkSize, reliableMode);
 		}
@@ -75,6 +79,10 @@ public class MessagePart extends Message implements IDontFrame {
 	}
 
 	public static List<MessagePart> createFromByteArray(long id, byte[] bytes, int chunkSize, ReliableMode reliableMode) {
+		if (bytes == null) {
+			log.error("Byte array was null!");
+			return null;
+		}
 		log.info("Create message with {} bytes and chunk size {}", bytes.length, chunkSize);
 
 		int from = 0;
