@@ -29,6 +29,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.naming.ConfigurationException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetSocketAddress;
@@ -101,8 +102,9 @@ public class State {
 				idProvider = config.idProviderClass.newInstance();
 			}
 		} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-			log.error("Couldn't create udp peer {}", config.udpPeerClass, e);
+			log.error("Couldn't create id provider {}", config.udpPeerClass, e);
 		}
+
 	}
 
 	private void createUdpPeer(Config config) {
