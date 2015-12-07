@@ -41,7 +41,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 	public StackedMessageProcessor(Config config, State state) {
 		super(config, state);
 		if (!config.idProviderClass.equals(ReliableModeIdProvider.class)) {
-			log.error("StackedMessageProcessor only works with the ReliableModeIdProvider!");
+			log.warn("StackedMessageProcessor only works with the ReliableModeIdProvider!");
 		}
 	}
 
@@ -90,6 +90,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 	public Message beforeSend(Message message) {
 		// Check if message is "stackable" and don't stack resent messages
 		if (message.stackable() && !message.isResendMessage()) {
+			checkCorrectIdProvider();
 			cleanUpUnacknowledgedSentMessagesMap();
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);
 			if (sentToAllFromServer(message.getReceiverId())) {
@@ -100,6 +101,12 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 			}
 		}
 		return message;
+	}
+
+	private void checkCorrectIdProvider() {
+		if (!config.idProviderClass.equals(ReliableModeIdProvider.class)) {
+			throw new UnsupportedOperationException("StackedMessageProcessor only works with the ReliableModeIdProvider!");
+		}
 	}
 
 	private void cleanUpUnacknowledgedSentMessagesMap() {
