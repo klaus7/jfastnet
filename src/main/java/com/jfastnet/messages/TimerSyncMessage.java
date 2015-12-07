@@ -17,6 +17,7 @@
 package com.jfastnet.messages;
 
 import com.jfastnet.ISimpleProcessable;
+import com.jfastnet.messages.features.MessageFeatures;
 import com.jfastnet.messages.features.TimestampFeature;
 import lombok.Getter;
 import lombok.Setter;
@@ -51,6 +52,9 @@ public class TimerSyncMessage extends Message implements IInstantServerProcessab
 	/** System playerIndex plus timestampDifferenceToHost equals host time. */
 	@Getter
 	private static Map<Integer, Long> timestampDifferenceToHost = new HashMap<>();
+
+	@Getter
+	private MessageFeatures features = new MessageFeatures();
 
 	public TimerSyncMessage(int clientId) {
 		this.clientId = clientId;
