@@ -84,12 +84,12 @@ public class MessageLogTest {
 
 			Message msg;
 
-			msg = messageLog.getSentMap().get(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j));
+			msg = messageLog.getSent(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j));
 			assertNotNull("msg id: " + j + ", i=" + i, msg);
 			assertThat(msg.getMsgId(), is((long) j));
 
 			int offset = 500;
-			msg = messageLog.getSentMap().get(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j - offset));
+			msg = messageLog.getSent(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j - offset));
 			assertThat(msg, is(notNullValue()));
 			assertThat(msg.getMsgId(), is((long) j - offset));
 		}

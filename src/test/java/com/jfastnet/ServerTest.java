@@ -397,7 +397,10 @@ public class ServerTest extends AbstractTest {
 			client.send(new DefaultReliableSeqMessageSpecific(10 + i));
 			final int finalI = i;
 			waitForCondition("Client message missing.", timeoutInSeconds,
-					() -> getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific && ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value == 10 + finalI);
+					() -> getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific
+							&& ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value == (10 + finalI),
+					() -> "Last received message: " + getLastReceivedMessage() + (getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific ? ", value: " + ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value : "") + ", i: " + (10 + finalI)
+			);
 		}
 	}
 
@@ -426,8 +429,8 @@ public class ServerTest extends AbstractTest {
 			client.send(new DefaultReliableSeqMessageSpecific(10 + i));
 			final int finalI = i;
 			waitForCondition("Client message on server missing.", timeoutInSeconds,
-					() -> getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific && ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value == 10 + finalI,
-					() -> "Last received message: " + getLastReceivedMessage() + (getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific ?", value: "+ ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value : ""));
+					() -> getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific && ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value == (10 + finalI),
+					() -> "Last received message: " + getLastReceivedMessage() + (getLastReceivedMessage() instanceof DefaultReliableSeqMessageSpecific ? ", value: " + ((DefaultReliableSeqMessageSpecific) getLastReceivedMessage()).value : "") + ", i: " + (10 + finalI));
 		}
 
 		logBig("Check re-connect of client");

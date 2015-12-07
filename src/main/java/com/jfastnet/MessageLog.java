@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 
 /** Logs incoming and outgoing messages. Per default only reliable messages
@@ -47,8 +50,10 @@ public class MessageLog {
 	@Getter
 	private CircularFifoQueue<Message> sent;
 
-	@Getter
 	private LRUMap<MessageKey, Message> sentMap;
+
+	@Getter
+	private ReentrantLock sentMapLock = new ReentrantLock();
 
 	private Config config;
 
@@ -68,16 +73,30 @@ public class MessageLog {
 		}
 	}
 
-	public synchronized void addSent(Message message) {
+	public Message getSent(MessageKey key) {
+		sentMapLock.lock();
+		try {
+			return sentMap.get(key);
+		} finally {
+			sentMapLock.unlock();
+		}
+	}
+
+	public void addSent(Message message) {
 		if (processorConfig.messageLogSendFilter.test(message)) {
 			MessageKey messageKey = MessageKey.newKey(message.getReliableMode(), message.getReceiverId(), message.getMsgId());
 			if (sentMap.containsKey(messageKey)) {
 				log.trace("Message already in map! Skipping!");
 				return;
 			}
-			sent.add(message);
-			log.trace("Put into sent-log: {} -- {}", messageKey, message);
-			sentMap.put(messageKey, message);
+			sentMapLock.lock();
+			try {
+				sent.add(message);
+				log.trace("Put into sent-log: {} -- {}", messageKey, message);
+				sentMap.put(messageKey, message);
+			} finally {
+				sentMapLock.unlock();
+			}
 		}
 	}
 

@@ -17,6 +17,7 @@
 package com.jfastnet.messages;
 
 import com.jfastnet.MessageKey;
+import com.jfastnet.MessageLog;
 import com.jfastnet.processors.MessageLogProcessor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -52,11 +53,10 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 			// Clear sender id, if every client receives the same id for a particular message
 			keySenderId = 0;
 		}
-		//HashMap<MessageKey, Message> sentMap = new HashMap<>(getState().getMessageLog().sentMap);
-		Map<MessageKey, Message> sentMap = getState().getProcessorOf(MessageLogProcessor.class).getMessageLog().getSentMap();
+		MessageLog messageLog = getState().getProcessorOf(MessageLogProcessor.class).getMessageLog();
 		for (Long absentId : absentIds) {
 			MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, keySenderId, absentId);
-			Message message = sentMap.get(key);
+			Message message = messageLog.getSent(key);
 			if (message == null) {
 				log.error("Requested message {} not in log.", key);
 				continue;

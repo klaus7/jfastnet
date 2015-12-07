@@ -131,7 +131,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 				() -> {
 					Config config = newClientConfig();
 					config.debug = true;
-					config.debugLostPackagePercentage = 15;
+					config.debugLostPackagePercentage = 10;
 					config.setIdProviderClass(ReliableModeIdProvider.class);
 					return config;
 				});
@@ -144,7 +144,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		}
 		server.send(new StackableMsg2());
 
-		int timeoutInSeconds = 5;
+		int timeoutInSeconds = 10;
 		waitForCondition("Not all messages received.", timeoutInSeconds,
 				() -> closeMsgReceived.get() == clients.size(),
 				() -> "Received close messages: " + closeMsgReceived);

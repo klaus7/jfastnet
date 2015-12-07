@@ -157,10 +157,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 					clientHeldBackMessages.add(message);
 					return null;
 				}
-
-//				if (!message.getProcessFlags().passReliableModeSequenceProcessor) {
-					clientHeldBackMessages.removeIf(heldBackMsg -> heldBackMsg.getMsgId() <= message.getMsgId());
-//				}
+				clientHeldBackMessages.removeIf(heldBackMsg -> heldBackMsg.getMsgId() <= message.getMsgId());
 
 				return message;
 			} finally {
@@ -211,9 +208,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 					Message heldBackMsg = clientHeldBackMessages.get(i);
 					if (heldBackMsg.getMsgId() == (lastMsgIdAtomicLong.get() + 1)) {
 						log.trace("Catch up with {}", heldBackMsg);
-//						heldBackMsg.getProcessFlags().passReliableModeSequenceProcessor = true; // to not increment again
 						config.internalReceiver.receive(heldBackMsg);
-//						lastMsgIdAtomicLong.incrementAndGet();
 						removes.add(heldBackMsg);
 					} else if (heldBackMsg.getMsgId() < (lastMsgIdAtomicLong.get() + 1)) {
 						removes.add(heldBackMsg);
@@ -224,7 +219,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 				heldBackMessages.get(clientId).removeAll(removes);
 
 //				if (messageId == (lastMsgIdAtomicLong.get() + 1)) {
-//					return true; // FIXME -> problems with stackable + unstackable
+//					return true; // FIXME -> problems with stackable + unstackable mixed messages
 //				}
 
 				if (!outOfSync) {

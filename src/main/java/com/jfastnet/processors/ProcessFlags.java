@@ -19,7 +19,4 @@ package com.jfastnet.processors;
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class ProcessFlags {
 
-	/** If set to true, the ReliableModeSequenceProcessor will not check a
-	 * receiving message and let it pass no matter what. */
-	public boolean passReliableModeSequenceProcessor;
 }
