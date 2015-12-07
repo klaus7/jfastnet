@@ -1,6 +1,9 @@
 # JFastNet
 Fast, reliable and easy UDP messaging for Java. Designed for games.
 
+JFastNet is tolerant towards packet loss and when used in the right way it can
+provide your players with a smooth network gaming experience even in bad network conditions.
+
 # Maven
 
 The dependency for your POM:
@@ -29,8 +32,7 @@ client.send(new PrintMessage("Hello Server!"));
 
 # Roadmap
 
-* Implement new reliable sending mode, where all unacknowledged messages get stacked onto the most recent message
-* Individual configs for the processors
+* More documentation
 
 # Changelog
 
@@ -38,8 +40,9 @@ The API of this library is subject to change.
 
 ## 0.2.0 (upcoming)
 
-* Stackable messages
+* Stackable messages (new reliable sending mode, where all unacknowledged messages get stacked onto the most recent message)
 * Cleaner separation of config and state
+* Individual configs for the processors
 
 ## 0.1.5
 

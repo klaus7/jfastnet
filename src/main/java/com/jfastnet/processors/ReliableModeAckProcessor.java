@@ -23,6 +23,7 @@ import com.jfastnet.messages.IAckMessage;
 import com.jfastnet.messages.Message;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashSet;
@@ -36,27 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * messages and the retrieval of ACK messages.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
-public class ReliableModeAckProcessor extends AbstractMessageProcessor implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageReceiverPostProcessor, IMessageSenderPreProcessor, IServerHooks {
-
-	/** Resend message where we didn't receive an ack packet in X ms. */
-	@Setter
-	private long resendTimeThreshold = 400;
-
-	/** Don't grow the resent time after reaching this limit. */
-	@Setter
-	private long resendTimeThresholdUpperLimit = 10_000;
-
-	/** Discard messages hitting the resent time limit. Reliable messages
-	 * could get lost! */
-	@Setter
-	private boolean discardOnResendTimeLimitOutrun = false;
-
-	@Setter
-	private boolean useAlternativeSenderOnResendTimeLimitOutrun = true;
-
-	/** Interval for checking if we need to resend a message. */
-	@Setter
-	int resendCheckInterval = 100;
+public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableModeAckProcessor.ProcessorConfig> implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageReceiverPostProcessor, IMessageSenderPreProcessor, IServerHooks {
 
 	/** Timestamp of last resend check. */
 	long lastResendCheck;
@@ -95,7 +76,7 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor implement
 	public void process() {
 		// check for resend
 		long currentTimeMillis = config.timeProvider.get();
-		if (lastResendCheck < currentTimeMillis - resendCheckInterval) {
+		if (lastResendCheck < currentTimeMillis - processorConfig.resendCheckInterval) {
 			lastResendCheck = currentTimeMillis;
 			for (Iterator<Map.Entry<MessageKey, MessageContainer>> iterator = messagesAwaitingAck.entrySet().iterator(); iterator.hasNext(); ) {
 				Map.Entry<MessageKey, MessageContainer> entry = iterator.next();
@@ -144,13 +125,13 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor implement
 		log.trace("PUT: {}, {}", key, message);
 		Long oldValue = sentMsgIds.get(key);
 		// Increase resend time continually
-		long newValue = (oldValue != null ? oldValue * 2L : resendTimeThreshold);
-		if (newValue > resendTimeThresholdUpperLimit) {
-			if (discardOnResendTimeLimitOutrun) {
+		long newValue = (oldValue != null ? oldValue * 2L : processorConfig.resendTimeThreshold);
+		if (newValue > processorConfig.resendTimeThresholdUpperLimit) {
+			if (processorConfig.discardOnResendTimeLimitOutrun) {
 				// That was the last try to send this message then.
 				return null;
 			}
-			newValue = resendTimeThresholdUpperLimit;
+			newValue = processorConfig.resendTimeThresholdUpperLimit;
 		}
 		sentMsgIds.put(key, newValue);
 		return messagesAwaitingAck.put(key,
@@ -222,6 +203,31 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor implement
 			this.message = message;
 			this.resendTimeInterval = resendTimeInterval;
 		}
+	}
+
+	@Override
+	public Class<ProcessorConfig> getConfigClass() {
+		return ProcessorConfig.class;
+	}
+
+	@Setter
+	@Getter
+	@Accessors(chain = true)
+	public static class ProcessorConfig {
+		/** Resend message where we didn't receive an ack packet in X ms. */
+		public long resendTimeThreshold = 400;
+
+		/** Don't grow the resent time after reaching this limit. */
+		public long resendTimeThresholdUpperLimit = 10_000;
+
+		/** Discard messages hitting the resent time limit. Reliable messages
+		 * could get lost! */
+		public boolean discardOnResendTimeLimitOutrun = false;
+
+		public boolean useAlternativeSenderOnResendTimeLimitOutrun = true;
+
+		/** Interval for checking if we need to resend a message. */
+		public int resendCheckInterval = 100;
 	}
 
 }

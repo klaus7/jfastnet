@@ -23,6 +23,9 @@ import com.jfastnet.idprovider.ReliableModeIdProvider;
 import com.jfastnet.messages.Message;
 import com.jfastnet.messages.StackAckMessage;
 import com.jfastnet.messages.StackedMessage;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -30,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
-public class StackedMessageProcessor extends AbstractMessageProcessor implements IMessageReceiverPreProcessor, IMessageSenderPreProcessor, IServerHooks {
+public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMessageProcessor.ProcessorConfig> implements IMessageReceiverPreProcessor, IMessageSenderPreProcessor, IServerHooks {
 
 	/** Client id, Msg Id. */
 	private Map<Integer, Long> lastAckMessageIdMap = new ConcurrentHashMap<>();
@@ -68,7 +71,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 				receiveStackedMessage(stackedMessage);
 				Message lastReceivedMessage = stackedMessage.getMessages().get(stackedMessage.getMessages().size() - 1);
 				long lastReceivedId = lastReceivedMessage.getMsgId();
-				if (lastReceivedId - myLastAckMessageId >= config.stackedMessagesAckThreshold) {
+				if (lastReceivedId - myLastAckMessageId >= processorConfig.stackedMessagesAckThreshold) {
 					config.internalSender.send(new StackAckMessage(lastReceivedId));
 					myLastAckMessageId = lastReceivedId;
 					log.trace("Send acknowledge message for id: {}", lastReceivedId);
@@ -132,7 +135,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 		if (newMessage.getMsgId() > startStackMsgId) {
 			List<Message> messages = new ArrayList<>();
 			log.trace( " ++++ begin stack ++++");
-			for (long msgId = startStackMsgId; msgId <= newMessage.getMsgId() && messages.size() < config.stackedMessagesAckThreshold * 1; msgId++) {
+			for (long msgId = startStackMsgId; msgId <= newMessage.getMsgId() && messages.size() < processorConfig.maximumNumberOfMessagesPerStack; msgId++) {
 				Message stackMsg = unacknowledgedSentMessagesMap.get(msgId);
 				if (stackMsg != null) {
 					// Be tolerant about missing ids.
@@ -163,5 +166,19 @@ public class StackedMessageProcessor extends AbstractMessageProcessor implements
 
 	boolean sentToAllFromServer(int receiverId) {
 		return config.senderId == 0 && receiverId == 0;
+	}
+
+	@Override
+	public Class<ProcessorConfig> getConfigClass() {
+		return ProcessorConfig.class;
+	}
+
+	@Setter
+	@Getter
+	@Accessors(chain = true)
+	public static class ProcessorConfig {
+		/** After X received stacked messages we send an ack packet. */
+		public int stackedMessagesAckThreshold = 7;
+		public int maximumNumberOfMessagesPerStack = stackedMessagesAckThreshold * 7;
 	}
 }

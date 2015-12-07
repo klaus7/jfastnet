@@ -28,12 +28,14 @@ import com.jfastnet.serialiser.ISerialiser;
 import com.jfastnet.serialiser.KryoSerialiser;
 import com.jfastnet.time.ITimeProvider;
 import com.jfastnet.time.SystemTimeProvider;
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+import java.util.function.ObjDoubleConsumer;
 import java.util.function.Predicate;
 
 /** Configure JFastNet with this configuration class. We don't care much about
@@ -42,6 +44,7 @@ import java.util.function.Predicate;
  *
  * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Setter
+@Getter
 @Accessors(chain = true)
 public class Config {
 
@@ -60,6 +63,14 @@ public class Config {
 		DEFAULT_MESSAGE_PROCESSORS.add(DiscardMessagesHandler.class);
 	}
 
+	/** Map for additional configuration (e.g. for the processors). */
+	public Map<Class, Object> additionalConfigMap = new HashMap<>();
+	{
+		setAdditionalConfig(new StackedMessageProcessor.ProcessorConfig());
+		setAdditionalConfig(new ReliableModeAckProcessor.ProcessorConfig());
+		setAdditionalConfig(new ReliableModeSequenceProcessor.ProcessorConfig());
+	}
+
 	/** Hostname or IP address. */
 	public String host = "127.0.0.1";
 
@@ -76,6 +87,9 @@ public class Config {
 	 * ConnectResponse message. */
 	public Consumer<Integer> newSenderIdConsumer = id -> {};
 
+	/** UDP peer system to use. (e.g. KryoNetty) */
+	public Class<? extends IPeer> udpPeerClass = JavaNetPeer.class;
+
 	/** Set to true if you want that a CSV file is created after every run with
 	 * data about all the sent and received messages and their data size. */
 	public boolean trackData = false;
@@ -89,17 +103,14 @@ public class Config {
 	/** Provides the message ids. */
 	public Class<? extends IIdProvider> idProviderClass = ClientIdReliableModeIdProvider.class;
 
-	/** JFastNet internal message sender. */
+	/** JFastNet internal message sender. Don't change. */
 	public IMessageSender internalSender;
 
-	/** JFastNet internal message receiver for received messages. */
+	/** JFastNet internal message receiver for received messages. Don't change. */
 	public IMessageReceiver internalReceiver;
 
 	/** Configure an external receiver for incoming messages. Must be thread-safe. */
 	public IMessageReceiver externalReceiver = DEFAULT_MESSAGE_RECEIVER;
-
-	/** UDP peer system to use. (e.g. KryoNetty) */
-	public Class<? extends IPeer> udpPeerClass = JavaNetPeer.class;
 
 	/** Serialisation system. Some peers require specific serialisation
 	 * return types. */
@@ -113,9 +124,6 @@ public class Config {
 
 	/** If keepalive messages can be stacked. */
 	public boolean stackKeepAliveMessages = false;
-
-	/** After X received stacked messages we send an ack packet. */
-	public int stackedMessagesAckThreshold = 7;
 
 	/** Time in ms when peer considers other side as not reachable. */
 	public int timeoutThreshold = keepAliveInterval * 6; //2;
@@ -175,4 +183,7 @@ public class Config {
 	public Predicate<Message> messageLogReceiveFilter = new MessageLog.NoMessagesPredicate();
 	public Predicate<Message> messageLogSendFilter = new MessageLog.ReliableMessagesPredicate();
 
+	public <E> void setAdditionalConfig(E config) {
+		additionalConfigMap.put(config.getClass(), config);
+	}
 }
