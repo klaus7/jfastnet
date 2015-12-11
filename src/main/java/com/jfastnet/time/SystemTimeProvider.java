@@ -21,6 +21,7 @@ public class SystemTimeProvider implements ITimeProvider {
 
 	@Override
 	public long get() {
+//		return System.nanoTime() / 1000000;
 		return System.currentTimeMillis();
 	}
 }
