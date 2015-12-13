@@ -90,12 +90,18 @@ public class MessagePart extends Message implements IDontFrame {
 		int partNumber = 0;
 
 		List<MessagePart> messages = new ArrayList<>();
+		if (ReliableMode.UNRELIABLE.equals(reliableMode)) {
+			log.warn("Splitting of unreliable messages not supported!");
+			return messages;
+		}
 		while (from < bytes.length) {
 			byte[] chunk = Arrays.copyOfRange(bytes, from, to);
 			if (ReliableMode.SEQUENCE_NUMBER.equals(reliableMode)) {
 				messages.add(new MessagePart(id, partNumber, chunk));
 			} else if (ReliableMode.ACK_PACKET.equals(reliableMode)) {
 				messages.add(new AckMessagePart(id, partNumber, chunk));
+			} else {
+				throw new UnsupportedOperationException("Reliable mode '" + reliableMode + "' not supported for message splitting!");
 			}
 			partNumber++;
 			from += chunkSize;
