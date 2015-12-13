@@ -17,6 +17,7 @@
 package com.jfastnet.messages;
 
 import com.jfastnet.State;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.ByteArrayInputStream;
@@ -34,6 +35,8 @@ public class MessagePart extends Message implements IDontFrame {
 
 	/** Message size in bytes without bytes payload. */
 	public static final int MESSAGE_HEADER_SIZE = 120;
+
+	public static final List<MessagePart> EMPTY_MESSAGE_PARTS = Collections.unmodifiableList(new ArrayList<>());
 
 	/** Whether this is the last part to construct the message. */
 	boolean last;
@@ -58,7 +61,7 @@ public class MessagePart extends Message implements IDontFrame {
 		return createFromMessage(state, id, message, chunkSize, message.getReliableMode());
 	}
 
-	public static List<MessagePart> createFromMessage(State state, long id, Message message, int chunkSize, ReliableMode reliableMode) {
+	public static List<MessagePart> createFromMessage(@NonNull State state, long id, @NonNull Message message, int chunkSize, @NonNull ReliableMode reliableMode) {
 		state.getUdpPeer().createPayload(message);
 		// createPayload has to create a byte array
 		// Depends on the UDP peer if this is possible.
@@ -69,20 +72,29 @@ public class MessagePart extends Message implements IDontFrame {
 				// TODO can potentially fail!
 				if (bytes == null) {
 					log.error("Compression failed for message: {}", message);
-					return null;
+					return EMPTY_MESSAGE_PARTS;
 				}
 			}
 			return createFromByteArray(id, bytes, chunkSize, reliableMode);
 		}
 		log.error("Message could not be created, because of missing byte array payload.");
-		return null;
+		return EMPTY_MESSAGE_PARTS;
 	}
 
-	public static List<MessagePart> createFromByteArray(long id, byte[] bytes, int chunkSize, ReliableMode reliableMode) {
+	public static List<MessagePart> createFromByteArray(long id, byte[] bytes, int chunkSize, @NonNull ReliableMode reliableMode) {
 		if (bytes == null) {
 			log.error("Byte array was null!");
-			return null;
+			return EMPTY_MESSAGE_PARTS;
 		}
+		if (bytes.length == 0) {
+			log.error("Byte array was empty!");
+			return EMPTY_MESSAGE_PARTS;
+		}
+		if (ReliableMode.UNRELIABLE.equals(reliableMode)) {
+			log.warn("Splitting of unreliable messages not supported!");
+			return EMPTY_MESSAGE_PARTS;
+		}
+
 		log.info("Create message with {} bytes and chunk size {}", bytes.length, chunkSize);
 
 		int from = 0;
@@ -90,10 +102,6 @@ public class MessagePart extends Message implements IDontFrame {
 		int partNumber = 0;
 
 		List<MessagePart> messages = new ArrayList<>();
-		if (ReliableMode.UNRELIABLE.equals(reliableMode)) {
-			log.warn("Splitting of unreliable messages not supported!");
-			return messages;
-		}
 		while (from < bytes.length) {
 			byte[] chunk = Arrays.copyOfRange(bytes, from, to);
 			if (ReliableMode.SEQUENCE_NUMBER.equals(reliableMode)) {

@@ -131,7 +131,7 @@ public class PeerController implements IPeerController {
 				if (config.autoSplitTooBigMessages && !Message.ReliableMode.UNRELIABLE.equals(message.getReliableMode())) {
 					log.info("Auto splitting message: {}", message);
 					final List<MessagePart> parts = MessagePart.createFromMessage(state, message.getMsgId(), message, config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());
-					if (parts != null && parts.size() > 0) {
+					if (parts.size() > 0) {
 						parts.forEach(this::queue);
 					} else {
 						log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
