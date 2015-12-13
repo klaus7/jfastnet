@@ -97,6 +97,7 @@ public class Client extends PeerController {
 					connectLock.lock();
 				}
 			} catch (InterruptedException e) {
+				connectLock.lock();
 				log.error("Wait for connection interrupted.", e);
 			}
 			if (state.connected) {
