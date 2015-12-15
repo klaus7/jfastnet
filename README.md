@@ -11,7 +11,7 @@ The dependency for your POM:
 <dependency>
     <groupId>com.jfastnet</groupId>
     <artifactId>jfastnet</artifactId>
-    <version>0.2.1</version>
+    <version>0.2.4</version>
 </dependency>
 ```
 
@@ -37,6 +37,14 @@ client.send(new PrintMessage("Hello Server!"));
 # Changelog
 
 The API of this library is subject to change.
+
+## 0.2.3
+
+* No auto splitting of unreliable messages -> splitted messages must be sent reliably
+
+## 0.2.2
+
+* Fail safe if compression failed
 
 ## 0.2.1
 
