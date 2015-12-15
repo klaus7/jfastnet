@@ -11,7 +11,7 @@ The dependency for your POM:
 <dependency>
     <groupId>com.jfastnet</groupId>
     <artifactId>jfastnet</artifactId>
-    <version>0.2.4</version>
+    <version>0.2.3</version>
 </dependency>
 ```
 
