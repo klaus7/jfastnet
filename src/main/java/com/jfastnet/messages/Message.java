@@ -17,7 +17,6 @@
 package com.jfastnet.messages;
 
 import com.jfastnet.Config;
-import com.jfastnet.ISimpleProcessable;
 import com.jfastnet.State;
 import com.jfastnet.messages.features.MessageFeatures;
 import com.jfastnet.messages.features.TimestampFeature;
@@ -32,12 +31,13 @@ import java.io.Serializable;
 import java.net.InetSocketAddress;
 
 /** The base class for all messages. Subclass this class for your own messages.
+ * @param <E> context object for the processing of the message
  * @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 @Getter
 @EqualsAndHashCode
 @Accessors(chain = true)
-public abstract class Message implements ISimpleProcessable, Serializable, Comparable<Message> {
+public abstract class Message<E> implements Serializable, Comparable<Message> {
 	/** */
 	private static final long serialVersionUID = 1L;
 
@@ -129,8 +129,9 @@ public abstract class Message implements ISimpleProcessable, Serializable, Compa
 		//log.info(" * Resolved ID {} for {}", msgId, this);
 	}
 
-	/** Method called on processing of message. */
-	public void process() {}
+	/** Method called on processing of message.
+	 * @param context context object */
+	public void process(E context) {}
 
 	@Override
 	public int compareTo(final Message o) {

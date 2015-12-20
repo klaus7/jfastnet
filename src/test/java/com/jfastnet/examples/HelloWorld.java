@@ -29,7 +29,7 @@ public class HelloWorld {
 	public static class PrintMessage extends GenericMessage {
 		public PrintMessage(Object object) { super(object); }
 		@Override
-		public void process() {
+		public void process(Object context) {
 			System.out.println(object);
 			received++;
 		}

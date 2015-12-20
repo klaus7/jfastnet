@@ -139,8 +139,7 @@ public class Server extends PeerController {
 		}
 
 		if (message instanceof IInstantServerProcessable) {
-			IInstantServerProcessable instantServerProcessable = (IInstantServerProcessable) message;
-			instantServerProcessable.process();
+			message.process(config.context);
 		} else {
 			super.receive(message);
 		}

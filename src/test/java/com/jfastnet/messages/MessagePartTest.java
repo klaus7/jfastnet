@@ -54,7 +54,7 @@ public class MessagePartTest extends AbstractTest {
 		}
 
 		@Override
-		public void process() {}
+		public void process(Object context) {}
 	}
 
 
@@ -80,16 +80,16 @@ public class MessagePartTest extends AbstractTest {
 		MessagePart lastPart = messageParts.get(messageParts.size() - 1);
 		assertTrue("last messag part must have set last flag to true", lastPart.last);
 
-		lastPart.process();
+		lastPart.process(null);
 		assertFalse(bigMsgReceived);
 
 		messageParts.forEach(messagePart -> {
-			if (messagePart.partNumber % 2 == 0) messagePart.process();
+			if (messagePart.partNumber % 2 == 0) messagePart.process(null);
 		});
 		assertFalse(bigMsgReceived);
 
 		messageParts.forEach(messagePart -> {
-			if (messagePart.partNumber % 2 == 1) messagePart.process();
+			if (messagePart.partNumber % 2 == 1) messagePart.process(null);
 		});
 		assertTrue(bigMsgReceived);
 

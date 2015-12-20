@@ -20,6 +20,4 @@ package com.jfastnet.messages;
  * Be cautious with concurrency!
  * <p>Can only be transferred unreliable, because all systems are skipped.</p>
  * @author Klaus Pfeiffer - klaus@allpiper.com */
-public interface IInstantServerProcessable {
-	void process();
-}
+public interface IInstantServerProcessable {}

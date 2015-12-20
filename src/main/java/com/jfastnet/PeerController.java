@@ -220,7 +220,7 @@ public class PeerController implements IPeerController {
 		log.trace("Received message: {}", message);
 
 		if (message instanceof IInstantProcessable) {
-			message.process();
+			message.process(config.context);
 		} else {
 			config.externalReceiver.receive(message);
 		}

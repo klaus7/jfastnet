@@ -46,7 +46,7 @@ import java.util.function.Consumer;
 public class Config {
 
 	/** Message receiver that will simply call process on the message. */
-	public static final IMessageReceiver DEFAULT_MESSAGE_RECEIVER = Message::process;
+	public static final IMessageReceiver DEFAULT_MESSAGE_RECEIVER = message -> message.process(null);
 
 	public static final List<Class> DEFAULT_MESSAGE_PROCESSORS = new ArrayList<>();
 	static {
@@ -68,6 +68,8 @@ public class Config {
 		setAdditionalConfig(new ReliableModeSequenceProcessor.ProcessorConfig());
 		setAdditionalConfig(new MessageLogProcessor.ProcessorConfig());
 	}
+
+	public Object context;
 
 	/** Hostname or IP address. */
 	public String host = "127.0.0.1";

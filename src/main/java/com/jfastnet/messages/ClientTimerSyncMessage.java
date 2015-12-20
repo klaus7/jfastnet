@@ -50,7 +50,7 @@ public class ClientTimerSyncMessage extends Message implements IDontFrame {
 	}
 
 	@Override
-	public void process() {
+	public void process(Object context) {
 		realOffsetToHost = retrievedOffsetToHost;
 		roundTripTime = retrievedRoundTripTime;
 		log.trace("RTT: {}", roundTripTime);

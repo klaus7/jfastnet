@@ -228,7 +228,7 @@ public abstract class AbstractTest {
 		config.serialiser = new KryoSerialiser(new SerialiserConfig(), kryos);
 		config.udpPeerClass = JavaNetPeer.class;
 //		config.udpPeer = new KryoNettyPeer(config);
-		config.externalReceiver = Message::process;
+		config.externalReceiver = message1 ->  message1.process(null);
 		config.keepAliveInterval = 700;
 		config.getAdditionalConfig(MessageLogProcessor.ProcessorConfig.class).messageLogReceiveFilter = message -> true;
 		config.compressBigMessages = true;

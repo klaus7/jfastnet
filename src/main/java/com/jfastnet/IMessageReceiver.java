@@ -19,8 +19,8 @@ package com.jfastnet;
 import com.jfastnet.messages.Message;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
-public interface IMessageReceiver {
+public interface IMessageReceiver<E> {
 
 	/** Receive message. */
-	void receive(Message message);
+	void receive(Message<E> message);
 }

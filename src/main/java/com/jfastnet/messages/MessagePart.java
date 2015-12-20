@@ -121,7 +121,7 @@ public class MessagePart extends Message implements IDontFrame {
 	}
 
 	@Override
-	public void process() {
+	public void process(Object context) {
 		log.trace("Part number {} of id {} received.", partNumber, id);
 
 		SortedMap<Long, SortedMap<Integer, MessagePart>> arrayBufferMap = getState().getByteArrayBufferMap();

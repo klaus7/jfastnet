@@ -9,14 +9,11 @@ import lombok.extern.slf4j.Slf4j;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -39,7 +36,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 
 	public static class UnStackableMsg1 extends Message {
 		@Override
-		public void process() {
+		public void process(Object context) {
 			log.info("########### UNSTACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
 					new Object[]{getConfig().senderId, getMsgId(), unstackableReceived.incrementAndGet()});
 			printMsg(this);
@@ -69,7 +66,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		}
 
 		@Override
-		public void process() {
+		public void process(Object context) {
 //			stackableReceived.incrementAndGet();
 			log.info("########### STACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
 					new Object[]{getConfig().senderId, getMsgId(), stackableReceived.incrementAndGet()});
@@ -89,7 +86,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 
 	public static class StackableMsg2 extends StackableMsg1 {
 		@Override
-		public void process() {
+		public void process(Object context) {
 			closeMsgReceived.incrementAndGet();
 			log.info("Close msg #" + closeMsgReceived.get());
 		}

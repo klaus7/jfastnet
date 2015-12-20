@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class IsReadyMessage extends Message implements IDontFrame {
 
 	@Override
-	public void process() {
+	public void process(Object context) {
 		log.info("Player {} is ready.", getSenderId());
 		int clientId = getSenderId();
 		getConfig().requiredClients.put(clientId, true);

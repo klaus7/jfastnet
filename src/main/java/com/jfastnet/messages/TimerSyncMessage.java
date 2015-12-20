@@ -65,7 +65,7 @@ public class TimerSyncMessage extends Message implements IInstantServerProcessab
 	 * IMPORTANT: the server processes this method!
 	 */
 	@Override
-	public void process() {
+	public void process(Object context) {
 		/*
 		 * The host sends out this action, which gets immediately returned (without processing) 
 		 * by the clients and received by the server,

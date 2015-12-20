@@ -44,7 +44,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 	}
 
 	@Override
-	public void process() {
+	public void process(Object context) {
 		int senderId = getSenderId();
 		log.info("Resend absent ids: {} to {}", Arrays.toString(absentIds.toArray()), senderId);
 

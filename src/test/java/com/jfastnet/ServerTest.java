@@ -26,7 +26,6 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -48,7 +47,7 @@ public class ServerTest extends AbstractTest {
 
 	static class DefaultUnreliableMessage extends Message {
 		@Override public ReliableMode getReliableMode() { return ReliableMode.UNRELIABLE; }
-		@Override public void process() { received++; }
+		@Override public void process(Object context) { received++; }
 	}
 
 	static class DefaultUnreliableMessageSpecific extends Message {
@@ -56,12 +55,12 @@ public class ServerTest extends AbstractTest {
 		public DefaultUnreliableMessageSpecific() {}
 		public DefaultUnreliableMessageSpecific(int value) {this.value = value;}
 		@Override public ReliableMode getReliableMode() {return ReliableMode.UNRELIABLE;}
-		@Override public void process() {received++;}
+		@Override public void process(Object context) {received++;}
 	}
 
 	static class DefaultReliableSeqMessage extends Message {
 		@Override public ReliableMode getReliableMode() { return ReliableMode.SEQUENCE_NUMBER; }
-		@Override public void process() { received++; }
+		@Override public void process(Object context) { received++; }
 	}
 
 	@ToString(callSuper = true)
@@ -70,7 +69,7 @@ public class ServerTest extends AbstractTest {
 		public DefaultReliableSeqMessageSpecific() {}
 		public DefaultReliableSeqMessageSpecific(int value) {this.value = value;}
 		@Override public ReliableMode getReliableMode() {return ReliableMode.SEQUENCE_NUMBER;}
-		@Override public void process() {received++;}
+		@Override public void process(Object context) {received++;}
 	}
 
 	static class BigMessage extends Message {
@@ -96,7 +95,7 @@ public class ServerTest extends AbstractTest {
 		}
 
 		@Override
-		public void process() {
+		public void process(Object context) {
 			log.info("Big message received.");
 			receivedBigMessage = this;
 			received++;
@@ -114,7 +113,7 @@ public class ServerTest extends AbstractTest {
 		reset();
 
 		Config newServerConfig = newServerConfig();
-		newServerConfig.setExternalReceiver(Message::process);
+		newServerConfig.setExternalReceiver(message -> message.process(null));
 		Server server = new Server(newServerConfig) {
 			@Override
 			public boolean send(Message message) {
@@ -127,7 +126,7 @@ public class ServerTest extends AbstractTest {
 		};
 		Client client1 = new Client(newClientConfig().setExternalReceiver(message -> {
 			// is called after all the processor magic
-			message.process();
+			message.process(null);
 		}));
 
 		this.server = server;
