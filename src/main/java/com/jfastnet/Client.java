@@ -18,6 +18,7 @@ package com.jfastnet;
 
 import com.jfastnet.messages.*;
 import com.jfastnet.messages.features.TimestampFeature;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,7 @@ public class Client extends PeerController {
 	private long lastReceivedMessageTime;
 
 	/** If not set it is retrieved from Config.senderId */
-	@Setter
+	@Setter(AccessLevel.PACKAGE)
 	private int clientId;
 
 	/** Timestamp of last keep alive check. */
