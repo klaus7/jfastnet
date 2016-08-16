@@ -46,7 +46,7 @@ import java.util.function.Consumer;
 public class Config {
 
 	/** Message receiver that will simply call process on the message. */
-	public static final IMessageReceiver DEFAULT_MESSAGE_RECEIVER = message -> message.process(null);
+	public static final IMessageReceiver<Void> DEFAULT_MESSAGE_RECEIVER = message -> message.process(null);
 
 	public static final List<Class> DEFAULT_MESSAGE_PROCESSORS = new ArrayList<>();
 	static {

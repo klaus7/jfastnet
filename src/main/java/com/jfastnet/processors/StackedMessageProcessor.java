@@ -93,13 +93,15 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 	@Override
 	public Message beforeSend(Message message) {
 		// Check if message is "stackable" and don't stack resent messages
-		if (message.stackable() && !message.isResendMessage()) {
+		if (state.isEnableStackedMessages() && message.stackable() && !message.isResendMessage()) {
 			checkCorrectIdProvider();
 			cleanUpUnacknowledgedSentMessagesMap();
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);
 			if (sentToAllFromServer(message.getReceiverId())) {
 				Set<Integer> clientIds = state.getClients().keySet();
 				clientIds.forEach(id -> createStackForReceiver(message, id));
+				// TODO: return null?
+				return null;
 			} else if (createStackForReceiver(message, message.getReceiverId())) {
 				return null;
 			}
@@ -141,8 +143,8 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 					// Be tolerant about missing ids.
 					// Not every id has to be present, because some messages
 					// may not be stackable.
-					log.trace(" ** added to stack: {}", stackMsg);
 					messages.add(stackMsg);
+					log.trace(" ** added to stack: {}", stackMsg);
 				} else {
 					log.trace(" ** not added to stack: {}", msgId);
 				}
@@ -164,7 +166,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 		return false;
 	}
 
-	boolean sentToAllFromServer(int receiverId) {
+	private boolean sentToAllFromServer(int receiverId) {
 		return config.senderId == 0 && receiverId == 0;
 	}
 

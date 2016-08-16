@@ -56,6 +56,11 @@ public class State {
 	public volatile boolean connected = false;
 	public volatile boolean connectionFailed = false;
 
+	/** Stacked messages can be temporarily disabled. e.g. if the packet size
+	 * of the stacked messages is too big. */
+	@Setter
+	private boolean enableStackedMessages = true;
+
 	/** Used for receiving bigger messages. Only one byte array buffer may
 	 * be processed at any given time. */
 	private SortedMap<Long, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();

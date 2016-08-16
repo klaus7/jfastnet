@@ -16,10 +16,7 @@
 
 package com.jfastnet;
 
-import com.jfastnet.messages.IInstantProcessable;
-import com.jfastnet.messages.LeaveRequest;
-import com.jfastnet.messages.Message;
-import com.jfastnet.messages.MessagePart;
+import com.jfastnet.messages.*;
 import com.jfastnet.processors.IMessageReceiverPostProcessor;
 import com.jfastnet.processors.IMessageReceiverPreProcessor;
 import com.jfastnet.processors.IMessageSenderPostProcessor;
@@ -136,13 +133,20 @@ public class PeerController implements IPeerController {
 					} else {
 						log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
 								new Object[]{message, config.maximumUdpPacketSize, payload.length});
-						log.error("Parts couldn't be created for message {}", message);
+						log.error(" -> Parts couldn't be created for message {}", message);
 					}
 				} else {
 					// Write error message
 					// OS could prevent too big messages from being sent.
 					log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
 							new Object[]{message, config.maximumUdpPacketSize, payload.length});
+					if (message instanceof StackedMessage) {
+						log.info(" -> Message is a stacked message: DISABLING stacked messages now");
+						state.setEnableStackedMessages(false);
+						// Restore stacked messages to normal messages
+						StackedMessage stackedMessage = (StackedMessage) message;
+						stackedMessage.getMessages().forEach(this::queue);
+					}
 				}
 				return false;
 			}
