@@ -210,8 +210,7 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableM
 		return ProcessorConfig.class;
 	}
 
-	@Setter
-	@Getter
+	@Setter @Getter
 	@Accessors(chain = true)
 	public static class ProcessorConfig {
 		/** Resend message where we didn't receive an ack packet in X ms. */

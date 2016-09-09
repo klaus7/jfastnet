@@ -56,8 +56,7 @@ public class MessageLogProcessor extends AbstractMessageProcessor<MessageLogProc
 		return ProcessorConfig.class;
 	}
 
-	@Setter
-	@Getter
+	@Setter @Getter
 	@Accessors(chain = true)
 	public static class ProcessorConfig {
 		public int receivedMessagesLimit = 1000;

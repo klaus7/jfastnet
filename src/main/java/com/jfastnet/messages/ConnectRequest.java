@@ -33,8 +33,7 @@ public class ConnectRequest extends Message implements IDontFrame {
 		}
 	};
 
-	@Getter
-	@Setter
+	@Setter @Getter
 	int clientId;
 
 	public ConnectRequest() {}

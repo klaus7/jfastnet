@@ -35,8 +35,7 @@ public class ClientTimerSyncMessage extends Message implements IDontFrame {
 	private static long realOffsetToHost = 0;
 
 	/** Slowly adapted offset. */
-	@Getter
-	@Setter
+	@Setter @Getter
 	private static long offsetToHost = 0;
 
 	@Getter

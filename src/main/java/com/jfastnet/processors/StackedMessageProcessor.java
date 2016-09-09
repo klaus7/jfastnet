@@ -175,8 +175,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 		return ProcessorConfig.class;
 	}
 
-	@Setter
-	@Getter
+	@Setter @Getter
 	@Accessors(chain = true)
 	public static class ProcessorConfig {
 		/** After X received stacked messages we send an ack packet. */

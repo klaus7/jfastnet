@@ -42,8 +42,7 @@ public class TimerSyncMessage extends Message implements IInstantServerProcessab
 	private int clientId;
 
 	/** System timestamp when last sync action was requested. Only set by server. */
-	@Setter
-	@Getter
+	@Setter @Getter
 	private static long lastTimestamp;
 
 	@Getter

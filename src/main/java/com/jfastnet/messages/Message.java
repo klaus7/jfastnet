@@ -53,16 +53,14 @@ public abstract class Message<E> implements Serializable, Comparable<Message> {
 	private int senderId;
 
 	/** Received id is only used during sending. */
-	@Setter
-	@Getter
+	@Setter @Getter
 	private transient int receiverId;
 
 	/** A message that is getting resent, because of unsuccessful transmission.
 	 * These messages may not be stopped from sending, when we are over threshold
 	 * because then the server could stall out if enough messages get lost and
 	 * it is waiting for acknowledge messages. */
-	@Setter
-	@Getter
+	@Setter @Getter
 	private transient boolean resendMessage;
 
 	/** Process flags are used to specify special processing instructions. */
@@ -78,13 +76,11 @@ public abstract class Message<E> implements Serializable, Comparable<Message> {
 	public transient Object payload;
 
 	/** Config gets set upon sending / receiving of message. */
-	@Setter
-	@Getter
+	@Setter @Getter
 	private transient Config config;
 
 	/** State gets set upon sending / receiving of message. */
-	@Setter
-	@Getter
+	@Setter @Getter
 	private transient State state;
 
 	public Message() {}

@@ -261,8 +261,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 		return ProcessorConfig.class;
 	}
 
-	@Setter
-	@Getter
+	@Setter @Getter
 	@Accessors(chain = true)
 	public static class ProcessorConfig {}
 
