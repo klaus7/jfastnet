@@ -17,6 +17,7 @@
 package com.jfastnet.messages;
 
 import com.jfastnet.State;
+import com.jfastnet.exceptions.DeserialiseException;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -148,6 +149,7 @@ public class MessagePart extends Message implements IDontFrame {
 				Message messageFromByteArray = getConfig().serialiser.deserialise(byteArray, 0, byteArray.length);
 				if (messageFromByteArray == null) {
 					log.error("Deserialised message was null! See previous errors.");
+					throw new DeserialiseException("Deserialised message was null! See previous errors.");
 				} else {
 					log.info("Message created: {}", messageFromByteArray);
 					messageFromByteArray.copyAttributesFrom(this);
@@ -155,8 +157,9 @@ public class MessagePart extends Message implements IDontFrame {
 				}
 			} catch (IOException e) {
 				log.error("Error writing byte array.", e);
+			} finally {
+				byteArrayBuffer.clear();
 			}
-			byteArrayBuffer.clear();
 		}
 	}
 
