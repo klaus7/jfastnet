@@ -117,7 +117,7 @@ public class MessagePart extends Message implements IDontFrame {
 			to += chunkSize;
 		}
 		messages.get(messages.size() - 1).last = true;
-
+		log.info("Created {} messages.", messages.size());
 		return messages;
 	}
 

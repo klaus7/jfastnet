@@ -66,6 +66,9 @@ public class KryoSerialiser implements ISerialiser{
 			return output.toBytes();
 		} catch (Exception e) {
 			log.error("Couldn't create output byte array.", e);
+			if (output != null) {
+				log.error("Output position: {}, Buffer length: {}", output.position(), output.getBuffer().length);
+			}
 		} finally {
 			output.close();
 		}
