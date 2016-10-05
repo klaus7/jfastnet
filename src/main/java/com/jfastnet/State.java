@@ -16,6 +16,7 @@
 
 package com.jfastnet;
 
+import com.jfastnet.events.EventLog;
 import com.jfastnet.idprovider.IIdProvider;
 import com.jfastnet.messages.MessagePart;
 import com.jfastnet.processors.IMessageReceiverPostProcessor;
@@ -56,6 +57,8 @@ public class State {
 	public volatile boolean connected = false;
 	public volatile boolean connectionFailed = false;
 
+	private final EventLog eventLog;
+
 	/** Stacked messages can be temporarily disabled. e.g. if the packet size
 	 * of the stacked messages is too big. */
 	@Setter
@@ -66,20 +69,21 @@ public class State {
 	private SortedMap<Long, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
 
 	/** Map of all added processors. */
-	private Map<Class, Object> processorMap = new HashMap<>();
+	private final Map<Class, Object> processorMap = new HashMap<>();
 
 	/** List of systems that need to be processed every tick. */
-	private List<ISimpleProcessable> processables = new ArrayList<>();
-	private List<IMessageSenderPreProcessor> messageSenderPreProcessors = new ArrayList<>();
-	private List<IMessageSenderPostProcessor> messageSenderPostProcessors = new ArrayList<>();
-	private List<IMessageReceiverPreProcessor> messageReceiverPreProcessors = new ArrayList<>();
-	private List<IMessageReceiverPostProcessor> messageReceiverPostProcessors = new ArrayList<>();
+	private final List<ISimpleProcessable> processables = new ArrayList<>();
+	private final List<IMessageSenderPreProcessor> messageSenderPreProcessors = new ArrayList<>();
+	private final List<IMessageSenderPostProcessor> messageSenderPostProcessors = new ArrayList<>();
+	private final List<IMessageReceiverPreProcessor> messageReceiverPreProcessors = new ArrayList<>();
+	private final List<IMessageReceiverPostProcessor> messageReceiverPostProcessors = new ArrayList<>();
 
 	@Getter
 	private Config config;
 
 	public State(Config config) {
 		this.config = config;
+		this.eventLog = new EventLog(config, this);
 		createIdProvider(config);
 		createUdpPeer(config);
 		createProcessors(config);

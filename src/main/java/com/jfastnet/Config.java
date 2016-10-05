@@ -20,7 +20,6 @@ import com.esotericsoftware.kryo.Kryo;
 import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.idprovider.ClientIdReliableModeIdProvider;
 import com.jfastnet.idprovider.IIdProvider;
-import com.jfastnet.messages.Message;
 import com.jfastnet.peers.javanet.JavaNetPeer;
 import com.jfastnet.processors.*;
 import com.jfastnet.serialiser.ISerialiser;
@@ -31,7 +30,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -165,6 +167,9 @@ public class Config {
 
 	/** Maximum number of ids to request when not in sync anymore. */
 	public int maximumRequestAbsentIds = 5;
+
+	/** Maximum size of event log queue. */
+	public int eventLogSize = 4096;
 
 	/** Delay in ms between sending of queued messages. */
 	public int queuedMessagesDelay = 50;

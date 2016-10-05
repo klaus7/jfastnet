@@ -38,12 +38,10 @@ import java.util.concurrent.locks.ReentrantLock;
 @Slf4j
 public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<ReliableModeSequenceProcessor.ProcessorConfig> implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageSenderPostProcessor, IServerHooks {
 
-	public static final AtomicLong ZERO_ATOMIC_LONG = new AtomicLong();
-	@Getter
-	private final Map<Integer, AtomicLong> lastMessageIdMap = new HashMap<>();
+	private static final AtomicLong ZERO_ATOMIC_LONG = new AtomicLong();
 
-	@Getter
-	private final Map<Integer, AtomicLong> lastInOrderMessageId = new HashMap<>();
+	@Getter private final Map<Integer, AtomicLong> lastMessageIdMap = new HashMap<>();
+	@Getter private final Map<Integer, AtomicLong> lastInOrderMessageId = new HashMap<>();
 
 	private final Map<Integer, Set<Long>> absentMessageIds = new NullsafeHashMap<Integer, Set<Long>>() {
 		@Override
@@ -59,7 +57,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 		}
 	};
 
-	private final Map<Integer, ReentrantLock> clientLock = new NullsafeHashMap<Integer, ReentrantLock>() {
+	private final Map<Integer, ReentrantLock> clientLockMap = new NullsafeHashMap<Integer, ReentrantLock>() {
 		@Override
 		protected ReentrantLock newInstance() {
 			return new ReentrantLock();
@@ -88,7 +86,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 		if (heldBackMessages.size() > 0) {
 			for (Map.Entry<Integer, List<Message>> entry : heldBackMessages.entrySet()) {
 				Integer clientId = entry.getKey();
-				ReentrantLock lock = clientLock.get(clientId);
+				ReentrantLock lock = clientLockMap.get(clientId);
 				if (lock.tryLock()) {
 					try {
 						List<Message> messages = entry.getValue();
@@ -138,7 +136,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 	public Message beforeReceive(Message message) {
 		if (Message.ReliableMode.SEQUENCE_NUMBER.equals(message.getReliableMode())) {
 			int senderId = message.getSenderId();
-			ReentrantLock lock = clientLock.get(senderId);
+			ReentrantLock lock = clientLockMap.get(senderId);
 			lock.lock();
 			try {
 				MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, senderId, message.getMsgId());
@@ -251,6 +249,7 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 	@Override
 	public Message afterSend(Message message) {
 		if (Message.ReliableMode.SEQUENCE_NUMBER.equals(message.getReliableMode())) {
+			log.trace("afterSend: id: {}, msg: {}", message.getMsgId(), message);
 			config.netStats.sentMessages.incrementAndGet();
 		}
 		return message;

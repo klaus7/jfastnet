@@ -18,10 +18,13 @@ package com.jfastnet.messages;
 
 import com.jfastnet.MessageKey;
 import com.jfastnet.MessageLog;
+import com.jfastnet.events.RequestedMessageNotInLogEvent;
 import com.jfastnet.processors.MessageLogProcessor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /** This message is used to request missing sequenced ids from the other side.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -59,6 +62,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 			Message message = messageLog.getSent(key);
 			if (message == null) {
 				log.error("Requested message {} not in log.", key);
+				getState().getEventLog().add(new RequestedMessageNotInLogEvent(key, senderId));
 				continue;
 			}
 			message.setReceiverId(senderId);

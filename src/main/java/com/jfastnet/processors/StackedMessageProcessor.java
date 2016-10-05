@@ -35,6 +35,9 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMessageProcessor.ProcessorConfig> implements IMessageReceiverPreProcessor, IMessageSenderPreProcessor, IServerHooks {
 
+	@SuppressWarnings("unchecked")
+	private static final Stack EMPTY_STACK = new Stack(0, Collections.EMPTY_LIST);
+
 	/** Client id, Msg Id. */
 	private Map<Integer, Long> lastAckMessageIdMap = new ConcurrentHashMap<>();
 
@@ -45,7 +48,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 	public StackedMessageProcessor(Config config, State state) {
 		super(config, state);
 		if (!config.idProviderClass.equals(ReliableModeIdProvider.class)) {
-			log.warn("StackedMessageProcessor only works with the ReliableModeIdProvider!");
+			log.warn("StackedMessageProcessor only works with the ReliableModeIdProvider.");
 		}
 	}
 
@@ -92,18 +95,24 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 
 	@Override
 	public Message beforeSend(Message message) {
-		// Check if message is "stackable" and don't stack resent messages
+		// Check if message is "stackable" and don't stack messages that get resent
 		if (state.isEnableStackedMessages() && message.stackable() && !message.isResendMessage()) {
 			checkCorrectIdProvider();
 			cleanUpUnacknowledgedSentMessagesMap();
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);
 			if (sentToAllFromServer(message.getReceiverId())) {
 				Set<Integer> clientIds = state.getClients().keySet();
-				clientIds.forEach(id -> createStackForReceiver(message, id));
-				// TODO: return null?
-				return null;
-			} else if (createStackForReceiver(message, message.getReceiverId())) {
-				return null;
+				clientIds.forEach(id -> {
+					Stack stack = createStackForReceiver(message, id);
+					stack.send(config, state);
+				});
+				return null; // Discard message
+			} else {
+				Stack stack = createStackForReceiver(message, message.getReceiverId());
+				if (stack.stackSendingIsReasonable()) {
+					stack.send(config, state);
+					return null; // Discard message
+				}
 			}
 		}
 		return message;
@@ -132,12 +141,17 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 	}
 
 	/** Create individual stack for receiver id. */
-	private boolean createStackForReceiver(Message newMessage, int receiverId) {
+	private Stack createStackForReceiver(Message newMessage, int receiverId) {
 		long startStackMsgId = lastAckMessageIdMap.getOrDefault(receiverId, -1L) + 1L;
-		if (newMessage.getMsgId() > startStackMsgId) {
+		Stack stack = EMPTY_STACK;
+		// At least the new message id must be present
+		if (newMessage.getMsgId() >= startStackMsgId) {
 			List<Message> messages = new ArrayList<>();
 			log.trace( " ++++ begin stack ++++");
-			for (long msgId = startStackMsgId; msgId <= newMessage.getMsgId() && messages.size() < processorConfig.maximumNumberOfMessagesPerStack; msgId++) {
+			for (long msgId = startStackMsgId;
+				 msgId <= newMessage.getMsgId() && messages.size() < processorConfig.maximumNumberOfMessagesPerStack;
+				 msgId++) {
+
 				Message stackMsg = unacknowledgedSentMessagesMap.get(msgId);
 				if (stackMsg != null) {
 					// Be tolerant about missing ids.
@@ -149,21 +163,10 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 					log.trace(" ** not added to stack: {}", msgId);
 				}
 			}
+			stack = new Stack(receiverId, messages);
 			log.trace( " ++++ end stack ++++");
-			if (messages.size() > 1) {
-				// Discard message and send stacked message instead
-				StackedMessage stackedMessage = new StackedMessage(messages);
-				stackedMessage.setReceiverId(receiverId);
-				config.internalSender.send(stackedMessage);
-				if (!state.idProvider.resolveEveryClientMessage()) {
-					// Clear receiver id, if every client receives the same id for a particular message
-					messages.forEach(message -> message.setReceiverId(0));
-				}
-				messages.forEach(state.getProcessorOf(MessageLogProcessor.class)::afterSend);
-				return true;
-			}
 		}
-		return false;
+		return stack;
 	}
 
 	private boolean sentToAllFromServer(int receiverId) {
@@ -181,5 +184,34 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 		/** After X received stacked messages we send an ack packet. */
 		public int stackedMessagesAckThreshold = 7;
 		public int maximumNumberOfMessagesPerStack = stackedMessagesAckThreshold * 7;
+	}
+
+	private static class Stack {
+		private final int receiverId;
+		private final List<Message> messages;
+
+		public Stack(int receiverId, List<Message> messages) {
+			this.receiverId = receiverId;
+			this.messages = messages;
+		}
+
+		boolean stackSendingIsReasonable() {
+			return messages.size() > 1;
+		}
+
+		void send(Config config, State state) {
+			if (messages.isEmpty()) {
+				log.trace("Stack was empty on send.");
+				return;
+			}
+			StackedMessage stackedMessage = new StackedMessage(messages);
+			stackedMessage.setReceiverId(receiverId);
+			config.internalSender.send(stackedMessage);
+			if (!state.idProvider.resolveEveryClientMessage()) {
+				// Clear receiver id, if every client receives the same id for a particular message
+				messages.forEach(message -> message.setReceiverId(0));
+			}
+			messages.forEach(state.getProcessorOf(MessageLogProcessor.class)::afterSend);
+		}
 	}
 }
