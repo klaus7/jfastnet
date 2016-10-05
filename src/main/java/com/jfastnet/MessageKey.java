@@ -25,9 +25,9 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class MessageKey {
-	public Message.ReliableMode reliableMode;
-	public int clientId;
-	public long messageId;
+	public final Message.ReliableMode reliableMode;
+	public final int clientId;
+	public final long messageId;
 
 	public MessageKey(Message.ReliableMode reliableMode, int clientId, long messageId) {
 		this.reliableMode = reliableMode;
