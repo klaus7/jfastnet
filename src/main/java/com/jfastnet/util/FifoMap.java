@@ -20,11 +20,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
-public class LRUMap<K, V> extends LinkedHashMap<K, V> {
+public class FifoMap<K, V> extends LinkedHashMap<K, V> {
 
 	private int maxEntries;
 
-	public LRUMap(int maxEntries) {
+	public FifoMap(int maxEntries) {
 		super(maxEntries * 10 / 7, 0.7f, false);
 		this.maxEntries = maxEntries;
 	}

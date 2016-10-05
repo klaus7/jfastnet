@@ -60,8 +60,7 @@ public class MessageLogProcessor extends AbstractMessageProcessor<MessageLogProc
 	@Accessors(chain = true)
 	public static class ProcessorConfig {
 		public int receivedMessagesLimit = 1000;
-		public int sentMessagesLimit = 3000;
-		public int sentMessagesMapLimit = 6000;
+		public int sentMessagesMapLimit = 16000;
 		public Predicate<Message> messageLogReceiveFilter = new MessageLog.NoMessagesPredicate();
 		public Predicate<Message> messageLogSendFilter = new MessageLog.ReliableMessagesPredicate();
 	}

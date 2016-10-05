@@ -18,21 +18,12 @@ package com.jfastnet;
 
 import com.jfastnet.messages.Message;
 import com.jfastnet.processors.MessageLogProcessor;
-import com.jfastnet.util.ConcurrentSizeLimitedMap;
-import com.jfastnet.util.LRUMap;
-import com.jfastnet.util.SizeLimitedList;
+import com.jfastnet.util.FifoMap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 
 /** Logs incoming and outgoing messages. Per default only reliable messages
@@ -47,13 +38,11 @@ public class MessageLog {
 	@Getter
 	private CircularFifoQueue<Message> received;
 
-	@Getter
-	private CircularFifoQueue<Message> sent;
+	/** First-in, first-out map of sent messages. If a missing id is requested
+	 * by another peer, this map gets queried for it. */
+	private FifoMap<MessageKey, Message> sentMap;
 
-	private LRUMap<MessageKey, Message> sentMap;
-
-	@Getter
-	private ReentrantLock sentMapLock = new ReentrantLock();
+	private final ReentrantLock sentMapLock = new ReentrantLock();
 
 	private Config config;
 
@@ -63,8 +52,7 @@ public class MessageLog {
 		this.config = config;
 		this.processorConfig = processorConfig;
 		received = new CircularFifoQueue<>(processorConfig.receivedMessagesLimit);
-		sent = new CircularFifoQueue<>(processorConfig.sentMessagesLimit);
-		sentMap = new LRUMap<>(processorConfig.sentMessagesMapLimit);
+		sentMap = new FifoMap<>(processorConfig.sentMessagesMapLimit);
 	}
 
 	public synchronized void addReceived(Message message) {
@@ -91,7 +79,6 @@ public class MessageLog {
 			}
 			sentMapLock.lock();
 			try {
-				sent.add(message);
 				log.trace("Put into sent-log: {} -- {}", messageKey, message);
 				sentMap.put(messageKey, message);
 			} finally {
