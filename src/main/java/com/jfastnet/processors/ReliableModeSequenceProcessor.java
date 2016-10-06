@@ -116,12 +116,12 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 		}
 
 		long currentTime = config.timeProvider.get();
-		if (currentTime > lastCheck + 500) {
+		if (currentTime > lastCheck + processorConfig.requestMissingIdsIntervalMs) {
 			lastCheck = currentTime;
 			for (Map.Entry<Integer, Set<Long>> entry : absentMessageIds.entrySet()) {
 				if (entry.getValue().size() > 0) {
 					Integer clientId = entry.getKey();
-					requestAbsentIds(clientId, absentMessageIds.get(clientId));
+					requestAbsentIds(clientId, absentMessageIds.get(clientId), 0);
 				}
 			}
 		}
@@ -216,15 +216,11 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 				}
 				heldBackMessages.get(clientId).removeAll(removes);
 
-//				if (messageId == (lastMsgIdAtomicLong.get() + 1)) {
-//					return true; // FIXME -> problems with stackable + unstackable mixed messages
-//				}
-
 				if (!outOfSync) {
 					// skipped message
-					log.warn("Skipped message: received messageId: {}, lastMsgId: {}", new Object[]{messageId, lastMsgId});
+					log.warn("Skipped received message id: {}, last messaged id was: {}", new Object[]{messageId, lastMsgId});
 					if (clientAbsentMessageIds.size() > 0) {
-						requestAbsentIds(clientId, clientAbsentMessageIds);
+						requestAbsentIds(clientId, clientAbsentMessageIds, messageId);
 					}
 					outOfSync = true;
 				}
@@ -233,15 +229,27 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 		return false;
 	}
 
-	private void requestAbsentIds(int clientId, Set<Long> clientAbsentMessageIds) {
+	/** Sends a request to peer id to request missing messages.
+	 * @param peerId peer id that gets requested
+	 * @param clientAbsentMessageIds missing message ids
+	 * @param maxId maximum id of message id that gets requested. 0 for no maximum id.
+	 */
+	private void requestAbsentIds(int peerId, Set<Long> clientAbsentMessageIds, long maxId) {
 		List<Long> requestIdsTmp = new ArrayList<>(clientAbsentMessageIds);
 		Collections.sort(requestIdsTmp);
 		List<Long> requestIds = new ArrayList<>();
 		// request at most X ids
-		for (int i = 0; i < Math.min(config.maximumRequestAbsentIds, requestIdsTmp.size()); i++) {
-			requestIds.add(requestIdsTmp.get(i));
+		for (int i = 0; i < Math.min(processorConfig.maximumMissingIdsRequestCount, requestIdsTmp.size()); i++) {
+			Long id = requestIdsTmp.get(i);
+			if (maxId != 0L && id > maxId) {
+				break;
+			}
+			requestIds.add(id);
 		}
-		RequestSeqIdsMessage requestSeqIdsMessage = new RequestSeqIdsMessage(requestIds, clientId);
+		if (requestIds.size() <= 0) {
+			return;
+		}
+		RequestSeqIdsMessage requestSeqIdsMessage = new RequestSeqIdsMessage(requestIds, peerId);
 		config.internalSender.send(requestSeqIdsMessage);
 		config.netStats.requestedMissingMessages.addAndGet(clientAbsentMessageIds.size());
 	}
@@ -262,6 +270,12 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 
 	@Setter @Getter
 	@Accessors(chain = true)
-	public static class ProcessorConfig {}
+	public static class ProcessorConfig {
+		/** Maximum number of ids to request when not in sync anymore. */
+		public int maximumMissingIdsRequestCount = 5;
+
+		/** Interval in milliseconds after which missing ids get requested. */
+		public int requestMissingIdsIntervalMs = 500;
+	}
 
 }

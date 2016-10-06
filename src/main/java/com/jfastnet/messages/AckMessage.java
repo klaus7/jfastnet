@@ -18,10 +18,6 @@ package com.jfastnet.messages;
 
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class AckMessage extends Message implements IAckMessage {
@@ -41,7 +37,7 @@ public class AckMessage extends Message implements IAckMessage {
 	}
 
 	public String toString() {
-		return "AckMessage(super=" + super.toString() + ", id=" + id + ")";
+		return super.toString() + ", acknowledge id=" + id;
 	}
 
 	@Override

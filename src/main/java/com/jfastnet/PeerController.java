@@ -16,6 +16,7 @@
 
 package com.jfastnet;
 
+import com.jfastnet.events.DisabledStackedMessagesEvent;
 import com.jfastnet.messages.*;
 import com.jfastnet.processors.IMessageReceiverPostProcessor;
 import com.jfastnet.processors.IMessageReceiverPreProcessor;
@@ -32,10 +33,10 @@ import java.util.List;
 public class PeerController implements IPeerController {
 
 	/** Last timestamp. Needed for evaluation of passed time. */
-	private long lastTS;
+	private long lastTimestamp;
 
 	/** Increases until next queued message is sent. */
-	private long queueDelayInc;
+	private long queueDelayIncrease;
 
 	/** List of queued messages. A FIFO queue. */
 	private List<Message> queuedMessages = new ArrayList<>();
@@ -75,10 +76,10 @@ public class PeerController implements IPeerController {
 	public void process() {
 		retrieveTimeDelta();
 
-		if (queueDelayInc > config.queuedMessagesDelay && !queuedMessages.isEmpty()) {
+		if (queueDelayIncrease > config.queuedMessagesDelay && !queuedMessages.isEmpty()) {
 			final Message firstMessage = queuedMessages.remove(0);
 			send(firstMessage);
-			queueDelayInc = 0;
+			queueDelayIncrease = 0;
 		}
 		state.getProcessables().forEach(ISimpleProcessable::process);
 		state.getUdpPeer().process();
@@ -86,8 +87,8 @@ public class PeerController implements IPeerController {
 
 	private void retrieveTimeDelta() {
 		final long timestamp = config.timeProvider.get();
-		queueDelayInc += (timestamp - lastTS);
-		lastTS = timestamp;
+		queueDelayIncrease += (timestamp - lastTimestamp);
+		lastTimestamp = timestamp;
 	}
 
 	@Override
@@ -120,40 +121,77 @@ public class PeerController implements IPeerController {
 		return true;
 	}
 
-	public boolean checkPayloadSize(Message message) {
+	private boolean hasSmallEnoughPayloadSizeToSend(Message message) {
 		if (message.payload instanceof byte[]) {
 			byte[] payload = (byte[]) message.payload;
 			if (payload.length > config.maximumUdpPacketSize && !(message instanceof MessagePart)) {
-				getState().idProvider.stepBack(message);
-				if (config.autoSplitTooBigMessages && !Message.ReliableMode.UNRELIABLE.equals(message.getReliableMode())) {
-					log.info("Auto splitting message: {}", message);
-					final List<MessagePart> parts = MessagePart.createFromMessage(state, message.getMsgId(), message, config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());
-					if (parts.size() > 0) {
-						parts.forEach(this::queue);
-					} else {
-						log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
-								new Object[]{message, config.maximumUdpPacketSize, payload.length});
-						log.error(" -> Parts couldn't be created for message {}", message);
-					}
-				} else {
-					// Write error message
-					// OS could prevent too big messages from being sent.
-					log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
-							new Object[]{message, config.maximumUdpPacketSize, payload.length});
-					if (message instanceof StackedMessage) {
-						log.info(" -> Message is a stacked message: DISABLING stacked messages now");
-						state.setEnableStackedMessages(false);
-						// Restore stacked messages to normal messages
-						StackedMessage stackedMessage = (StackedMessage) message;
-						stackedMessage.getMessages().forEach(this::queue);
-					}
-				}
 				return false;
 			}
 		} else {
 			log.error("Payload is no byte array.");
 		}
 		return true;
+	}
+
+	boolean checkPayloadSize(Message message) {
+		if (!hasSmallEnoughPayloadSizeToSend(message)) {
+			getState().idProvider.stepBack(message);
+			if (config.autoSplitTooBigMessages && !Message.ReliableMode.UNRELIABLE.equals(message.getReliableMode())) {
+				autoSplitMessage(message);
+			} else {
+				if (message instanceof StackedMessage) {
+					StackedMessage stackedMessage = (StackedMessage) message;
+					log.info(" -> Message is a stacked message: DISABLING stacked messages now");
+					disableStackedMessages(stackedMessage);
+					downsizeStackedMessage(stackedMessage);
+					if (hasSmallEnoughPayloadSizeToSend(stackedMessage)) {
+						return true;
+					} else {
+						// Still not small enough
+						Message lastMessage = stackedMessage.getLastMessage();
+						if (lastMessage != null) {
+							this.send(lastMessage);
+						}
+					}
+				}
+				// Write error message
+				// OS could prevent too big messages from being sent.
+				log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
+						new Object[]{message, config.maximumUdpPacketSize, message.payloadLength()});
+			}
+			return false;
+		}
+		return true;
+	}
+
+	private void autoSplitMessage(Message message) {
+		log.info("Auto splitting message: {}", message);
+		final List<MessagePart> parts = MessagePart.createFromMessage(state, message.getMsgId(), message, config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());
+		if (parts.size() > 0) {
+			parts.forEach(this::queue);
+		} else {
+			log.error("Message {} exceeds configured maximumUdpPacketSize of {}. Payload size is {}.",
+					new Object[]{message, config.maximumUdpPacketSize, message.payloadLength()});
+			log.error(" -> Parts couldn't be created for message {}", message);
+		}
+	}
+
+	private void disableStackedMessages(StackedMessage stackedMessage) {
+		state.getEventLog().add(new DisabledStackedMessagesEvent(stackedMessage));
+		state.setEnableStackedMessages(false);
+	}
+
+	private void downsizeStackedMessage(StackedMessage stackedMessage) {
+		List<Message> messages = stackedMessage.getMessages();
+		if (messages.size() > 0) {
+			// Reduce messages
+			while (!hasSmallEnoughPayloadSizeToSend(stackedMessage) && messages.size() > 1) {
+				// Remove oldest message
+				messages.remove(0);
+				// Recreate payload
+				createPayload(stackedMessage);
+			}
+		}
 	}
 
 	protected boolean afterSend(Message message) {

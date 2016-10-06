@@ -16,18 +16,15 @@
 
 package com.jfastnet.events;
 
-import com.jfastnet.MessageKey;
-import lombok.Getter;
+import com.jfastnet.messages.StackedMessage;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
-public class RequestedMessageNotInLogEvent implements Event {
+public class DisabledStackedMessagesEvent implements Event {
 
-	@Getter private final MessageKey messageKey;
-	@Getter private final int requesterId;
+	private final StackedMessage offendingStackedMessage;
 
-	public RequestedMessageNotInLogEvent(MessageKey messageKey, int requesterId) {
-		this.messageKey = messageKey;
-		this.requesterId = requesterId;
+	public DisabledStackedMessagesEvent(StackedMessage offendingStackedMessage) {
+		this.offendingStackedMessage = offendingStackedMessage;
 	}
 
 	@Override

@@ -100,7 +100,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 			checkCorrectIdProvider();
 			cleanUpUnacknowledgedSentMessagesMap();
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);
-			if (sentToAllFromServer(message.getReceiverId())) {
+			if (isSentToAllFromServer(message.getReceiverId())) {
 				Set<Integer> clientIds = state.getClients().keySet();
 				clientIds.forEach(id -> {
 					Stack stack = createStackForReceiver(message, id);
@@ -169,7 +169,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 		return stack;
 	}
 
-	private boolean sentToAllFromServer(int receiverId) {
+	private boolean isSentToAllFromServer(int receiverId) {
 		return config.senderId == 0 && receiverId == 0;
 	}
 

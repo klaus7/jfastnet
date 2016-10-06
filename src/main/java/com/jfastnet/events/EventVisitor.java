@@ -16,22 +16,9 @@
 
 package com.jfastnet.events;
 
-import com.jfastnet.MessageKey;
-import lombok.Getter;
-
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
-public class RequestedMessageNotInLogEvent implements Event {
-
-	@Getter private final MessageKey messageKey;
-	@Getter private final int requesterId;
-
-	public RequestedMessageNotInLogEvent(MessageKey messageKey, int requesterId) {
-		this.messageKey = messageKey;
-		this.requesterId = requesterId;
-	}
-
-	@Override
-	public void accept(EventVisitor visitor) {
-		visitor.visit(this);
-	}
+public interface EventVisitor {
+	default void visit(Event event) {}
+	default void visit(DisabledStackedMessagesEvent event) {}
+	default void visit(RequestedMessageNotInLogEvent event) {}
 }

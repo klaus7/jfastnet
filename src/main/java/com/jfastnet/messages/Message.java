@@ -122,7 +122,7 @@ public abstract class Message<E> implements Serializable, Comparable<Message> {
 	/** Resolve id via id provider. */
 	public void resolveId() {
 		this.msgId = state.idProvider.createIdFor(this);
-		//log.info(" * Resolved ID {} for {}", msgId, this);
+		log.trace(" * Resolved ID {} for {}", msgId, this);
 	}
 
 	/** Method called on processing of message.
@@ -203,6 +203,15 @@ public abstract class Message<E> implements Serializable, Comparable<Message> {
 			return timestampFeature.timestamp;
 		}
 		return 0L;
+	}
+
+	public int payloadLength() {
+		if (payload instanceof byte[]) {
+			byte[] payload = (byte[]) this.payload;
+			return payload.length;
+		} else {
+			return -1;
+		}
 	}
 
 	public enum ReliableMode {

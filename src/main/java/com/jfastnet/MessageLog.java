@@ -74,7 +74,7 @@ public class MessageLog {
 		if (processorConfig.messageLogSendFilter.test(message)) {
 			MessageKey messageKey = MessageKey.newKey(message.getReliableMode(), message.getReceiverId(), message.getMsgId());
 			if (sentMap.containsKey(messageKey)) {
-				log.trace("Message already in map! Skipping!");
+				//log.trace("Message already in map! Skipping!");
 				return;
 			}
 			sentMapLock.lock();

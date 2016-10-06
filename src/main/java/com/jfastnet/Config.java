@@ -165,9 +165,6 @@ public class Config {
 
 	public int receiveBufferAllocator = 65536;
 
-	/** Maximum number of ids to request when not in sync anymore. */
-	public int maximumRequestAbsentIds = 5;
-
 	/** Maximum size of event log queue. */
 	public int eventLogSize = 4096;
 

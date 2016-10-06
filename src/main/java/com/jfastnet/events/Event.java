@@ -18,4 +18,5 @@ package com.jfastnet.events;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 public interface Event {
+	void accept(EventVisitor visitor);
 }

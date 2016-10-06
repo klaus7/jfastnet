@@ -32,12 +32,12 @@ import java.util.List;
 public class RequestSeqIdsMessage extends Message implements IDontFrame {
 
 	/** List of sequence message ids we require. */
-	private List<Long> absentIds = new ArrayList<>();
+	private List<Long> missingIds = new ArrayList<>();
 
-	public RequestSeqIdsMessage(List<Long> absentIds, int receiverId) {
-		this.absentIds = absentIds;
+	public RequestSeqIdsMessage(List<Long> missingIds, int receiverId) {
+		this.missingIds = missingIds;
 		setReceiverId(receiverId);
-		log.info("Request absent-Ids from {}: {}", receiverId, Arrays.toString(absentIds.toArray()));
+		log.info("Request absent-Ids from {}: {}", receiverId, Arrays.toString(missingIds.toArray()));
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 	@Override
 	public void process(Object context) {
 		int senderId = getSenderId();
-		log.info("Resend absent ids: {} to {}", Arrays.toString(absentIds.toArray()), senderId);
+		log.info("Resend absent ids: {} to {}", Arrays.toString(missingIds.toArray()), senderId);
 
 		int keySenderId = senderId;
 		if (!getState().idProvider.resolveEveryClientMessage()) {
@@ -57,7 +57,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 			keySenderId = 0;
 		}
 		MessageLog messageLog = getState().getProcessorOf(MessageLogProcessor.class).getMessageLog();
-		for (Long absentId : absentIds) {
+		for (Long absentId : missingIds) {
 			MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, keySenderId, absentId);
 			Message message = messageLog.getSent(key);
 			if (message == null) {

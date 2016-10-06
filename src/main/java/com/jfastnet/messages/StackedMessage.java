@@ -34,4 +34,11 @@ public class StackedMessage extends Message {
 	public ReliableMode getReliableMode() {
 		return ReliableMode.UNRELIABLE;
 	}
+
+	public Message getLastMessage() {
+		if (messages.size() <= 0) {
+			return null;
+		}
+		return messages.get(messages.size() - 1);
+	}
 }
