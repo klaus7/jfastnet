@@ -6,15 +6,15 @@ import com.jfastnet.idprovider.ReliableModeIdProvider;
 import com.jfastnet.messages.Message;
 import com.jfastnet.util.NullsafeHashMap;
 import lombok.extern.slf4j.Slf4j;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
 import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -141,7 +141,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		}
 		server.send(new StackableMsg2());
 
-		int timeoutInSeconds = 10;
+		int timeoutInSeconds = 15;
 		waitForCondition("Not all messages received.", timeoutInSeconds,
 				() -> closeMsgReceived.get() == clients.size(),
 				() -> "Received close messages: " + closeMsgReceived);
