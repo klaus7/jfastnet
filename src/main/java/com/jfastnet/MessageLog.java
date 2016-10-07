@@ -71,7 +71,7 @@ public class MessageLog {
 	}
 
 	public void addSent(Message message) {
-		if (processorConfig.messageLogSendFilter.test(message)) {
+		if (!message.isResendMessage() && processorConfig.messageLogSendFilter.test(message)) {
 			MessageKey messageKey = MessageKey.newKey(message.getReliableMode(), message.getReceiverId(), message.getMsgId());
 			if (sentMap.containsKey(messageKey)) {
 				//log.trace("Message already in map! Skipping!");

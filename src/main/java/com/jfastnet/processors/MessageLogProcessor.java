@@ -28,7 +28,8 @@ import java.util.function.Predicate;
 
 /** Puts filtered messages into the message log.
  * @author Klaus Pfeiffer - klaus@allpiper.com */
-public class MessageLogProcessor extends AbstractMessageProcessor<MessageLogProcessor.ProcessorConfig> implements IMessageSenderPostProcessor, IMessageReceiverPreProcessor {
+public class MessageLogProcessor extends AbstractMessageProcessor<MessageLogProcessor.ProcessorConfig>
+		implements IMessageSenderPostProcessor, IMessageReceiverPreProcessor {
 
 	/** Message log collects messages for resending. */
 	@Getter

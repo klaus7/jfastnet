@@ -101,6 +101,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 			cleanUpUnacknowledgedSentMessagesMap();
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);
 			if (isSentToAllFromServer(message.getReceiverId())) {
+				state.getProcessorOf(MessageLogProcessor.class).afterSend(message);
 				Set<Integer> clientIds = state.getClients().keySet();
 				clientIds.forEach(id -> {
 					Stack stack = createStackForReceiver(message, id);
@@ -110,6 +111,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 			} else {
 				Stack stack = createStackForReceiver(message, message.getReceiverId());
 				if (stack.stackSendingIsReasonable()) {
+					state.getProcessorOf(MessageLogProcessor.class).afterSend(message);
 					stack.send(config, state);
 					return null; // Discard message
 				}
@@ -211,7 +213,6 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 				// Clear receiver id, if every client receives the same id for a particular message
 				messages.forEach(message -> message.setReceiverId(0));
 			}
-			messages.forEach(state.getProcessorOf(MessageLogProcessor.class)::afterSend);
 		}
 	}
 }
