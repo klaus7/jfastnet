@@ -40,17 +40,17 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableModeAckProcessor.ProcessorConfig> implements ISimpleProcessable, IMessageReceiverPreProcessor, IMessageReceiverPostProcessor, IMessageSenderPreProcessor, IServerHooks {
 
 	/** Timestamp of last resend check. */
-	long lastResendCheck;
+	private long lastResendCheck;
 
 	/** Messages where we didn't receive an ack packet yet. */
 	@Getter
 	Map<MessageKey, MessageContainer> messagesAwaitingAck = new ConcurrentHashMap<>();
 
 	/** Set of received message ids. */
-	Set<MessageKey> receivedMsgIds = new HashSet<>(8192);
+	private final Set<MessageKey> receivedMsgIds = new HashSet<>(8192);
 
 	/** To determine new resend time interval. */
-	private Map<MessageKey, Long> sentMsgIds = new ConcurrentHashMap<>();
+	private final Map<MessageKey, Long> sentMsgIds = new ConcurrentHashMap<>();
 
 	public ReliableModeAckProcessor(Config config, State state) {
 		super(config, state);
@@ -222,8 +222,6 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableM
 		/** Discard messages hitting the resent time limit. Reliable messages
 		 * could get lost! */
 		public boolean discardOnResendTimeLimitOutrun = false;
-
-		//public boolean useAlternativeSenderOnResendTimeLimitOutrun = true;
 
 		/** Interval for checking if we need to resend a message. */
 		public int resendCheckInterval = 100;

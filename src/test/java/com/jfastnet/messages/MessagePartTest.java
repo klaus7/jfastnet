@@ -19,6 +19,7 @@ package com.jfastnet.messages;
 import com.jfastnet.AbstractTest;
 import com.jfastnet.Config;
 import com.jfastnet.State;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Random;
 import static org.junit.Assert.*;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
+@Slf4j
 public class MessagePartTest extends AbstractTest {
 
 	static class BigMessage extends Message {
@@ -92,7 +94,6 @@ public class MessagePartTest extends AbstractTest {
 			if (messagePart.partNumber % 2 == 1) messagePart.process(null);
 		});
 		assertTrue(bigMsgReceived);
-
 	}
 
 	@Test
@@ -100,10 +101,12 @@ public class MessagePartTest extends AbstractTest {
 		String input = "This is a compression test";
 		byte[] bytes = input.getBytes();
 		byte[] compressed = MessagePart.compress(bytes);
+		assertTrue("Check for compression failed.", MessagePart.isCompressed(compressed));
 		byte[] decompressed = MessagePart.decompress(compressed);
-		String s = new String(decompressed);
-		System.out.println(s);
-		assertEquals(input, s);
+		assertFalse("Check for compression failed.", MessagePart.isCompressed(decompressed));
+		String decompressedString = new String(decompressed);
+		log.info("Decompressed message: " + decompressedString);
+		assertEquals(input, decompressedString);
 	}
 
 }

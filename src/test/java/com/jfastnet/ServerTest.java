@@ -221,7 +221,7 @@ public class ServerTest extends AbstractTest {
 	@Test
 	public void testBigMessageAckQueuing() {
 		reset();
-		start(1, newServerConfig(), () -> newClientConfig().setDebug(true).setDebugLostPackagePercentage(20));
+		start(1, newServerConfig(), () -> newClientConfig().setDebug(true).setDebugLostPackagePercentage(15));
 
 		BigMessage bigMessage;
 		String forLaterCheck;
@@ -332,7 +332,6 @@ public class ServerTest extends AbstractTest {
 					Config config = newClientConfig();
 					config.idProviderClass = ClientIdReliableModeIdProvider.class;
 					config.debug = true;
-					// 10 % Packet loss should be enough
 					config.debugLostPackagePercentage = 50;
 					return config;
 				});

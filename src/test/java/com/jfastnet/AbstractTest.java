@@ -285,8 +285,9 @@ public abstract class AbstractTest {
 				}
 				if (i <= 0 && !call) {
 //					log.info(out.call());
-					System.err.println(out.call());
-					Assert.fail(errorMsg + " [Condition didn't evaluate to true in time. Timeout was " + timeoutInSeconds + "]");
+					String outCallStr = out.call();
+					System.err.println(outCallStr);
+					Assert.fail(errorMsg + " [Condition didn't evaluate to true in time. Timeout was " + timeoutInSeconds + "] " + outCallStr);
 				}
 			}
 		} catch (Exception e) {

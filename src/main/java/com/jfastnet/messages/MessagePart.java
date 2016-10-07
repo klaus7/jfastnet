@@ -34,10 +34,12 @@ import java.util.zip.InflaterInputStream;
 @Slf4j
 public class MessagePart extends Message implements IDontFrame {
 
+	private static final int ZLIB_HEADER = 0x78;
+
 	/** Message size in bytes without bytes payload. */
 	public static final int MESSAGE_HEADER_SIZE = 120;
 
-	public static final List<MessagePart> EMPTY_MESSAGE_PARTS = Collections.unmodifiableList(new ArrayList<>());
+	private static final List<MessagePart> EMPTY_MESSAGE_PARTS = Collections.unmodifiableList(new ArrayList<>());
 
 	/** Whether this is the last part to construct the message. */
 	boolean last;
@@ -69,11 +71,12 @@ public class MessagePart extends Message implements IDontFrame {
 		if (message.payload instanceof byte[]) {
 			byte[] bytes = (byte[]) message.payload;
 			if (state.getConfig().compressBigMessages) {
-				bytes = compress(bytes);
-				// TODO can potentially fail!
-				if (bytes == null) {
-					log.error("Compression failed for message: {}", message);
-					return EMPTY_MESSAGE_PARTS;
+				byte[] compressedBytes = compress(bytes);
+				if (compressedBytes == null) {
+					log.warn("Compression failed for message: {}", message);
+					log.info("Proceeding without compression.");
+				} else {
+					bytes = compressedBytes;
 				}
 			}
 			return createFromByteArray(id, bytes, chunkSize, reliableMode);
@@ -201,14 +204,18 @@ public class MessagePart extends Message implements IDontFrame {
 			deflaterOutputStream.write(bytes);
 			deflaterOutputStream.close();
 			byteArrayOutputStream.close();
-			bytes = byteArrayOutputStream.toByteArray();
+			return byteArrayOutputStream.toByteArray();
 		} catch (IOException e) {
 			log.error("Couldn't compress byte array.", e);
 		}
-		return bytes;
+		return null;
 	}
 
 	public static byte[] decompress(byte[] bytes) {
+		if (!isCompressed(bytes)) {
+			log.warn("Tried to decompress uncompressed data. No decompressing will be done.");
+			return bytes;
+		}
 		try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
 			 InflaterInputStream inflaterInputStream = new InflaterInputStream(byteArrayInputStream)) {
 			ByteArrayOutputStream bout = new ByteArrayOutputStream(2048);
@@ -223,6 +230,23 @@ public class MessagePart extends Message implements IDontFrame {
 			log.error("Couldn't decompress byte array.", e);
 		}
 		return bytes;
+	}
+
+	/**
+	 * ZLib magic headers:
+	 * <pre>
+	 * 78 01 - No Compression/low
+	 * 78 9C - Default Compression
+	 * 78 DA - Best Compression
+	 * </pre>
+	 * @return true, if data was compressed with the java default inflater (zlib)
+	 */
+	public static boolean isCompressed(byte[] data) {
+		return data.length > 0 && (data[0] & 0xff) == ZLIB_HEADER && (
+				   (data[1] & 0xff) == 0x9c
+				|| (data[1] & 0xff) == 0x01
+				|| (data[1] & 0xff) == 0xda
+		);
 	}
 
 	/** MessagePart with ACK reliable mode. */
