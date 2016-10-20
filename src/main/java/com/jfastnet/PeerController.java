@@ -186,8 +186,17 @@ public class PeerController implements IPeerController {
 		if (messages.size() > 0) {
 			// Reduce messages
 			while (!hasSmallEnoughPayloadSizeToSend(stackedMessage) && messages.size() > 1) {
-				// Remove oldest message
-				messages.remove(0);
+				// Choose removal strategy based on stackKeepAliveMessages config
+				// because when stackKeepAliveMessages is true, we can safely remove
+				// the newest messages without the risk of getting stuck.
+
+				if (config.stackKeepAliveMessages) {
+					// Remove newest message
+					messages.remove(messages.size() - 1);
+				} else {
+					// Remove oldest message
+					messages.remove(0);
+				}
 				// Recreate payload
 				createPayload(stackedMessage);
 			}
