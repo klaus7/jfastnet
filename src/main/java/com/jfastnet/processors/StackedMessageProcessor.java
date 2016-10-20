@@ -185,7 +185,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 	public static class ProcessorConfig {
 		/** After X received stacked messages we send an ack packet. */
 		public int stackedMessagesAckThreshold = 7;
-		public int maximumNumberOfMessagesPerStack = stackedMessagesAckThreshold * 7;
+		public int maximumNumberOfMessagesPerStack = stackedMessagesAckThreshold * 3;
 	}
 
 	private static class Stack {
