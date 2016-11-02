@@ -20,6 +20,7 @@ import com.esotericsoftware.kryo.Kryo;
 import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.idprovider.ClientIdReliableModeIdProvider;
 import com.jfastnet.idprovider.IIdProvider;
+import com.jfastnet.peers.CongestionControl;
 import com.jfastnet.peers.javanet.JavaNetPeer;
 import com.jfastnet.processors.*;
 import com.jfastnet.serialiser.ISerialiser;
@@ -69,6 +70,7 @@ public class Config {
 		setAdditionalConfig(new ReliableModeAckProcessor.ProcessorConfig());
 		setAdditionalConfig(new ReliableModeSequenceProcessor.ProcessorConfig());
 		setAdditionalConfig(new MessageLogProcessor.ProcessorConfig());
+		setAdditionalConfig(new CongestionControl.CongestionControlConfig());
 	}
 
 	public Object context;

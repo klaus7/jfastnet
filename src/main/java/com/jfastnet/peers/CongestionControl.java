@@ -20,6 +20,9 @@ import com.jfastnet.ConfigStateContainer;
 import com.jfastnet.messages.Message;
 import com.jfastnet.state.ClientState;
 import com.jfastnet.state.NetworkQuality;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
@@ -33,6 +36,7 @@ public class CongestionControl<T> {
 
 	private final ConfigStateContainer configStateContainer;
 	private final Consumer<T> packetSender;
+	private final CongestionControlConfig congestionControlConfig;
 
 	private final Queue<DelayedPacket> packetQueue = new ArrayDeque<>();
 
@@ -41,6 +45,7 @@ public class CongestionControl<T> {
 	public CongestionControl(ConfigStateContainer configStateContainer, Consumer<T> packetSender) {
 		this.configStateContainer = configStateContainer;
 		this.packetSender = packetSender;
+		this.congestionControlConfig = configStateContainer.config.getAdditionalConfig(CongestionControlConfig.class);
 	}
 
 	public void send(Message message, T packet) {
@@ -56,11 +61,11 @@ public class CongestionControl<T> {
 			qualityFactor = networkQuality.qualityFactor;
 		}
 
-		if (qualityFactor > 0.9f && packetQueue.isEmpty()) {
+		if (qualityFactor > congestionControlConfig.immediateSendQualityFactorThreshold && packetQueue.isEmpty()) {
 			immediateSend(packet);
 			delay = 0;
 		} else {
-			delay = (long) ((1f - qualityFactor) * 1000);
+			delay = (long) ((1f - qualityFactor) * congestionControlConfig.maximumDelayFactor);
 
 			long sendTimeStamp;
 			DelayedPacket lastDelayedPacket = packetQueue.peek();
@@ -87,6 +92,14 @@ public class CongestionControl<T> {
 			immediateSend(delayedPacket.packet);
 			packetQueue.poll();
 		}
+	}
+
+	@Setter
+	@Getter
+	@Accessors(chain = true)
+	public static class CongestionControlConfig {
+		public int maximumDelayFactor = 1000;
+		public float immediateSendQualityFactorThreshold = 0.9f;
 	}
 
 	private class DelayedPacket {
