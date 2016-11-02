@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Klaus Pfeiffer <klaus@allpiper.com>
+ * Copyright 2016 Klaus Pfeiffer - klaus@allpiper.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,16 @@
  * limitations under the License.
  ******************************************************************************/
 
-package com.jfastnet.processors;
-
-import com.jfastnet.messages.Message;
-import com.jfastnet.messages.features.ChecksumFeature;
+package com.jfastnet;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
-public class AddChecksumProcessor implements IMessageSenderPreProcessor {
+public class ConfigStateContainer {
 
-	/** WIP! */
-	private byte[] salt = "".getBytes();
+	public final Config config;
+	public final State state;
 
-	@Override
-	public Message beforeSend(Message message) {
-		ChecksumFeature checksumFeature = message.getFeatures().get(ChecksumFeature.class);
-		if (checksumFeature != null) {
-			checksumFeature.calculate(message);
-			// FIXME needs two times of serialisation
-			message.payload = message.getConfig().serialiser.serialise(message);
-		}
-		return message;
+	public ConfigStateContainer(Config config, State state) {
+		this.config = config;
+		this.state = state;
 	}
 }

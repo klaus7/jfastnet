@@ -178,11 +178,6 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableM
 	}
 
 	@Override
-	public Message beforeCongestionControl(Message message) {
-		return message;
-	}
-
-	@Override
 	public Message beforeSend(Message message) {
 		if (Message.ReliableMode.ACK_PACKET.equals(message.getReliableMode())) {
 			put(MessageKey.newKey(Message.ReliableMode.ACK_PACKET, message.getReceiverId(), message.getMsgId()), message);

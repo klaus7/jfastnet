@@ -102,7 +102,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);
 			if (isSentToAllFromServer(message.getReceiverId())) {
 				state.getProcessorOf(MessageLogProcessor.class).afterSend(message);
-				Set<Integer> clientIds = state.getClients().keySet();
+				Set<Integer> clientIds = state.getClientStates().idSet();
 				clientIds.forEach(id -> {
 					Stack stack = createStackForReceiver(message, id);
 					stack.send(config, state);
@@ -128,7 +128,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 
 	private void cleanUpUnacknowledgedSentMessagesMap() {
 		if (state.isHost()) {
-			Set<Integer> clientIds = state.getClients().keySet();
+			Set<Integer> clientIds = state.getClientStates().idSet();
 			long maxAckId = 0L;
 			for (Integer clientId : clientIds) {
 				long clientLastAckId = lastAckMessageIdMap.getOrDefault(clientId, 0L);

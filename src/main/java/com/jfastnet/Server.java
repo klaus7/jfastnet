@@ -17,13 +17,12 @@
 package com.jfastnet;
 
 import com.jfastnet.messages.*;
+import com.jfastnet.state.ClientStates;
 import com.jfastnet.util.NullsafeHashMap;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
-import java.util.Comparator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
@@ -32,13 +31,13 @@ public class Server extends PeerController {
 
 	/** Timestamp of time when a message was last received from client id.
 	 * Key: client id; Value: timestamp */
-	protected Map<Integer, Long> lastReceivedMap = new ConcurrentHashMap<>();
+	private Map<Integer, Long> lastReceivedMap = new ConcurrentHashMap<>();
 
 	/** Track count of incoming messages. */
-	protected Map<Class, Counter> incomingMessages = new NullsafeCounterHashMap();
+	private Map<Class, Counter> incomingMessages = new NullsafeCounterHashMap();
 
 	/** Track count of outgoing messages. */
-	protected Map<Class, Counter> outgoingMessages = new NullsafeCounterHashMap();
+	private Map<Class, Counter> outgoingMessages = new NullsafeCounterHashMap();
 
 	private long lastKeepAliveCheck;
 
@@ -60,8 +59,10 @@ public class Server extends PeerController {
 	public void process() {
 		super.process();
 
+		calculateNetworkQualityToClients();
+
 		long currentTime = config.timeProvider.get();
-		int clientSize = state.getClients().size();
+		int clientSize = state.getClientStates().size();
 		if (clientSize > 0 && clientSize >= config.requiredClients.size() && lastKeepAliveCheck + config.keepAliveInterval < currentTime) {
 
 			// Potentially "Keep Alive" will be sent, when first client joins.
@@ -82,11 +83,16 @@ public class Server extends PeerController {
 		}
 	}
 
+	private void calculateNetworkQualityToClients() {
+		state.getClientStates().process();
+	}
+
 	@Override
 	public void receive(Message message) {
 		boolean isConnectRequest = message instanceof ConnectRequest;
-		Map<Integer, InetSocketAddress> clients = state.getClients();
-		if (!clients.containsValue(message.getSocketAddressSender())) {
+
+		ClientStates clientStates = state.getClientStates();
+		if (!clientStates.hasAddress(message.getSocketAddressSender())) {
 			if (!isConnectRequest) {
 				log.warn("No client found under {}", message.getSocketAddressSender());
 				log.warn("Message was: {}", message);
@@ -110,17 +116,13 @@ public class Server extends PeerController {
 				// Sender (client) id was 0 and this is a connect request
 				// -> client needs an id
 
-				Optional<Map.Entry<Integer, InetSocketAddress>> socketAddressOptional = clients.entrySet().stream()
-						.filter(entry -> entry.getValue().equals(message.getSocketAddressSender()))
-						.findFirst();
+				Integer clientIdBySocketAddress = clientStates.getIdBySocketAddress(message.getSocketAddressSender());
 
-				if (socketAddressOptional.isPresent()) {
-					Map.Entry<Integer, InetSocketAddress> socketAddressEntry = socketAddressOptional.get();
-					clientId = socketAddressEntry.getKey();
+				if (clientIdBySocketAddress != null) {
+					clientId = clientIdBySocketAddress;
 					log.info("Assign previous client id {} to {}.", clientId, message.getSocketAddressSender());
 				} else {
-					Integer maximumId = clients.keySet().stream().max(Comparator.naturalOrder()).orElse(0);
-					clientId = maximumId == null ? 1 : maximumId + 1;
+					clientId = clientStates.newClientId();
 					log.info("Assign new client id {} to {}.", clientId, message.getSocketAddressSender());
 				}
 				connectRequest.setSenderId(clientId);
@@ -128,12 +130,12 @@ public class Server extends PeerController {
 			}
 			lastReceivedMap.put(clientId, config.timeProvider.get());
 
-			boolean clientAlreadyInMap = clients.containsKey(clientId);
+			boolean clientAlreadyInMap = clientStates.hasId(clientId);
 			if (clientAlreadyInMap) {
 				log.info("Client {} is already in list - could be a re-join.", clientId);
 				unregisterClientAtProcessors(clientId);
 			}
-			clients.put(clientId, message.getSocketAddressSender());
+			clientStates.put(clientId, message.getSocketAddressSender());
 			log.info("Added {} with address {} to clients.", clientId, message.getSocketAddressSender());
 			registerClientAtProcessors(clientId);
 		}
@@ -188,14 +190,11 @@ public class Server extends PeerController {
 			if (!createPayload(message)) {
 				return false;
 			}
-//			if (!checkPayloadSize(message)) {
-//				return false;
-//			}
 		}
 
 		boolean beforeSendState = true;
 		boolean afterSendState = true;
-		for (Map.Entry<Integer, InetSocketAddress> entry : state.getClients().entrySet()) {
+		for (Map.Entry<Integer, InetSocketAddress> entry : state.getClientStates().addressEntrySet()) {
 			Integer clientId = entry.getKey();
 			if (exceptId > 0 && exceptId == clientId) {
 				continue;
@@ -206,9 +205,6 @@ public class Server extends PeerController {
 				if (!createPayload(message)) {
 					beforeSendState = false;
 				}
-//				else if (!checkPayloadSize(message)) {
-//					return false;
-//				}
 			}
 			message.socketAddressRecipient = entry.getValue();
 
@@ -217,9 +213,6 @@ public class Server extends PeerController {
 				state.getUdpPeer().send(message);
 				afterSendState &= super.afterSend(message);
 			}
-//			beforeSendState &= super.beforeSend(message);
-//			config.udpPeer.send(message);
-//			afterSendState &= super.afterSend(message);
 
 		}
 		log.trace("Sent message: {}", message);
@@ -258,7 +251,7 @@ public class Server extends PeerController {
 		}
 
 
-		for (Map.Entry<Integer, InetSocketAddress> entry : state.getClients().entrySet()) {
+		for (Map.Entry<Integer, InetSocketAddress> entry : state.getClientStates().addressEntrySet()) {
 			Integer clientId = entry.getKey();
 			if (exceptId > 0 && exceptId == clientId) {
 				continue;
@@ -275,9 +268,9 @@ public class Server extends PeerController {
 	}
 
 	public boolean send(int clientId, Message message) {
-		InetSocketAddress client = state.getClients().get(clientId);
+		InetSocketAddress client = state.getClientStates().getById(clientId).getSocketAddress();
 		if (client == null) {
-			log.warn("Client with id {} not found.", clientId);
+			log.warn("Client address with id {} not found.", clientId);
 			return false;
 		}
 		message.socketAddressRecipient = client;
@@ -285,8 +278,8 @@ public class Server extends PeerController {
 	}
 
 	public void unregister(int clientId) {
-		log.info("Bye {}", state.getClients().get(clientId));
-		state.getClients().remove(clientId);
+		log.info("Bye {}", state.getClientStates().getById(clientId));
+		state.getClientStates().remove(clientId);
 		lastReceivedMap.remove(clientId);
 		config.requiredClients.remove(clientId);
 		unregisterClientAtProcessors(clientId);

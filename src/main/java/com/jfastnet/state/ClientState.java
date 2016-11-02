@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2015 Klaus Pfeiffer <klaus@allpiper.com>
+ * Copyright 2016 Klaus Pfeiffer - klaus@allpiper.com
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,33 @@
  * limitations under the License.
  ******************************************************************************/
 
-package com.jfastnet.processors;
+package com.jfastnet.state;
 
-import com.jfastnet.messages.Message;
-import com.jfastnet.messages.features.ChecksumFeature;
+import com.jfastnet.Config;
+import lombok.Getter;
+import lombok.ToString;
+
+import java.net.InetSocketAddress;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
-public class AddChecksumProcessor implements IMessageSenderPreProcessor {
+@ToString
+public class ClientState {
 
-	/** WIP! */
-	private byte[] salt = "".getBytes();
+	@Getter private final NetworkQuality networkQuality;
+	@Getter private final InetSocketAddress socketAddress;
 
-	@Override
-	public Message beforeSend(Message message) {
-		ChecksumFeature checksumFeature = message.getFeatures().get(ChecksumFeature.class);
-		if (checksumFeature != null) {
-			checksumFeature.calculate(message);
-			// FIXME needs two times of serialisation
-			message.payload = message.getConfig().serialiser.serialise(message);
-		}
-		return message;
+	private final Config config;
+
+	public ClientState(Config config) {
+		this.config = config;
+		this.socketAddress = null;
+		networkQuality = new NetworkQuality(this.config);
 	}
+
+	public ClientState(Config config, InetSocketAddress socketAddress) {
+		this.config = config;
+		this.socketAddress = socketAddress;
+		networkQuality = new NetworkQuality(this.config);
+	}
+
 }

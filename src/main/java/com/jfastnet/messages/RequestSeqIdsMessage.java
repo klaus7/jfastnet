@@ -20,6 +20,7 @@ import com.jfastnet.MessageKey;
 import com.jfastnet.MessageLog;
 import com.jfastnet.events.RequestedMessageNotInLogEvent;
 import com.jfastnet.processors.MessageLogProcessor;
+import com.jfastnet.state.ClientState;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -56,6 +57,7 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 			// Clear sender id, if every client receives the same id for a particular message
 			keySenderId = 0;
 		}
+		degradeNetworkQuality();
 		MessageLog messageLog = getState().getProcessorOf(MessageLogProcessor.class).getMessageLog();
 		for (Long absentId : missingIds) {
 			MessageKey key = MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, keySenderId, absentId);
@@ -70,6 +72,15 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 			log.info("Resend {} to {}", message, senderId);
 			getConfig().internalSender.send(message);
 			getConfig().netStats.resentMessages.incrementAndGet();
+		}
+	}
+
+	private void degradeNetworkQuality() {
+		// If other side requests missing messages, it means we should slow down sending.
+		// Thus we degrade the network quality to this peer.
+		ClientState clientState = getState().getClientStates().getById(getSenderId());
+		if (clientState != null) {
+			clientState.getNetworkQuality().requestedMissingMessages(missingIds.size(), getConfig().timeProvider.get());
 		}
 	}
 }

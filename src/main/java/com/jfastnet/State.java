@@ -23,6 +23,7 @@ import com.jfastnet.processors.IMessageReceiverPostProcessor;
 import com.jfastnet.processors.IMessageReceiverPreProcessor;
 import com.jfastnet.processors.IMessageSenderPostProcessor;
 import com.jfastnet.processors.IMessageSenderPreProcessor;
+import com.jfastnet.state.ClientStates;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
@@ -30,9 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.InetSocketAddress;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -51,7 +50,7 @@ public class State {
 	private boolean isHost;
 
 	/** The server holds track of its clients. */
-	private Map<Integer, InetSocketAddress> clients = new ConcurrentHashMap<>();
+	private final ClientStates clientStates;
 
 	/** Client will only receive messages, if connected. */
 	public volatile boolean connected = false;
@@ -87,6 +86,7 @@ public class State {
 		createIdProvider(config);
 		createUdpPeer(config);
 		createProcessors(config);
+		clientStates = new ClientStates(config);
 	}
 
 	private void createIdProvider(Config config) {

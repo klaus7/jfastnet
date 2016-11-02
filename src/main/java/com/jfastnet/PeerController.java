@@ -218,15 +218,6 @@ public class PeerController implements IPeerController {
 	 * @return true if we are ready to send the message, false otherwise */
 	public boolean beforeSend(Message message) {
 		for (IMessageSenderPreProcessor processor : state.getMessageSenderPreProcessors()) {
-			if (processor.beforeCongestionControl(message) == null) {
-				log.trace("Processor {} discarded message {} at beforeCongestionControl", processor, message);
-				return false;
-			}
-		}
-
-		// TODO: congestion control
-
-		for (IMessageSenderPreProcessor processor : state.getMessageSenderPreProcessors()) {
 			if (processor.beforeSend(message) == null) {
 				log.trace("Processor {} discarded message {} at beforeSend", processor, message);
 				return false;

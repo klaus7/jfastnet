@@ -16,11 +16,9 @@
 
 package com.jfastnet.peers.javanet;
 
-import com.jfastnet.Config;
-import com.jfastnet.IPeer;
-import com.jfastnet.NetStats;
-import com.jfastnet.State;
+import com.jfastnet.*;
 import com.jfastnet.messages.Message;
+import com.jfastnet.peers.CongestionControl;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -33,13 +31,13 @@ import java.util.Random;
 @Slf4j
 public class JavaNetPeer implements IPeer {
 
-	Config config;
-	State state;
+	private final Config config;
+	private final State state;
 
-	private Random debugRandom = new Random();
+	private final Random debugRandom = new Random();
+	private CongestionControl<DatagramPacket> congestionControl;
 
 	private DatagramSocket socket;
-
 	private Thread receiveThread;
 
 	public JavaNetPeer(Config config, State state) {
@@ -53,6 +51,8 @@ public class JavaNetPeer implements IPeer {
 			socket = new DatagramSocket(config.bindPort);
 			socket.setSendBufferSize(config.socketSendBufferSize);
 			socket.setReceiveBufferSize(config.socketReceiveBufferSize);
+
+			congestionControl = new CongestionControl<>(new ConfigStateContainer(config, state), this::socketSend);
 
 			receiveThread = new Thread(new MessageReceivingRunnable());
 			receiveThread.start();
@@ -104,15 +104,19 @@ public class JavaNetPeer implements IPeer {
 					new NetStats.Line(true, message.getSenderId(), frame, System.currentTimeMillis(), message.getClass(), (payload).length));
 		}
 
+		log.trace("Send message: {}", message);
+		log.trace("Payload length: {}", payload.length);
+		DatagramPacket datagramPacket = new DatagramPacket(payload, payload.length, message.socketAddressRecipient);
+		congestionControl.send(message, datagramPacket);
+		return true;
+	}
+
+	private void socketSend(DatagramPacket datagramPacket) {
 		try {
-			log.trace("Send message: {}", message);
-			log.trace("Payload length: {}", payload.length);
-			socket.send(new DatagramPacket(payload, payload.length, message.socketAddressRecipient));
+			socket.send(datagramPacket);
 		} catch (IOException e) {
 			log.error("Couldn't send message.", e);
-			return false;
 		}
-		return true;
 	}
 
 	public byte[] getByteArray(Message message) {
@@ -155,7 +159,9 @@ public class JavaNetPeer implements IPeer {
 	}
 
 	@Override
-	public void process() {}
+	public void process() {
+		congestionControl.process();
+	}
 
 	private class MessageReceivingRunnable implements Runnable {
 		@Override

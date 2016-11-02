@@ -102,8 +102,8 @@ public abstract class AbstractTest {
 		log.info("All clients connected successfully!");
 
 		waitForCondition("Not all clients joined.", 3,
-				() -> server.state.getClients().size() == clientCount,
-				() -> "Clients: " + server.getState().getClients().size() + ", Expected: " + clientCount);
+				() -> server.state.getClientStates().size() == clientCount,
+				() -> "Clients: " + server.getState().getClientStates().size() + ", Expected: " + clientCount);
 	}
 
 	public Message getLastReceivedMessage() {
