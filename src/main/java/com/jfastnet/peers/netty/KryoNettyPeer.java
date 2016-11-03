@@ -144,7 +144,7 @@ public class KryoNettyPeer implements IPeer {
 			message.getFeatures().resolve();
 		}
 
-		if (config.debug && debugRandom.nextInt(100) < config.debugLostPackagePercentage) {
+		if (config.debug.simulateLossOfPacket()) {
 			// simulated N % loss rate
 			log.warn("DEBUG: simulated loss of packet: {}", message);
 			return;

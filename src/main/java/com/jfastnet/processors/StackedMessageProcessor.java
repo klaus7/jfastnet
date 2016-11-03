@@ -208,11 +208,11 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 			}
 			StackedMessage stackedMessage = new StackedMessage(messages);
 			stackedMessage.setReceiverId(receiverId);
-			config.internalSender.send(stackedMessage);
 			if (!state.idProvider.resolveEveryClientMessage()) {
 				// Clear receiver id, if every client receives the same id for a particular message
 				messages.forEach(message -> message.setReceiverId(0));
 			}
+			config.internalSender.send(stackedMessage);
 		}
 	}
 }

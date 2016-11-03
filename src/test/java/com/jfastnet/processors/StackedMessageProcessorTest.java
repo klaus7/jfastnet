@@ -8,39 +8,86 @@ import com.jfastnet.idprovider.ReliableModeIdProvider;
 import com.jfastnet.messages.Message;
 import com.jfastnet.util.NullsafeHashMap;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.junit.Test;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
 public class StackedMessageProcessorTest extends AbstractTest {
 
-	static AtomicInteger stackableReceived = new AtomicInteger();
-	static AtomicInteger unstackableReceived = new AtomicInteger();
-	static AtomicInteger closeMsgReceived = new AtomicInteger();
-	static Map<Integer, List<Message>> receivedMessages = new HashMap<>();
+	private static final AtomicInteger receivedCounter = new AtomicInteger();
+	private static ThreadLocal<AtomicInteger> stackableReceived;
+	private static ThreadLocal<AtomicInteger> unstackableReceived;
+	private static final AtomicInteger closeMsgReceived = new AtomicInteger();
+	private static final Map<Integer, List<Message>> receivedMessages = new HashMap<>();
 
-	static Map<Integer, Set<Long>> stackableIds = new NullsafeHashMap<Integer, Set<Long>>() {
+	private static Map<Integer, Set<Long>> stackableIds = new NullsafeHashMap<Integer, Set<Long>>() {
 		@Override protected Set<Long> newInstance() {return new HashSet<>();}
 	};
 
-	static Map<Integer, Set<Long>> unstackableIds = new NullsafeHashMap<Integer, Set<Long>>() {
+	private static Map<Integer, Set<Long>> unstackableIds = new NullsafeHashMap<Integer, Set<Long>>() {
 		@Override protected Set<Long> newInstance() {return new HashSet<>();}
 	};
 
 	static boolean fail = false;
 
-	public static class UnStackableMsg1 extends Message {
+	static class StackableMsg1 extends Message {
+		@Override
+		public boolean stackable() {
+			return true;
+		}
+
 		@Override
 		public void process(Object context) {
+			receivedCounter.incrementAndGet();
+			int unstackableReceivedCounter = unstackableReceived.get().get();
+			int stackableReceivedCounter = stackableReceived.get().incrementAndGet();
+			log.info("########### STACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
+					new Object[]{getConfig().senderId, getMsgId(), stackableReceivedCounter});
+			addReceived(this);
+			printMsg(this);
+
+			CircularFifoQueue<Message> received = getState().getProcessorOf(MessageLogProcessor.class).getMessageLog().getReceived();
+			long expectedId = received.size() == 0 ? 1L : received.get(received.size() - 1).getMsgId();
+			if (getMsgId() != expectedId) {
+				log.error("Wrong id found! Expected: {}, Actual: {}", expectedId, getMsgId());
+				fail = true;
+			}
+//			if (stackableReceivedCounter <= unstackableReceivedCounter) {
+//				log.error("Stackable must have a greater id! stackableReceived: {}, unstackableReceived: {}", stackableReceivedCounter, unstackableReceivedCounter);
+//				fail = true;
+//			}
+			if (getConfig() != null && stackableIds.containsKey(getConfig().senderId)) {
+				if (stackableIds.get(getConfig().senderId).contains(getMsgId())) {
+					log.error("Stackables already contained. senderId: {}, msgId: {}", getConfig().senderId, getMsgId());
+					fail = true;
+				}
+			}
+		}
+	}
+
+	static class StackableMsg2 extends StackableMsg1 {
+		@Override
+		public void process(Object context) {
+			addReceived(this);
+			closeMsgReceived.incrementAndGet();
+			log.info("Close msg #" + closeMsgReceived.get());
+		}
+	}
+
+	static class UnStackableMsg1 extends Message {
+		@Override
+		public void process(Object context) {
+			receivedCounter.incrementAndGet();
+			int unstackableReceivedCounter = unstackableReceived.get().incrementAndGet();
 			log.info("########### UNSTACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
-					new Object[]{getConfig().senderId, getMsgId(), unstackableReceived.incrementAndGet()});
+					new Object[]{getConfig().senderId, getMsgId(), unstackableReceivedCounter});
 			addReceived(this);
 			printMsg(this);
 			if (getConfig() != null && unstackableIds.containsKey(getConfig().senderId)) {
@@ -67,49 +114,14 @@ public class StackedMessageProcessorTest extends AbstractTest {
 //		}
 	}
 
-	public static class StackableMsg1 extends Message {
-		@Override
-		public boolean stackable() {
-			return true;
-		}
-
-		@Override
-		public void process(Object context) {
-//			stackableReceived.incrementAndGet();
-			log.info("########### STACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
-					new Object[]{getConfig().senderId, getMsgId(), stackableReceived.incrementAndGet()});
-			addReceived(this);
-			printMsg(this);
-			if (stackableReceived.get() <= unstackableReceived.get()) {
-				log.error("Stackable must have a greater id!");
-				fail = true;
-			}
-			if (getConfig() != null && stackableIds.containsKey(getConfig().senderId)) {
-				if (stackableIds.get(getConfig().senderId).contains(getMsgId())) {
-					log.error("Stackables already contained {}, {}", getConfig().senderId, getMsgId());
-					fail = true;
-				}
-			}
-		}
-	}
-
-	public static class StackableMsg2 extends StackableMsg1 {
-		@Override
-		public void process(Object context) {
-			addReceived(this);
-			closeMsgReceived.incrementAndGet();
-			log.info("Close msg #" + closeMsgReceived.get());
-		}
-	}
-
 	@Test
 	public void testStacking() {
 		reset();
 		start(8,
 				() -> {
 					Config config = newClientConfig().setStackKeepAliveMessages(true);
-					config.debug = true;
-					config.debugLostPackagePercentage = 5;
+					config.debug.enabled = true;
+					config.debug.lostPacketsPercentage = 5;
 					config.setIdProviderClass(ReliableModeIdProvider.class);
 					return config;
 				});
@@ -126,7 +138,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 				() -> closeMsgReceived.get() == clients.size(),
 				() -> "Received close messages: " + closeMsgReceived);
 
-		assertThat(stackableReceived.get(), is(messageCount * clients.size()));
+		assertThat(receivedCounter.get(), is(messageCount * clients.size()));
 
 		assertThat(fail, is(false));
 	}
@@ -137,8 +149,8 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		start(4,
 				() -> {
 					Config config = newClientConfig();
-					config.debug = true;
-					config.debugLostPackagePercentage = 5;
+					config.debug.enabled = true;
+					config.debug.lostPacketsPercentage = 5;
 					config.setIdProviderClass(ReliableModeIdProvider.class);
 					return config;
 				});
@@ -156,15 +168,15 @@ public class StackedMessageProcessorTest extends AbstractTest {
 				() -> closeMsgReceived.get() == clients.size(),
 				() -> "Received close messages: " + closeMsgReceived);
 
-		assertThat(stackableReceived.get(), is(messageCount * clients.size()));
-		assertThat(unstackableReceived.get(), is(messageCount * clients.size()));
+		assertThat(receivedCounter.get(), is(messageCount * 2 * clients.size()));
 		assertThat(fail, is(false));
 
 		log.info("Check order of received messages");
 		for (int i = 1; i <= clients.size(); i++) {
 			List<Message> messages = receivedMessages.get(i);
 			assertThat(messages, is(notNullValue()));
-			long lastId = 2L;
+			assertThat(messages.size(), greaterThan(0));
+			long lastId = messages.get(0).getMsgId();
 			for (Message message : messages) {
 				assertThat(message.getMsgId(), is(lastId));
 				lastId++;
@@ -180,14 +192,69 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		}
 	}
 
+	@Test
+	public void testLostPacketCorrectReceiveOrder() {
+		reset();
+		start(4,
+				() -> {
+					Config config = newClientConfig();
+					config.debug.enabled = true;
+					config.debug.lostPacketsPercentage = 0;
+					config.setIdProviderClass(ReliableModeIdProvider.class);
+					return config;
+				});
+		logBig("Send broadcast messages to clients");
 
-	public void reset() {
-		stackableReceived.set(0);
-		unstackableReceived.set(0);
+		discardNextPacket();
+		server.send(new StackableMsg1());
+		server.send(new UnStackableMsg1());
+
+		server.send(new StackableMsg1());
+		discardNextPacket();
+		server.send(new UnStackableMsg1());
+
+		discardNextPacket();
+		server.send(new StackableMsg1());
+		discardNextPacket();
+		server.send(new UnStackableMsg1());
+
+		server.send(new StackableMsg1());
+		server.send(new UnStackableMsg1());
+
+		// Send close message
+		server.send(new StackableMsg2());
+
+		int timeoutInSeconds = 5;
+		waitForCondition("Not all messages received.", timeoutInSeconds,
+				() -> closeMsgReceived.get() == clients.size(),
+				() -> "Received close messages: " + closeMsgReceived);
+
+		assertThat(fail, is(false));
+	}
+
+	private void discardNextPacket() {
+		clients.forEach(client -> client.getConfig().debug.discardNextPacket = true);
+	}
+
+
+	private void reset() {
+		receivedCounter.set(0);
 		closeMsgReceived.set(0);
 		stackableIds.clear();
 		unstackableIds.clear();
 		receivedMessages.clear();
 		fail = false;
+		stackableReceived = new ThreadLocal<AtomicInteger>() {
+			@Override
+			protected AtomicInteger initialValue() {
+				return new AtomicInteger();
+			}
+		};
+		unstackableReceived = new ThreadLocal<AtomicInteger>() {
+			@Override
+			protected AtomicInteger initialValue() {
+				return new AtomicInteger();
+			}
+		};
 	}
 }

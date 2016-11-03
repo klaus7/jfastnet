@@ -31,10 +31,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -173,14 +170,6 @@ public class Config {
 	/** Delay in ms between sending of queued messages. */
 	public int queuedMessagesDelay = 50;
 
-	/** Set to true if you want to simulate packet loss or an otherwise
-	 * rough environment. */
-	public boolean debug = false;
-
-	/** Specify percentage of lost packages from 0 to 100 where 100 means
-	 * every packet. */
-	public int debugLostPackagePercentage = 1;
-
 	/** List of all added processors. */
 	public List<Class> processorClasses = DEFAULT_MESSAGE_PROCESSORS;
 
@@ -189,5 +178,34 @@ public class Config {
 	}
 	public <E> E getAdditionalConfig(Class<E> configClass) {
 		return (E) additionalConfigMap.get(configClass);
+	}
+
+	public final Debug debug = new Debug();
+
+	@Setter
+	@Getter
+	@Accessors(chain = true)
+	public static class Debug {
+		private final Random debugRandom = new Random();
+
+		/** Set to true if you want to simulate packet loss or an otherwise
+		 * rough environment. */
+		public boolean enabled = false;
+
+		/** Set to true if you want to simulate packet loss for the next
+		 * received packet. */
+		public boolean discardNextPacket = false;
+
+		/** Specify percentage of lost packages from 0 to 100 where 100 means
+		 * every packet. */
+		public int lostPacketsPercentage = 1;
+
+		public boolean simulateLossOfPacket() {
+			if (discardNextPacket) {
+				discardNextPacket = false;
+				return true;
+			}
+			return enabled && debugRandom.nextInt(100) < lostPacketsPercentage;
+		}
 	}
 }

@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.util.Random;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -34,7 +33,6 @@ public class JavaNetPeer implements IPeer {
 	private final Config config;
 	private final State state;
 
-	private final Random debugRandom = new Random();
 	private CongestionControl<DatagramPacket> congestionControl;
 
 	private DatagramSocket socket;
@@ -137,7 +135,7 @@ public class JavaNetPeer implements IPeer {
 			message.getFeatures().resolve();
 		}
 
-		if (config.debug && debugRandom.nextInt(100) < config.debugLostPackagePercentage) {
+		if (config.debug.simulateLossOfPacket()) {
 			// simulated N % loss rate
 			log.warn("DEBUG: simulated loss of packet: {}", message);
 			return;

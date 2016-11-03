@@ -211,6 +211,13 @@ public abstract class AbstractTest {
 		}
 	}
 
+	public Config newClientDebugConfig(int lostPacketsPercentage) {
+		Config config = newClientConfig();
+		config.debug.enabled = true;
+		config.debug.lostPacketsPercentage = lostPacketsPercentage;
+		return config;
+	}
+
 	public Config newClientConfig() {
 		ThreadLocal<Kryo> kryos =  new ThreadLocal<Kryo>() {
 			protected Kryo initialValue() {

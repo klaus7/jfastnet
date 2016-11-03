@@ -212,16 +212,16 @@ public class ServerTest extends AbstractTest {
 		start(8);
 		tearDown();
 
-		start(8, newServerConfig(), () -> newClientConfig().setDebug(true).setDebugLostPackagePercentage(15));
+		start(8, newServerConfig(), () -> newClientDebugConfig(15));
 		tearDown();
 
-		start(8, newServerConfig(), () -> newClientConfig().setDebug(true).setDebugLostPackagePercentage(15));
+		start(8, newServerConfig(), () -> newClientDebugConfig(15));
 	}
 
 	@Test
 	public void testBigMessageAckQueuing() {
 		reset();
-		start(1, newServerConfig(), () -> newClientConfig().setDebug(true).setDebugLostPackagePercentage(15));
+		start(1, newServerConfig(), () -> newClientDebugConfig(15));
 
 		BigMessage bigMessage;
 		String forLaterCheck;
@@ -331,8 +331,8 @@ public class ServerTest extends AbstractTest {
 				() -> {
 					Config config = newClientConfig();
 					config.idProviderClass = ClientIdReliableModeIdProvider.class;
-					config.debug = true;
-					config.debugLostPackagePercentage = 50;
+					config.debug.enabled = true;
+					config.debug.lostPacketsPercentage = 50;
 					return config;
 				});
 		logBig("Send broadcast messages to clients");
@@ -365,8 +365,8 @@ public class ServerTest extends AbstractTest {
 				() -> {
 					Config config = newClientConfig();
 					config.idProviderClass = ClientIdReliableModeIdProvider.class;
-					config.debug = true;
-					config.debugLostPackagePercentage = 10;
+					config.debug.enabled = true;
+					config.debug.lostPacketsPercentage = 10;
 					return config;
 				});
 
@@ -415,8 +415,8 @@ public class ServerTest extends AbstractTest {
 		start(8, () -> {
 					Config config = newClientConfig();
 					config.idProviderClass = ReliableModeIdProvider.class;
-					config.debug = true;
-					config.debugLostPackagePercentage = 10;
+					config.debug.enabled = true;
+					config.debug.lostPacketsPercentage = 10;
 					return config;
 				});
 
