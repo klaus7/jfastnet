@@ -17,6 +17,7 @@
 package com.jfastnet.state;
 
 import com.jfastnet.Config;
+import com.jfastnet.peers.CongestionControl;
 import com.jfastnet.processors.ReliableModeSequenceProcessor;
 
 import java.util.SortedSet;
@@ -32,9 +33,12 @@ public class NetworkQuality {
 
 	private int countRequestedMessages = 0;
 	private SortedSet<Long> missingMessageTimestamps = new TreeSet<>();
+	private long consideredTimeFrameInMs;
 
 	public NetworkQuality(Config config) {
 		this.config = config;
+		CongestionControl.CongestionControlConfig congestionControlConfig = config.getAdditionalConfig(CongestionControl.CongestionControlConfig.class);
+		consideredTimeFrameInMs = congestionControlConfig.consideredTimeFrameInMs;
 	}
 
 	public void requestedMissingMessages(int size, long timeStamp) {
@@ -44,9 +48,8 @@ public class NetworkQuality {
 		}
 	}
 
-	public void calculateQuality() {
+	void calculateQuality() {
 		final long currentTimestamp = config.timeProvider.get();
-		long consideredTimeFrameInMs = config.keepAliveInterval * 2; // TODO make configurable
 		missingMessageTimestamps.removeIf(timestamp -> timestamp < currentTimestamp - consideredTimeFrameInMs);
 		int missingMessagesInTimeFrame = missingMessageTimestamps.size();
 		ReliableModeSequenceProcessor.ProcessorConfig processorConfig = config.getAdditionalConfig(ReliableModeSequenceProcessor.ProcessorConfig.class);

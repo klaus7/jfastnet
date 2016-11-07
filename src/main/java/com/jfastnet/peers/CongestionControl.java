@@ -61,7 +61,7 @@ public class CongestionControl<T> {
 			qualityFactor = networkQuality.qualityFactor;
 		}
 
-		if (qualityFactor > congestionControlConfig.immediateSendQualityFactorThreshold && packetQueue.isEmpty()) {
+		if (qualityFactor >= congestionControlConfig.immediateSendQualityFactorThreshold && packetQueue.isEmpty()) {
 			immediateSend(packet);
 			delay = 0;
 		} else {
@@ -100,6 +100,8 @@ public class CongestionControl<T> {
 	public static class CongestionControlConfig {
 		public int maximumDelayFactor = 1000;
 		public float immediateSendQualityFactorThreshold = 0.9f;
+		/** Considered time frame for network quality. */
+		public int consideredTimeFrameInMs = 3000;
 	}
 
 	private class DelayedPacket {
