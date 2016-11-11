@@ -41,6 +41,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 	/** Client id, Msg Id. */
 	private Map<Integer, Long> lastAckMessageIdMap = new ConcurrentHashMap<>();
 
+	@Setter
 	private long myLastAckMessageId;
 	private long myLastAckMessageTimestamp;
 
@@ -100,7 +101,8 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 	@Override
 	public Message beforeSend(Message message) {
 		// Check if message is "stackable" and don't stack messages that get resent
-		if (state.isEnableStackedMessages() && message.stackable() && !message.isResendMessage()) {
+		// Check for ReliableMode.SEQUENCE_NUMBER, so we can be sure about correct ascending message ids
+		if (state.isEnableStackedMessages() && message.stackable() && !message.isResendMessage() && message.getReliableMode() == Message.ReliableMode.SEQUENCE_NUMBER) {
 			checkCorrectIdProvider();
 			cleanUpUnacknowledgedSentMessagesMap();
 			unacknowledgedSentMessagesMap.put(message.getMsgId(), message);

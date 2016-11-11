@@ -18,13 +18,11 @@ package com.jfastnet.messages;
 
 import com.jfastnet.Config;
 import com.jfastnet.processors.ReliableModeSequenceProcessor;
+import com.jfastnet.processors.StackedMessageProcessor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Sent from the server to the client to confirm the connection.
@@ -35,7 +33,7 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 	/** Last used reliable sequence id on the server. */
 	long lastReliableSeqId;
 
-	long connectRequestMsgId;
+	private long connectRequestMsgId;
 
 	/** The client id is sent back from the server to the client. If it was 0
 	 * before, the server assigend a new id. */
@@ -64,6 +62,11 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 	/** process() would be called too late. */
 	public void setLastReliableSeqIdInSequenceProcessor() {
 		log.info("Connection established! Last reliable sequence id is {}", lastReliableSeqId);
+		setInSequenceProcessor();
+		setInStackedMessageProcessor();
+	}
+
+	private void setInSequenceProcessor() {
 		final Map<Integer, AtomicLong> lastMessageIdMap = getState().getProcessorOf(ReliableModeSequenceProcessor.class).getLastMessageIdMap();
 		AtomicLong lastId = lastMessageIdMap.get(getSenderId());
 		if (lastId == null || lastId.get() == 0L) {
@@ -72,6 +75,11 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 		} else {
 			log.warn(" * Last reliable sequence id was already set to {}", lastId);
 		}
+	}
+
+	private void setInStackedMessageProcessor() {
+		StackedMessageProcessor stackedMessageProcessor = getState().getProcessorOf(StackedMessageProcessor.class);
+		stackedMessageProcessor.setMyLastAckMessageId(lastReliableSeqId);
 	}
 
 	@Override
