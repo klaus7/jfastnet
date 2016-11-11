@@ -166,7 +166,7 @@ public class MessagePart extends Message implements IDontFrame {
 		}
 	}
 
-	public boolean allPartsReceived() {
+	private boolean allPartsReceived() {
 		if (ReliableMode.SEQUENCE_NUMBER.equals(getReliableMode())) {
 			return last;
 		} else if (ReliableMode.ACK_PACKET.equals(getReliableMode())) {

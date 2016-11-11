@@ -39,7 +39,7 @@ public class PeerController implements IPeerController {
 	private long queueDelayIncrease;
 
 	/** List of queued messages. A FIFO queue. */
-	private List<Message> queuedMessages = new ArrayList<>();
+	private final List<Message> queuedMessages = new ArrayList<>();
 
 	/** Current state information. */
 	@Getter
@@ -122,6 +122,16 @@ public class PeerController implements IPeerController {
 	}
 
 	private boolean hasSmallEnoughPayloadSizeToSend(Message message) {
+		if (message.isResendMessage()) {
+
+			// Don't try to split up resent messages, because if they were too
+			// big, they already got split up. Also new ids would be generated
+			// and the reliable sequence ids from the clients could diverge, if
+			// for some reason the resent message is a bit bigger and would
+			// have to be split up.
+
+			return true;
+		}
 		if (message.payload instanceof byte[]) {
 			byte[] payload = (byte[]) message.payload;
 			if (payload.length > config.maximumUdpPacketSize && !(message instanceof MessagePart)) {
@@ -166,7 +176,9 @@ public class PeerController implements IPeerController {
 
 	private void autoSplitMessage(Message message) {
 		log.info("Auto splitting message: {}", message);
-		final List<MessagePart> parts = MessagePart.createFromMessage(state, message.getMsgId(), message, config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());
+		final List<MessagePart> parts = MessagePart.createFromMessage(state, message.getMsgId(), message,
+				config.maximumUdpPacketSize - MessagePart.MESSAGE_HEADER_SIZE, message.getReliableMode());
+
 		if (parts.size() > 0) {
 			parts.forEach(this::queue);
 		} else {
