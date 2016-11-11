@@ -72,6 +72,7 @@ public abstract class AbstractTest {
 			if (i == 1) client2 = clients.get(i);
 		}
 
+		log.info("main thread id: {}", Thread.currentThread().getId());
 		log.info("Start server");
 		server.start();
 		log.info("Start clients");

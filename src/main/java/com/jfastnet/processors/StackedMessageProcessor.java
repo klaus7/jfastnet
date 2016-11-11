@@ -42,6 +42,7 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 	private Map<Integer, Long> lastAckMessageIdMap = new ConcurrentHashMap<>();
 
 	private long myLastAckMessageId;
+	private long myLastAckMessageTimestamp;
 
 	private Map<Long, Message> unacknowledgedSentMessagesMap = new ConcurrentHashMap<>();
 
@@ -74,9 +75,12 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 				receiveStackedMessage(stackedMessage);
 				Message lastReceivedMessage = stackedMessage.getMessages().get(stackedMessage.getMessages().size() - 1);
 				long lastReceivedId = lastReceivedMessage.getMsgId();
-				if (lastReceivedId - myLastAckMessageId >= processorConfig.stackedMessagesAckThreshold) {
+				boolean receivedMessageCountExceedsAckThreshold = lastReceivedId - myLastAckMessageId >= processorConfig.stackedMessagesAckThreshold;
+				boolean timeFrameExceedsAckThreshold = config.timeProvider.get() > myLastAckMessageTimestamp + processorConfig.stackedMessagesAckTimeThresholdMs;
+				if (receivedMessageCountExceedsAckThreshold || timeFrameExceedsAckThreshold) {
 					config.internalSender.send(new StackAckMessage(lastReceivedId));
 					myLastAckMessageId = lastReceivedId;
+					myLastAckMessageTimestamp = config.timeProvider.get();
 					log.trace("Send acknowledge message for id: {}", lastReceivedId);
 				}
 			}
@@ -186,6 +190,8 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 		/** After X received stacked messages we send an ack packet. */
 		public int stackedMessagesAckThreshold = 7;
 		public int maximumNumberOfMessagesPerStack = stackedMessagesAckThreshold * 3;
+		/** The next message after X milliseconds we send an ack packet. */
+		public int stackedMessagesAckTimeThresholdMs = 300;
 	}
 
 	private static class Stack {

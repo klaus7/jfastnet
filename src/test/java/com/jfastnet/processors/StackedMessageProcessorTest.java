@@ -8,10 +8,10 @@ import com.jfastnet.idprovider.ReliableModeIdProvider;
 import com.jfastnet.messages.Message;
 import com.jfastnet.util.NullsafeHashMap;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -22,8 +22,9 @@ import static org.hamcrest.Matchers.*;
 public class StackedMessageProcessorTest extends AbstractTest {
 
 	private static final AtomicInteger receivedCounter = new AtomicInteger();
-	private static ThreadLocal<AtomicInteger> stackableReceived;
-	private static ThreadLocal<AtomicInteger> unstackableReceived;
+//	private static ThreadLocal<AtomicInteger> stackableReceived;
+//	private static ThreadLocal<AtomicInteger> unstackableReceived;
+	private static Map<Integer, AtomicInteger> expectedId = new ConcurrentHashMap<>();
 	private static final AtomicInteger closeMsgReceived = new AtomicInteger();
 	private static final Map<Integer, List<Message>> receivedMessages = new HashMap<>();
 
@@ -46,17 +47,17 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		@Override
 		public void process(Object context) {
 			receivedCounter.incrementAndGet();
-			int unstackableReceivedCounter = unstackableReceived.get().get();
-			int stackableReceivedCounter = stackableReceived.get().incrementAndGet();
-			log.info("########### STACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
-					new Object[]{getConfig().senderId, getMsgId(), stackableReceivedCounter});
+			expectedId.get(getConfig().senderId).incrementAndGet();
+			writeLog("Stackable", this);
+//			int stackableReceivedCounter = stackableReceived.get().incrementAndGet();
+//			log.info("########### STACKABLE ### ClientID: {} ### MsgID: {} ### Number: {} ### ThreadID: {}",
+//					new Object[]{getConfig().senderId, getMsgId(), stackableReceivedCounter, Thread.currentThread().getId()});
 			addReceived(this);
 			printMsg(this);
 
-			CircularFifoQueue<Message> received = getState().getProcessorOf(MessageLogProcessor.class).getMessageLog().getReceived();
-			long expectedId = received.size() == 0 ? 1L : received.get(received.size() - 1).getMsgId();
-			if (getMsgId() != expectedId) {
-				log.error("Wrong id found! Expected: {}, Actual: {}", expectedId, getMsgId());
+			long expectedIdValue = expectedId.get(getConfig().senderId).get();
+			if (getMsgId() != expectedIdValue) {
+				log.error("Wrong id found! Expected: {}, Actual: {}", new Object[]{expectedIdValue, getMsgId()});
 				fail = true;
 			}
 //			if (stackableReceivedCounter <= unstackableReceivedCounter) {
@@ -85,9 +86,11 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		@Override
 		public void process(Object context) {
 			receivedCounter.incrementAndGet();
-			int unstackableReceivedCounter = unstackableReceived.get().incrementAndGet();
-			log.info("########### UNSTACKABLE ### ClientID: {} ### MsgID: {} ### Number: {}",
-					new Object[]{getConfig().senderId, getMsgId(), unstackableReceivedCounter});
+			expectedId.get(getConfig().senderId).incrementAndGet();
+			writeLog("Unstackable", this);
+//			int unstackableReceivedCounter = unstackableReceived.get().incrementAndGet();
+//			log.info("########### UNSTACKABLE ### ClientID: {} ### MsgID: {} ### Number: {} ### ThreadID: {}",
+//					new Object[]{getConfig().senderId, getMsgId(), unstackableReceivedCounter, Thread.currentThread().getId()});
 			addReceived(this);
 			printMsg(this);
 			if (getConfig() != null && unstackableIds.containsKey(getConfig().senderId)) {
@@ -97,6 +100,11 @@ public class StackedMessageProcessorTest extends AbstractTest {
 				}
 			}
 		}
+	}
+
+	private static void writeLog(final String type, Message msg) {
+		log.info("########### " + type + " ### ClientID: {} ### MsgID: {} ### ThreadID: {}",
+				new Object[]{msg.getConfig().senderId, msg.getMsgId(), Thread.currentThread().getId()});
 	}
 
 	private synchronized static void addReceived(Message message) {
@@ -195,7 +203,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 	@Test
 	public void testLostPacketCorrectReceiveOrder() {
 		reset();
-		start(4,
+		start(1,
 				() -> {
 					Config config = newClientConfig();
 					config.debug.enabled = true;
@@ -244,17 +252,21 @@ public class StackedMessageProcessorTest extends AbstractTest {
 		unstackableIds.clear();
 		receivedMessages.clear();
 		fail = false;
-		stackableReceived = new ThreadLocal<AtomicInteger>() {
-			@Override
-			protected AtomicInteger initialValue() {
-				return new AtomicInteger();
-			}
-		};
-		unstackableReceived = new ThreadLocal<AtomicInteger>() {
-			@Override
-			protected AtomicInteger initialValue() {
-				return new AtomicInteger();
-			}
-		};
+//		stackableReceived = new ThreadLocal<AtomicInteger>() {
+//			@Override
+//			protected AtomicInteger initialValue() {
+//				return new AtomicInteger();
+//			}
+//		};
+//		unstackableReceived = new ThreadLocal<AtomicInteger>() {
+//			@Override
+//			protected AtomicInteger initialValue() {
+//				return new AtomicInteger();
+//			}
+//		};
+		expectedId = new ConcurrentHashMap<>();
+		for (int i = 0; i < 16; i++) {
+			expectedId.put(i, new AtomicInteger(1));
+		}
 	}
 }

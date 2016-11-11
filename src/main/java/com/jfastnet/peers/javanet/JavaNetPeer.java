@@ -164,6 +164,7 @@ public class JavaNetPeer implements IPeer {
 	private class MessageReceivingRunnable implements Runnable {
 		@Override
 		public void run() {
+			log.info("Start receiver thread {} for senderId {}", Thread.currentThread().getId(), config.senderId);
 			byte[] receiveData = new byte[config.socketReceiveBufferSize];
 			while(true) {
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
@@ -177,10 +178,12 @@ public class JavaNetPeer implements IPeer {
 				} catch (Exception e) {
 					if (!socket.isClosed()) {
 						log.warn("Error receiving packet.", e);
+					} else {
+						log.warn("Error receiving packet. Socket is already closed!");
 					}
 				}
 			}
-			log.info("Receiver thread ended");
+			log.info("Receiver thread {} ended", Thread.currentThread().getId());
 		}
 	}
 }

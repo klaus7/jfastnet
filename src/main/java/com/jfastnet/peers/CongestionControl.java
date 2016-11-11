@@ -54,6 +54,7 @@ public class CongestionControl<T> {
 			return;
 		}
 		InetSocketAddress socketAddressRecipient = message.socketAddressRecipient;
+		// Congestion Control only supported for server right now
 		ClientState clientState = configStateContainer.state.getClientStates().getBySocketAddress(socketAddressRecipient);
 		float qualityFactor = 1f;
 		if (clientState != null) {
