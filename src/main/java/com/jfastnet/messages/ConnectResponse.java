@@ -59,7 +59,7 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 		config.serverHooks.onRegister(clientId);
 	}
 
-	/** process() would be called too late. */
+	/** Called on receit of message. Message#process() would be called too late. */
 	public void setLastReliableSeqIdInSequenceProcessor() {
 		log.info("Connection established! Last reliable sequence id is {}", lastReliableSeqId);
 		setInSequenceProcessor();

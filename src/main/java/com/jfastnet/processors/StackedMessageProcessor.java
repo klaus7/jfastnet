@@ -39,8 +39,10 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 	private static final Stack EMPTY_STACK = new Stack(0, Collections.EMPTY_LIST);
 
 	/** Client id, Msg Id. */
+	@Getter
 	private Map<Integer, Long> lastAckMessageIdMap = new ConcurrentHashMap<>();
 
+	/** Stacked messaged id that I acknowledged to the other side. */
 	@Setter
 	private long myLastAckMessageId;
 	private long myLastAckMessageTimestamp;
@@ -64,8 +66,8 @@ public class StackedMessageProcessor extends AbstractMessageProcessor<StackedMes
 		if (message instanceof StackAckMessage) {
 			StackAckMessage stackAckMessage = (StackAckMessage) message;
 			log.trace("Received acknowledge message for id {}", stackAckMessage.getLastReceivedId());
-			Long lastId = lastAckMessageIdMap.get(message.getSenderId());
-			if (lastId == null || lastId < stackAckMessage.getLastReceivedId()) {
+			long lastId = lastAckMessageIdMap.getOrDefault(message.getSenderId(), 0L);
+			if (lastId < stackAckMessage.getLastReceivedId()) {
 				lastAckMessageIdMap.put(message.getSenderId(), stackAckMessage.getLastReceivedId());
 			}
 			return null;

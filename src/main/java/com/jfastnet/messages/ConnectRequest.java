@@ -16,6 +16,7 @@
 
 package com.jfastnet.messages;
 
+import com.jfastnet.processors.StackedMessageProcessor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -52,8 +53,14 @@ public class ConnectRequest extends Message implements IDontFrame {
 		final ConnectResponse connectResponse = new ConnectResponse(getMsgId(), clientId);
 		DUMMY.setReceiverId(clientId);
 		connectResponse.lastReliableSeqId = getState().idProvider.getLastIdFor(DUMMY);
+		putLastAckMessageIdIntoStackedMessageProcessor(connectResponse.lastReliableSeqId);
 		log.info("Last reliable ID: {} - send to {}", connectResponse.lastReliableSeqId, clientId);
 		connectResponse.setReceiverId(clientId);
 		getConfig().internalSender.send(connectResponse);
+	}
+
+	private void putLastAckMessageIdIntoStackedMessageProcessor(long lastReliableSeqId) {
+		StackedMessageProcessor stackedMessageProcessor = getState().getProcessorOf(StackedMessageProcessor.class);
+		stackedMessageProcessor.getLastAckMessageIdMap().put(clientId, lastReliableSeqId);
 	}
 }
