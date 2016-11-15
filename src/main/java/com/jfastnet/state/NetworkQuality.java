@@ -19,21 +19,23 @@ package com.jfastnet.state;
 import com.jfastnet.Config;
 import com.jfastnet.peers.CongestionControl;
 import com.jfastnet.processors.ReliableModeSequenceProcessor;
+import lombok.ToString;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
+@ToString(of = "qualityFactor")
 public class NetworkQuality {
 
 	/** 1f => Best, 0f => Worst quality */
 	public float qualityFactor = 1f;
 
-	private final Config config;
-
 	private int countRequestedMessages = 0;
 	private SortedSet<Long> missingMessageTimestamps = new TreeSet<>();
-	private long consideredTimeFrameInMs;
+
+	private final Config config;
+	private final long consideredTimeFrameInMs;
 
 	public NetworkQuality(Config config) {
 		this.config = config;

@@ -278,7 +278,7 @@ public class Server extends PeerController {
 	}
 
 	public void unregister(int clientId) {
-		log.info("Bye {}", state.getClientStates().getById(clientId));
+		log.info("Bye {} -> {}", clientId, state.getClientStates().getById(clientId));
 		state.getClientStates().remove(clientId);
 		lastReceivedMap.remove(clientId);
 		config.requiredClients.remove(clientId);

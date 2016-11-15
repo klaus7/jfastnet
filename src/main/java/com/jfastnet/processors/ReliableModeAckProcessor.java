@@ -26,10 +26,7 @@ import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Retrieval of messages with the reliable mode set to ACK must be confirmed
@@ -51,6 +48,9 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableM
 
 	/** To determine new resend time interval. */
 	private final Map<MessageKey, Long> sentMsgIds = new ConcurrentHashMap<>();
+
+	/** Used to determine if enough messages where resent for a particular receiver id. */
+	private final Map<Integer, Integer> maxNumberOfSentMessagesCheckMap = new HashMap<>();
 
 	public ReliableModeAckProcessor(Config config, State state) {
 		super(config, state);
@@ -78,16 +78,23 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableM
 		long currentTimeMillis = config.timeProvider.get();
 		if (lastResendCheck < currentTimeMillis - processorConfig.resendCheckInterval) {
 			lastResendCheck = currentTimeMillis;
+			maxNumberOfSentMessagesCheckMap.clear();
 			for (Iterator<Map.Entry<MessageKey, MessageContainer>> iterator = messagesAwaitingAck.entrySet().iterator(); iterator.hasNext(); ) {
 				Map.Entry<MessageKey, MessageContainer> entry = iterator.next();
 				MessageContainer messageContainer = entry.getValue();
 				Message message = messageContainer.message;
 				if (message == null) {
+					iterator.remove();
 					log.error("Message from message container was null.");
 				} else if (messageContainer.nextResendTry < currentTimeMillis) {
+					int receiverId = entry.getKey().clientId;
+					Integer resentMessagesForReceiver = maxNumberOfSentMessagesCheckMap.getOrDefault(receiverId, 0);
+					if (resentMessagesForReceiver > processorConfig.maximumNumberOfResentMessagesPerCheck) {
+						continue;
+					}
 					iterator.remove();
 					// For server side: only send to players where message is missing
-					message.setReceiverId(entry.getKey().clientId);
+					message.setReceiverId(receiverId);
 					log.info("Resend UDP message {}", message);
 					message.setResendMessage(true);
 					if (!state.connected && !(message instanceof ConnectRequest)) {
@@ -227,6 +234,9 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableM
 
 		/** Interval for checking if we need to resend a message. */
 		public int resendCheckInterval = 100;
+
+		/** Maximum number of resent messages per check interval and per receiver id. */
+		public int maximumNumberOfResentMessagesPerCheck = 7;
 	}
 
 }
