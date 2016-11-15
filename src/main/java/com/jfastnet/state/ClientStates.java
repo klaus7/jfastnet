@@ -104,4 +104,5 @@ public class ClientStates implements ISimpleProcessable {
 	public void process() {
 		clientStateMap.forEach((id, clientState) -> clientState.getNetworkQuality().calculateQuality());
 	}
+
 }

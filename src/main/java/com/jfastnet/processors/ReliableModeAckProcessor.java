@@ -180,7 +180,14 @@ public class ReliableModeAckProcessor extends AbstractMessageProcessor<ReliableM
 	@Override
 	public Message beforeSend(Message message) {
 		if (Message.ReliableMode.ACK_PACKET.equals(message.getReliableMode())) {
-			put(MessageKey.newKey(Message.ReliableMode.ACK_PACKET, message.getReceiverId(), message.getMsgId()), message);
+			int receiverId = message.getReceiverId();
+			if (state.isHost() && receiverId == 0) {
+				// Sent to all and we are the host
+				Set<Integer> idSet = state.getClientStates().idSet();
+				idSet.forEach(clientId -> put(MessageKey.newKey(Message.ReliableMode.ACK_PACKET, clientId, message.getMsgId()), message));
+			} else {
+				put(MessageKey.newKey(Message.ReliableMode.ACK_PACKET, receiverId, message.getMsgId()), message);
+			}
 		}
 		return message;
 	}
