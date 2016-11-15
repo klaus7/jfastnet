@@ -24,7 +24,7 @@ public class StackedMessageProcessorTest extends AbstractTest {
 	private static final AtomicInteger receivedCounter = new AtomicInteger();
 //	private static ThreadLocal<AtomicInteger> stackableReceived;
 //	private static ThreadLocal<AtomicInteger> unstackableReceived;
-	private static Map<Integer, AtomicInteger> expectedId = new ConcurrentHashMap<>();
+	private static Map<Integer, AtomicInteger> expectedId = new HashMap<>();
 	private static final AtomicInteger closeMsgReceived = new AtomicInteger();
 	private static final Map<Integer, List<Message>> receivedMessages = new HashMap<>();
 

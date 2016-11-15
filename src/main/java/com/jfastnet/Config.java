@@ -81,7 +81,7 @@ public class Config {
 	/** On client this can be 0 so a free port is automatically used. */
 	public int bindPort = 0;
 
-	/** Optional configured sender id. */
+	/** Optional configured sender id. 0 is reserved for the server. */
 	public int senderId;
 
 	/** Consumer is called when a new client id is retrieved through the

@@ -20,7 +20,6 @@ import com.jfastnet.Config;
 import com.jfastnet.State;
 import com.jfastnet.messages.features.MessageFeatures;
 import com.jfastnet.messages.features.TimestampFeature;
-import com.jfastnet.processors.ProcessFlags;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,7 +44,7 @@ public abstract class Message<E> implements Serializable, Comparable<Message> {
 
 	/** Unique message id. */
 	@Getter
-	private long msgId;
+	long msgId;
 
 	/** Sender id of message. <b>Attention!</b> Don't use this in responses,
 	 * as it will always be the host's id! */
@@ -62,9 +61,6 @@ public abstract class Message<E> implements Serializable, Comparable<Message> {
 	 * it is waiting for acknowledge messages. */
 	@Setter @Getter
 	private transient boolean resendMessage;
-
-	/** Process flags are used to specify special processing instructions. */
-	private transient ProcessFlags processFlags;
 
 	/** Address from receiving or to sending socket. */
 	public transient InetSocketAddress socketAddressSender;
@@ -84,13 +80,6 @@ public abstract class Message<E> implements Serializable, Comparable<Message> {
 	private transient State state;
 
 	public Message() {}
-
-	public ProcessFlags getProcessFlags() {
-		if (processFlags == null) {
-			processFlags = new ProcessFlags();
-		}
-		return processFlags;
-	}
 
 	public Message copyAttributesFrom(Message message) {
 		config = message.config;
@@ -153,7 +142,7 @@ public abstract class Message<E> implements Serializable, Comparable<Message> {
 	public void prepareToSend() {}
 
 	/** Override if you need something done before receiving. */
-	public void beforeReceive() {}
+	public Message<E> beforeReceive() 			{ return this; }
 
 	/** Specify the reliable mode for this message. */
 	public ReliableMode getReliableMode() 		{ return ReliableMode.SEQUENCE_NUMBER; }

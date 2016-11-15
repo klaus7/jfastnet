@@ -129,31 +129,34 @@ public class JavaNetPeer implements IPeer {
 			return;
 		}
 		log.trace("Received message: {}", message);
-		message.setConfig(config);
-		message.setState(state);
-		if (message.getFeatures() != null) {
-			message.getFeatures().resolve();
-		}
-
 		if (config.debug.simulateLossOfPacket()) {
 			// simulated N % loss rate
 			log.warn("DEBUG: simulated loss of packet: {}", message);
 			return;
 		}
 
+		trackData(message);
+
 		message.socketAddressSender = new InetSocketAddress(packet.getAddress(), packet.getPort());
 
+		message.setConfig(config);
+		message.setState(state);
+
+		message.getFeatures().resolve();
+
+		message = message.beforeReceive();
+
+		// Let the controller receive the message.
+		// Processors are called there.
+		config.internalReceiver.receive(message);
+	}
+
+	private void trackData(Message message) {
 		if (config.trackData) {
 			int frame = 0;
 			config.netStats.getData().add(
 					new NetStats.Line(false, message.getSenderId(), frame, message.getTimestamp(), message.getClass(), ((byte[]) message.payload).length));
 		}
-
-		message.beforeReceive();
-
-		// Let the controller receive the message.
-		// Processors are called there.
-		config.internalReceiver.receive(message);
 	}
 
 	@Override

@@ -6,8 +6,6 @@ import com.jfastnet.Config;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -58,6 +56,8 @@ public class MessageTest extends AbstractTest {
 
 		b1 = config.serialiser.serialise(new Message2(0));
 		log.info("size reg. zero long value:   {}", b1.length);
+		b1 = config.serialiser.serialise(new Message2(112233));
+		log.info("size reg. long value 112233: {}", b1.length);
 		b1 = config.serialiser.serialise(new Message2(Long.MAX_VALUE));
 		log.info("size reg. max long value:    {}", b1.length);
 	}

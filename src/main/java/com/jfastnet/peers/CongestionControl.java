@@ -49,7 +49,7 @@ public class CongestionControl<T> {
 	}
 
 	public void send(Message message, T packet) {
-		if (message.isResendMessage()) {
+		if (!configStateContainer.state.isHost() || message.isResendMessage()) {
 			immediateSend(packet);
 			return;
 		}

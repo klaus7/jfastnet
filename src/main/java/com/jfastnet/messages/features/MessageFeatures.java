@@ -30,9 +30,11 @@ public class MessageFeatures implements Serializable, MessageFeature {
 	private transient Map<Class, MessageFeature> featureMap = new HashMap<>();
 
 	public void resolve() {
-		featureMap = new HashMap<>();
-		for (MessageFeature feature : features) {
-			featureMap.put(feature.getClass(), feature);
+		if (features.size() > 0) {
+			featureMap = new HashMap<>();
+			for (MessageFeature feature : features) {
+				featureMap.put(feature.getClass(), feature);
+			}
 		}
 	}
 
