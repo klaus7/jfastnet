@@ -2,6 +2,16 @@
 
 The API of this library is subject to change.
 
+## 0.3.1
+
+* When compression fails, message will be sent uncompressed
+* Congestion Control
+* don't split up resent messages
+* added CompressedMessage for convenient sending of single compressed messages
+* fixed bug in ReliableModeAckProcessor when messages got sent to all clients from the server
+* configurable maximumNumberOfResentMessagesPerCheck in ReliableModeAckProcessor added
+* StackedMessageProcessor bugfix: lastAckMessageIdMap was not set correctly on re-join
+
 ## 0.3.0
 
 * Crucial bugfixes for stacked message processing
