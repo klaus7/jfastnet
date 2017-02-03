@@ -168,6 +168,9 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>2.4</version>
 				<configuration>
+					<excludes>
+						<exclude>**/log4j.properties</exclude>
+					</excludes>
 					<archive>
 						<manifest>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
