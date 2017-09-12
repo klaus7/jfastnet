@@ -136,9 +136,10 @@ public class Client extends PeerController {
 			connectLock.lock();
 			try {
 				if (!state.connectionFailed) {
-					((ConnectResponse) message).setLastReliableSeqIdInSequenceProcessor();
+					ConnectResponse connectResponse = (ConnectResponse) message;
+					connectResponse.setLastReliableSeqIdInSequenceProcessor();
 					state.connected = true;
-					clientId = ((ConnectResponse) message).getClientId();
+					clientId = connectResponse.getClientId();
 					log.info("Set client id to {}", clientId);
 					config.setSenderId(clientId);
 					config.newSenderIdConsumer.accept(clientId);
