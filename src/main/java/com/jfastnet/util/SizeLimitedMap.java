@@ -23,6 +23,8 @@ public class SizeLimitedMap<K, V> extends TreeMap<K, V> {
 
 	private int maximumSize;
 
+	public SizeLimitedMap() {}
+
 	public SizeLimitedMap(int maximumSize) {
 		this.maximumSize = maximumSize;
 	}

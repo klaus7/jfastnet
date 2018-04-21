@@ -17,14 +17,21 @@
 package com.jfastnet.util;
 
 import java.util.HashMap;
+import java.util.function.Supplier;
 
 /** If on "get" the map is null, a new object is inserted.
  * @author Klaus Pfeiffer - klaus@allpiper.com
  * @param <E> key for this map containing another Object of entities and their ids.
  * @param <F> value of this map */
-public abstract class NullsafeHashMap<E, F> extends HashMap<E, F> {
+public class NullsafeHashMap<E, F> extends HashMap<E, F> {
+
+	private Supplier<F> supplier;
 
 	public NullsafeHashMap() {}
+
+	public NullsafeHashMap(Supplier<F> supplier) {
+		this.supplier = supplier;
+	}
 
 	public NullsafeHashMap(int componentsInitialCapacity) {
 		super(componentsInitialCapacity);
@@ -42,5 +49,7 @@ public abstract class NullsafeHashMap<E, F> extends HashMap<E, F> {
 
 	/** If on get it is null, this object is created. Returning null would
 	 * imitate the usual HashMap behavior. */
-	protected abstract F newInstance();
+	protected F newInstance() {
+		return supplier.get();
+	}
 }

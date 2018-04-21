@@ -23,6 +23,8 @@ public class SizeLimitedSet<E> extends TreeSet<E> {
 
 	private int maximumSize;
 
+	public SizeLimitedSet() {}
+
 	public SizeLimitedSet(int maximumSize) {
 		this.maximumSize = maximumSize;
 	}

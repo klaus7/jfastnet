@@ -24,6 +24,8 @@ public class FifoMap<K, V> extends LinkedHashMap<K, V> {
 
 	private int maxEntries;
 
+	public FifoMap() {}
+
 	public FifoMap(int maxEntries) {
 		super(maxEntries * 10 / 7, 0.7f, false);
 		this.maxEntries = maxEntries;

@@ -23,6 +23,8 @@ public class SizeLimitedList<E> extends ArrayList<E> {
 
 	private int maximumSize;
 
+	public SizeLimitedList() {}
+
 	public SizeLimitedList(int maximumSize) {
 		this.maximumSize = maximumSize;
 	}

@@ -32,6 +32,8 @@ public class ConcurrentSizeLimitedMap<K extends Comparable<K>, V> extends Concur
 
 	private volatile int size = 0;
 
+	public ConcurrentSizeLimitedMap() {}
+
 	public ConcurrentSizeLimitedMap(int maximumSize) {
 		this.maximumSize = maximumSize;
 		this.deleteCount = Math.max(1, maximumSize / 10);
