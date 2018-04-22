@@ -2,6 +2,10 @@
 
 The API of this library is subject to change.
 
+## 0.3.2
+
+* added empty constructors to fix de-/serialising
+
 ## 0.3.1
 
 * When compression fails, message will be sent uncompressed
