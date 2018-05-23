@@ -2,6 +2,10 @@
 
 The API of this library is subject to change.
 
+## 0.3.3
+
+* Missing receiver id led to server sending specific message to all clients (only with ACK reliable mode)
+
 ## 0.3.2
 
 * added empty constructors to fix de-/serialising
