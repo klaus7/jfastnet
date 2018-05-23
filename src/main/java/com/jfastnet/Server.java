@@ -273,6 +273,7 @@ public class Server extends PeerController {
 			log.warn("Client address with id {} not found.", clientId);
 			return false;
 		}
+		message.setReceiverId(clientId);
 		message.socketAddressRecipient = client;
 		return super.send(message);
 	}
