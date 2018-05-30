@@ -16,6 +16,7 @@
 
 package com.jfastnet.messages;
 
+import com.jfastnet.Config;
 import com.jfastnet.State;
 import com.jfastnet.exceptions.DeserialiseException;
 import lombok.NonNull;
@@ -195,6 +196,32 @@ public class MessagePart extends Message implements IDontFrame {
 		} else {
 			throw new UnsupportedOperationException("Unsupported reliable mode.");
 		}
+	}
+
+	public static Message recreateMessage(List<MessagePart> messageParts, Config config) {
+		List<byte[]> values = messageParts.stream().map(messagePart -> messagePart.bytes).collect(Collectors.toList());
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		try {
+			for (byte[] value : values) {
+				bos.write(value);
+			}
+			bos.flush();
+			byte[] byteArray = bos.toByteArray();
+			if (config.compressBigMessages) {
+				byteArray = MessagePart.decompress(byteArray);
+			}
+			Message messageFromByteArray = config.serialiser.deserialise(byteArray, 0, byteArray.length);
+			if (messageFromByteArray == null) {
+				log.error("Deserialised message was null! See previous errors.");
+				return null;
+			} else {
+				log.info("Message created: {}", messageFromByteArray);
+				return messageFromByteArray;
+			}
+		} catch (IOException e) {
+			log.error("Error writing byte array.", e);
+		}
+		return null;
 	}
 
 	public static byte[] compress(byte[] bytes) {
