@@ -38,8 +38,6 @@ public class KryoSerialiser implements ISerialiser{
 
 	private final SerialiserConfig config;
 
-	private Output output = new Output(128, 1048576);
-
 	private ThreadLocal<Kryo> kryos;
 
 	private Kryo kryo;
@@ -58,6 +56,7 @@ public class KryoSerialiser implements ISerialiser{
 
 	@Override
 	public byte[] serialise(Message message) {
+		Output output = null;
 		try {
 			output = new Output(128, 1048576);
 //			output.clear(); // FIXME see https://github.com/EsotericSoftware/kryo/issues/312
