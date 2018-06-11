@@ -53,6 +53,7 @@ public class JavaNetPeer implements IPeer {
 			congestionControl = new CongestionControl<>(new ConfigStateContainer(config, state), this::socketSend);
 
 			receiveThread = new Thread(new MessageReceivingRunnable());
+			receiveThread.setName("JavaNetPeer-receiver");
 			receiveThread.start();
 		} catch (Exception e) {
 			log.error("Couldn't start server.", e);
