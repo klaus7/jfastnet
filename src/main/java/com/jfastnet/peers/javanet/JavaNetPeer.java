@@ -169,9 +169,9 @@ public class JavaNetPeer implements IPeer {
 		@Override
 		public void run() {
 			log.info("Start receiver thread {} for senderId {}", Thread.currentThread().getId(), config.senderId);
-			byte[] receiveData = new byte[config.socketReceiveBufferSize];
+			final byte[] receiveData = new byte[config.socketReceiveBufferSize];
+			final DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			while(true) {
-				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 				try {
 					if (socket.isClosed()) {
 						log.info("Receiving socket closed.");
