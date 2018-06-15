@@ -64,7 +64,8 @@ public class State {
 	private boolean enableStackedMessages = true;
 
 	/** Used for receiving bigger messages. Only one byte array buffer may
-	 * be processed at any given time. */
+	 * be processed at any given time.
+	 * Key: channel id; value: (key: message part position; value: message part) */
 	private SortedMap<Long, SortedMap<Integer, MessagePart>> byteArrayBufferMap = new TreeMap<>();
 
 	/** Map of all added processors. */

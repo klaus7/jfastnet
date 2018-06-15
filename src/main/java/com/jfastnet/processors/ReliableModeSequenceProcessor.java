@@ -40,8 +40,8 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 
 	private static final AtomicLong ZERO_ATOMIC_LONG = new AtomicLong();
 
+	/** Key: client id; Value: last received message id. */
 	@Getter private final Map<Integer, AtomicLong> lastMessageIdMap = new HashMap<>();
-	@Getter private final Map<Integer, AtomicLong> lastInOrderMessageId = new HashMap<>();
 
 	private final Map<Integer, Set<Long>> absentMessageIds = new NullsafeHashMap<Integer, Set<Long>>() {
 		@Override
@@ -76,7 +76,6 @@ public class ReliableModeSequenceProcessor extends AbstractMessageProcessor<Reli
 	@Override
 	public void onUnregister(int clientId) {
 		lastMessageIdMap.remove(clientId);
-		lastInOrderMessageId.remove(clientId);
 		absentMessageIds.remove(clientId);
 		heldBackMessages.remove(clientId);
 	}
