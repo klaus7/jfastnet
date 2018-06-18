@@ -165,6 +165,11 @@ public class Client extends PeerController {
 				super.receive(message);
 			}
 		}
+		if (message instanceof LeaveConfirmationResponse) {
+			log.info("Received LeaveConfirmationResponse");
+			super.receive(message);
+			this.state.getUdpPeer().stop();
+		}
 	}
 
 	/** @return true if timeout for last received message reached. */

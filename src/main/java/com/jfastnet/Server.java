@@ -78,7 +78,9 @@ public class Server extends PeerController {
 			Long lastReceivedTime = entry.getValue();
 			if (lastReceivedTime + config.timeoutThreshold < currentTime) {
 				// timed out
-				unregister(entry.getKey());
+				Integer clientId = entry.getKey();
+				log.warn("Client {} timed out!", clientId);
+				unregister(clientId);
 			}
 		}
 	}
@@ -280,6 +282,7 @@ public class Server extends PeerController {
 
 	public void unregister(int clientId) {
 		log.info("Bye {} -> {}", clientId, state.getClientStates().getById(clientId));
+		send(clientId, new LeaveConfirmationResponse());
 		state.getClientStates().remove(clientId);
 		lastReceivedMap.remove(clientId);
 		config.requiredClients.remove(clientId);
