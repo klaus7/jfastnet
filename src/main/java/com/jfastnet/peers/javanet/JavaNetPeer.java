@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -46,20 +47,29 @@ public class JavaNetPeer implements IPeer {
 	@Override
 	public boolean start() {
 		try {
-			socket = new DatagramSocket(config.bindPort);
-			socket.setSendBufferSize(config.socketSendBufferSize);
-			socket.setReceiveBufferSize(config.socketReceiveBufferSize);
-
+			createSocket();
 			congestionControl = new CongestionControl<>(new ConfigStateContainer(config, state), this::socketSend);
-
 			receiveThread = new Thread(new MessageReceivingRunnable());
 			receiveThread.setName("JavaNetPeer-receiver");
 			receiveThread.start();
 		} catch (Exception e) {
-			log.error("Couldn't start server.", e);
+			log.error("Couldn't start peer.", e);
 			return false;
 		}
 		return true;
+	}
+
+	private void createSocket() throws SocketException {
+		if (socket != null) {
+			try {
+				socket.close();
+			} catch (Exception e) {
+				log.error("Closing of socket failed.", e);
+			}
+		}
+		socket = new DatagramSocket(config.bindPort);
+		socket.setSendBufferSize(config.socketSendBufferSize);
+		socket.setReceiveBufferSize(config.socketReceiveBufferSize);
 	}
 
 	@Override
