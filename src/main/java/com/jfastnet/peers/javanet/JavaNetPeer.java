@@ -72,12 +72,14 @@ public class JavaNetPeer implements IPeer {
 			if (socket != null && !socket.isClosed()) {
 				socket.close();
 			}
-			if (receiveThread != null) {
+			socket = null;
+			if (receiveThread != null && receiveThread.isAlive()) {
 				receiveThread.join(3000);
 				if (receiveThread.isAlive()) {
 					log.error("Receiver thread should be destroyed by now.");
 				}
 			}
+			receiveThread = null;
 		} catch (Exception e) {
 			log.error("Closing of socket failed.", e);
 		}
