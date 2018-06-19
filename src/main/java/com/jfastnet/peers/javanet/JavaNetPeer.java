@@ -47,6 +47,7 @@ public class JavaNetPeer implements IPeer {
 	@Override
 	public boolean start() {
 		try {
+			stop();
 			createSocket();
 			congestionControl = new CongestionControl<>(new ConfigStateContainer(config, state), this::socketSend);
 			receiveThread = new Thread(new MessageReceivingRunnable());
@@ -60,13 +61,6 @@ public class JavaNetPeer implements IPeer {
 	}
 
 	private void createSocket() throws SocketException {
-		if (socket != null) {
-			try {
-				socket.close();
-			} catch (Exception e) {
-				log.error("Closing of socket failed.", e);
-			}
-		}
 		socket = new DatagramSocket(config.bindPort);
 		socket.setSendBufferSize(config.socketSendBufferSize);
 		socket.setReceiveBufferSize(config.socketReceiveBufferSize);
@@ -75,7 +69,7 @@ public class JavaNetPeer implements IPeer {
 	@Override
 	public void stop() {
 		try {
-			if (socket != null) {
+			if (socket != null && !socket.isClosed()) {
 				socket.close();
 			}
 			if (receiveThread != null) {
@@ -121,6 +115,10 @@ public class JavaNetPeer implements IPeer {
 	}
 
 	private void socketSend(DatagramPacket datagramPacket) {
+		if (socket == null || socket.isClosed()) {
+			log.error("Couldn't send message: Socket is closed!");
+			return;
+		}
 		try {
 			socket.send(datagramPacket);
 		} catch (IOException e) {
