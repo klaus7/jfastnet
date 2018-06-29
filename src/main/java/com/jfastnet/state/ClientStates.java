@@ -18,6 +18,7 @@ package com.jfastnet.state;
 
 import com.jfastnet.Config;
 import com.jfastnet.ISimpleProcessable;
+import lombok.Getter;
 import lombok.ToString;
 
 import java.net.InetSocketAddress;
@@ -35,6 +36,7 @@ public class ClientStates implements ISimpleProcessable {
 	private final Config config;
 
 	private Map<Integer, InetSocketAddress> clientAddressMap = new ConcurrentHashMap<>();
+	@Getter
 	private Map<Integer, ClientState> clientStateMap = new ConcurrentHashMap<>();
 
 	public ClientStates(Config config) {
