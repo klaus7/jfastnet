@@ -23,7 +23,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Predicate;
 
 /** Logs incoming and outgoing messages. Per default only reliable messages
@@ -42,7 +44,7 @@ public class MessageLog {
 	 * by another peer, this map gets queried for it. */
 	private FifoMap<MessageKey, Message> sentMap;
 
-	private final ReentrantLock sentMapLock = new ReentrantLock();
+	private final ReadWriteLock sentMapLock = new ReentrantReadWriteLock();
 
 	private Config config;
 
@@ -62,27 +64,35 @@ public class MessageLog {
 	}
 
 	public Message getSent(MessageKey key) {
-		sentMapLock.lock();
+		Lock readLock = sentMapLock.readLock();
+		readLock.lock();
 		try {
 			return sentMap.get(key);
 		} finally {
-			sentMapLock.unlock();
+			readLock.unlock();
 		}
 	}
 
 	public void addSent(Message message) {
 		if (!message.isResendMessage() && processorConfig.messageLogSendFilter.test(message)) {
 			MessageKey messageKey = MessageKey.newKey(message.getReliableMode(), message.getReceiverId(), message.getMsgId());
-			if (sentMap.containsKey(messageKey)) {
-				//log.trace("Message already in map! Skipping!");
-				return;
+			Lock readLock = sentMapLock.readLock();
+			readLock.lock();
+			try {
+				if (sentMap.containsKey(messageKey)) {
+					//log.trace("Message already in map! Skipping!");
+					return;
+				}
+			} finally {
+				readLock.unlock();
 			}
-			sentMapLock.lock();
+			Lock writeLock = sentMapLock.writeLock();
+			writeLock.lock();
 			try {
 				log.trace("Put into sent-log: {} -- {}", messageKey, message);
 				sentMap.put(messageKey, message);
 			} finally {
-				sentMapLock.unlock();
+				writeLock.unlock();
 			}
 		}
 	}
