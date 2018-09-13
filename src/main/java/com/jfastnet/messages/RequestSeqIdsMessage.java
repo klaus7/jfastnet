@@ -35,6 +35,9 @@ public class RequestSeqIdsMessage extends Message implements IDontFrame {
 	/** List of sequence message ids we require. */
 	private List<Long> missingIds = new ArrayList<>();
 
+	/** no-arg constructor required for serialization. */
+	private RequestSeqIdsMessage() {}
+
 	public RequestSeqIdsMessage(List<Long> missingIds, int receiverId) {
 		this.missingIds = missingIds;
 		setReceiverId(receiverId);

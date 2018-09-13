@@ -22,6 +22,9 @@ public class GenericMessage extends Message {
 
 	public Object object;
 
+	/** no-arg constructor required for serialization. */
+	public GenericMessage() {}
+
 	public GenericMessage(Object object) {
 		this.object = object;
 	}

@@ -21,17 +21,24 @@ import com.jfastnet.Config;
 import com.jfastnet.Server;
 import com.jfastnet.messages.GenericMessage;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class HelloWorld {
 
-	public static int received = 0;
+	private static final AtomicInteger received = new AtomicInteger(0);
 
 	public static class PrintMessage extends GenericMessage {
-		public PrintMessage(Object object) { super(object); }
+
+		/** no-arg constructor required for serialization. */
+		private PrintMessage() {}
+
+		PrintMessage(Object object) { super(object); }
+
 		@Override
 		public void process(Object context) {
 			System.out.println(object);
-			received++;
+			received.incrementAndGet();
 		}
 	}
 
@@ -46,7 +53,7 @@ public class HelloWorld {
 		server.send(new PrintMessage("Hello Client!"));
 		client.send(new PrintMessage("Hello Server!"));
 
-		while (received < 2) Thread.sleep(100);
+		while (received.get() < 2) Thread.sleep(100);
 
 		client.stop();
 		server.stop();

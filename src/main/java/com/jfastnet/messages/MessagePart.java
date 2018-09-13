@@ -55,6 +55,9 @@ public class MessagePart extends Message implements IDontFrame {
 	/** The payload of the message part. */
 	byte[] bytes;
 
+	/** no-arg constructor required for serialization. */
+	private MessagePart() {}
+
 	private MessagePart(long id, int partNumber, byte[] bytes) {
 		this.id = id;
 		this.partNumber = partNumber;

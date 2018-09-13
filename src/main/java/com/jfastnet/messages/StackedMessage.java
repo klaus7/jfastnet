@@ -26,6 +26,9 @@ public class StackedMessage extends Message {
 	@Getter
 	List<Message> messages;
 
+	/** no-arg constructor required for serialization. */
+	private StackedMessage() {}
+
 	public StackedMessage(List<Message> messages) {
 		this.messages = messages;
 	}

@@ -76,7 +76,7 @@ public class JavaNetPeer implements IPeer {
 			if (receiveThread != null && receiveThread.isAlive()) {
 				receiveThread.join(3000);
 				if (receiveThread.isAlive()) {
-					log.error("Receiver thread should be destroyed by now.");
+					log.warn("Receiver thread should be destroyed by now.");
 				}
 			}
 			receiveThread = null;
@@ -118,7 +118,7 @@ public class JavaNetPeer implements IPeer {
 
 	private void socketSend(DatagramPacket datagramPacket) {
 		if (socket == null || socket.isClosed()) {
-			log.error("Couldn't send message: Socket is closed!");
+			log.warn("Couldn't send message: Socket is closed!");
 			return;
 		}
 		try {
@@ -183,14 +183,14 @@ public class JavaNetPeer implements IPeer {
 			final DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			while(true) {
 				try {
-					if (socket.isClosed()) {
+					if (socket == null || socket.isClosed()) {
 						log.info("Receiving socket closed.");
 						break;
 					}
 					socket.receive(receivePacket);
 					receive(receivePacket);
 				} catch (Exception e) {
-					if (!socket.isClosed()) {
+					if (socket != null && !socket.isClosed()) {
 						log.warn("Error receiving packet.", e);
 					} else {
 						log.warn("Error receiving packet. Socket is already closed!");

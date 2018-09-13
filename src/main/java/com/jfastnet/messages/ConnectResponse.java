@@ -40,6 +40,9 @@ public class ConnectResponse extends Message implements IDontFrame, IInstantProc
 	@Getter
 	int clientId;
 
+	/** no-arg constructor required for serialization. */
+	private ConnectResponse() {}
+
 	public ConnectResponse(long connectRequestMsgId, int clientId) {
 		this.connectRequestMsgId = connectRequestMsgId;
 		this.clientId = clientId;

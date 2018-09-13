@@ -24,6 +24,9 @@ public class StackAckMessage extends Message {
 	@Getter
 	private long lastReceivedId;
 
+	/** no-arg constructor required for serialization. */
+	private StackAckMessage() {}
+
 	public StackAckMessage(long lastReceivedId) {
 		this.lastReceivedId = lastReceivedId;
 	}

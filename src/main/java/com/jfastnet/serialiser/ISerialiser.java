@@ -33,6 +33,6 @@ public interface ISerialiser {
 
 	Message deserialiseWithStream(InputStream _is);
 
-	/** Setted payload is a requirement. */
+	/** Set payload is a requirement. */
 	CRC32 getChecksum(Message message, byte[] salt);
 }

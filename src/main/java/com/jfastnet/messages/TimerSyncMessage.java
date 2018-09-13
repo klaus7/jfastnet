@@ -55,6 +55,9 @@ public class TimerSyncMessage extends Message implements IInstantServerProcessab
 	@Getter
 	private MessageFeatures features = new MessageFeatures();
 
+	/** no-arg constructor required for serialization. */
+	private TimerSyncMessage() {}
+
 	public TimerSyncMessage(int clientId) {
 		this.clientId = clientId;
 		getFeatures().add(new TimestampFeature());

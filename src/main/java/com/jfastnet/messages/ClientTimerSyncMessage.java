@@ -42,6 +42,9 @@ public class ClientTimerSyncMessage extends Message implements IDontFrame {
 	@Setter(value = AccessLevel.PROTECTED)
 	private static long roundTripTime = 0;
 
+	/** no-arg constructor required for serialization. */
+	private ClientTimerSyncMessage() {}
+
 	@java.beans.ConstructorProperties({"retrievedOffsetToHost", "retrievedRoundTripTime"})
 	public ClientTimerSyncMessage(long retrievedOffsetToHost, long retrievedRoundTripTime) {
 		this.retrievedOffsetToHost = retrievedOffsetToHost;
