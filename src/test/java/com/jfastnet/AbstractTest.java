@@ -17,6 +17,7 @@
 package com.jfastnet;
 
 import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.util.DefaultInstantiatorStrategy;
 import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.messages.*;
 import com.jfastnet.peers.javanet.JavaNetPeer;
@@ -62,8 +63,10 @@ public abstract class AbstractTest {
 	@SneakyThrows
 	public void start(int clientCount, Callable<Config> clientConfig ) {
 		//server = new Server(serverConfig);
+		log.info("Creating server...");
 		server = new Server(clientConfig.call().setBindPort(15150).setPort(0));
 		clients = new ArrayList<>();
+		log.info("Creating {} clients...", clientCount);
 		for (int i = 0; i < clientCount; i++) {
 			Config config = clientConfig.call();
 			config.setSenderId(i + 1);
@@ -82,7 +85,10 @@ public abstract class AbstractTest {
 
 		// We need this loop to also process the server while waiting for the clients to connect
 		final boolean[] proceed = {false};
+		int loopCount = 0;
 		while (!proceed[0]) {
+			loopCount++;
+			log.info("Connection wait loop, iteration: {}", loopCount);
 			proceed[0] = true;
 			server.process();
 			for (Client client : clients) {
@@ -95,6 +101,7 @@ public abstract class AbstractTest {
 			Thread.sleep(200);
 		}
 
+		log.info("Clients connected, calling blockingWaitUntilConnected...");
 		clients.forEach(Client::blockingWaitUntilConnected);
 		long unconnectedClientCount = clients.stream().filter(client -> !client.isConnected()).count();
 		if (unconnectedClientCount > 0) {
@@ -223,7 +230,7 @@ public abstract class AbstractTest {
 		ThreadLocal<Kryo> kryos =  new ThreadLocal<Kryo>() {
 			protected Kryo initialValue() {
 				Kryo kryo = new Kryo();
-				kryo.setInstantiatorStrategy(new Kryo.DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
+				kryo.setInstantiatorStrategy(new DefaultInstantiatorStrategy(new StdInstantiatorStrategy()));
 				customizeKryo(kryo);
 				return kryo;
 			}
