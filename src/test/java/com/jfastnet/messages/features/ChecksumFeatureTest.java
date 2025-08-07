@@ -31,10 +31,14 @@ import static org.junit.Assert.assertNotNull;
 @Slf4j
 public class ChecksumFeatureTest extends AbstractTest {
 
+	static {
+		log.info("ChecksumFeatureTest class is being loaded.");
+	}
+
 	public static final long V1 = 52353254L;
 	public static final long V2 = 9654787L;
 
-	static class ChecksumTestMsg extends Message {
+	public static class ChecksumTestMsg extends Message {
 		long v1 = V1;
 		long v2 = V2;
 

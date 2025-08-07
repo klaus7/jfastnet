@@ -58,12 +58,15 @@ public class KryoSerialiser implements ISerialiser{
 
 	@Override
 	public byte[] serialise(Message message) {
+		log.info("Serialising message: {}", message);
 		Output output = outputs.get();
 		try {
-			output.clear();
+			output.reset();
 			getKryo().writeClassAndObject(output, message);
 			output.flush();
-			return output.toBytes();
+			byte[] bytes = output.toBytes();
+			log.info("Serialised message to {} bytes", bytes.length);
+			return bytes;
 		} catch (Exception e) {
 			log.error("Couldn't create output byte array.", e);
 			if (output != null) {
@@ -77,9 +80,11 @@ public class KryoSerialiser implements ISerialiser{
 
 	@Override
 	public Message deserialise(byte[] byteArray, int offset, int length) {
+		log.info("Deserialising message from byte array with length: {}", length);
 		try (Input input = new Input(byteArray, offset, length)) {
 			Message message = (Message) getKryo().readClassAndObject(input);
 			if (message != null) {
+				log.info("Deserialised message: {}", message);
 				message.payload = byteArray;
 				return message;
 			}
