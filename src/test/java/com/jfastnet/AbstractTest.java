@@ -252,7 +252,9 @@ public abstract class AbstractTest {
 		return (config);
 	}
 
-	public void customizeKryo(Kryo kryo) {}
+	public void customizeKryo(Kryo kryo) {
+		kryo.setRegistrationRequired(false);
+	}
 
 	public Config newServerConfig() {
 		return newClientConfig().setBindPort(15150).setPort(0);

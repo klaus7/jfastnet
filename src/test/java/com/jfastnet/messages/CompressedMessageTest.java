@@ -77,6 +77,7 @@ public class CompressedMessageTest extends AbstractTest {
 
 	@Override
 	public void customizeKryo(Kryo kryo) {
+		super.customizeKryo(kryo);
 		kryo.register(CompressedMessage.class);
 		kryo.register(Message1.class);
 		kryo.register(Message2.class);

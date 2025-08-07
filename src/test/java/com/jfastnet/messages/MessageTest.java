@@ -64,6 +64,7 @@ public class MessageTest extends AbstractTest {
 
 	@Override
 	public void customizeKryo(Kryo kryo) {
+		super.customizeKryo(kryo);
 		if (registerClass) {
 			kryo.register(Message1.class);
 			kryo.register(Message2.class);

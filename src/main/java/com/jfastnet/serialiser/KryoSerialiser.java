@@ -61,7 +61,7 @@ public class KryoSerialiser implements ISerialiser{
 		log.info("Serialising message: {}", message);
 		Output output = outputs.get();
 		try {
-			output.setPosition(0);
+			output.reset();
 			getKryo().writeClassAndObject(output, message);
 			output.flush();
 			byte[] bytes = output.toBytes();
