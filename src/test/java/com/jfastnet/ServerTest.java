@@ -46,12 +46,12 @@ public class ServerTest extends AbstractTest {
 
 	private static BigMessage receivedBigMessage;
 
-	static class DefaultUnreliableMessage extends Message {
+	public static class DefaultUnreliableMessage extends Message {
 		@Override public ReliableMode getReliableMode() { return ReliableMode.UNRELIABLE; }
 		@Override public void process(Object context) { received++; }
 	}
 
-	static class DefaultUnreliableMessageSpecific extends Message {
+	public static class DefaultUnreliableMessageSpecific extends Message {
 		public int value;
 		public DefaultUnreliableMessageSpecific() {}
 		public DefaultUnreliableMessageSpecific(int value) {this.value = value;}
@@ -59,13 +59,13 @@ public class ServerTest extends AbstractTest {
 		@Override public void process(Object context) {received++;}
 	}
 
-	static class DefaultReliableSeqMessage extends Message {
+	public static class DefaultReliableSeqMessage extends Message {
 		@Override public ReliableMode getReliableMode() { return ReliableMode.SEQUENCE_NUMBER; }
 		@Override public void process(Object context) { received++; }
 	}
 
 	@ToString(callSuper = true)
-	static class DefaultReliableSeqMessageSpecific extends Message {
+	public static class DefaultReliableSeqMessageSpecific extends Message {
 		public int value;
 		public DefaultReliableSeqMessageSpecific() {}
 		public DefaultReliableSeqMessageSpecific(int value) {this.value = value;}
@@ -73,7 +73,7 @@ public class ServerTest extends AbstractTest {
 		@Override public void process(Object context) {received++;}
 	}
 
-	static class BigMessage extends Message {
+	public static class BigMessage extends Message {
 		String s;
 
 		public BigMessage() {

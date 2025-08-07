@@ -37,6 +37,9 @@ client.send(new PrintMessage("Hello Server!"));
 * More documentation
 
 # Documentation
+
+A comprehensive documentation can be found in the [DOCUMENTATION.md](DOCUMENTATION.md) file.
+
 The documentation is still a work-in-progress.
 
 The most important classes to look for in the beginning are the `Config` and the `Message` class. The JavaDoc there should provide you with the basic configuration possibilities of the library.
