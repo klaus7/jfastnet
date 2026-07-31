@@ -98,13 +98,6 @@
 			<version>4.2.16.Final</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency> <!-- improves netty's performance -->
-			<groupId>org.javassist</groupId>
-			<artifactId>javassist</artifactId>
-			<version>3.32.0-GA</version>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- KRYO -->
 		<dependency>
 			<groupId>com.esotericsoftware</groupId>

@@ -10,7 +10,7 @@ The API of this library is subject to change.
 .* Apache Commons Collections 4.1 -> 4.5.0
 .* SLF4J 1.6.6 -> 2.0.18
 .* Lombok 1.18.30 -> 1.18.46
-.* Javassist 3.18.2-GA -> 3.32.0-GA
+* Removed the obsolete Javassist dependency (modern Netty no longer uses it)
 * Replaced the hard dependency on the EOL Log4j 1.x binding (`slf4j-log4j12`) with `slf4j-api` only;
   downstream users can now choose their own SLF4J binding. Tests log via `slf4j-simple`.
 * Migrated the test suite from JUnit 4 to JUnit 5 (Jupiter) and Hamcrest 1.3 to 3.0
