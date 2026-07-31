@@ -20,12 +20,12 @@ import com.jfastnet.AbstractTest;
 import com.jfastnet.messages.Message;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -61,13 +61,13 @@ public class ChecksumFeatureTest extends AbstractTest {
 		Message message = getLastReceivedMessage(0);
 
 		assertThat("Message is of wrong type.", message, instanceOf(ChecksumTestMsg.class));
-		assertNotNull("Message is null.", message);
-		assertNotNull("Features are null.", message.getFeatures());
+		assertNotNull(message, "Message is null.");
+		assertNotNull(message.getFeatures(), "Features are null.");
 
 		ChecksumFeature checksumFeature = message.getFeatures().get(ChecksumFeature.class);
-		assertNotNull("Checksum feature is null.", checksumFeature);
+		assertNotNull(checksumFeature, "Checksum feature is null.");
 
-		assertNotEquals("Checksum may not be 0.", checksumFeature.getCrcValue(), 0);
+		assertNotEquals(checksumFeature.getCrcValue(), 0, "Checksum may not be 0.");
 		//assertTrue("Wrong checksum, but this test should have failed earlier!", checksumFeature.check(message));
 	}
 

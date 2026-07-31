@@ -26,8 +26,8 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -359,7 +359,7 @@ public class ServerTest extends AbstractTest {
 	}
 
 	/** Sending to multiple clients with specific ids enabled. */
-	@Ignore("Sending with specific ids is not working reliably yet.")
+	@Disabled("Sending with specific ids is not working reliably yet.")
 	@Test
 	public void sendToMultipleClientsSpecificReliableSeqTest() {
 		reset();
