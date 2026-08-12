@@ -5,11 +5,14 @@ The API of this library is subject to change.
 ## 0.3.9 (unreleased)
 
 * Upgraded all dependencies to their latest stable versions:
-.* Netty 4.1.42.Final -> 4.2.16.Final (peer now uses the `MultiThreadIoEventLoopGroup` API introduced in Netty 4.2)
-.* Kryo 5.5.0 -> 5.6.2
-.* Apache Commons Collections 4.1 -> 4.5.0
-.* SLF4J 1.6.6 -> 2.0.18
-.* Lombok 1.18.30 -> 1.18.46
+  * Netty 4.1.42.Final -> 4.2.16.Final (peer now uses the `MultiThreadIoEventLoopGroup` API introduced in Netty 4.2)
+  * Kryo 5.5.0 -> 5.6.2
+  * Apache Commons Collections 4.1 -> 4.5.0
+  * SLF4J 1.6.6 -> 2.0.18
+  * Lombok 1.18.30 -> 1.18.46
+* Fixed the build on JDK 23 and later by declaring Lombok in the compiler plugin's
+  `annotationProcessorPaths`. Those JDKs no longer run annotation processors found only on the
+  class path, which made every generated getter and `@Slf4j` log field disappear.
 * Removed the obsolete Javassist dependency (modern Netty no longer uses it)
 * Replaced the hard dependency on the EOL Log4j 1.x binding (`slf4j-log4j12`) with `slf4j-api` only;
   downstream users can now choose their own SLF4J binding. Tests log via `slf4j-simple`.
