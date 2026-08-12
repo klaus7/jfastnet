@@ -3,7 +3,7 @@ package com.jfastnet.messages;
 import com.esotericsoftware.kryo.Kryo;
 import com.jfastnet.AbstractTest;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Random;
 import java.util.function.Supplier;

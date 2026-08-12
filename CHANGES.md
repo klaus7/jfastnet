@@ -2,6 +2,20 @@
 
 The API of this library is subject to change.
 
+## 0.3.9 (unreleased)
+
+* Upgraded all dependencies to their latest stable versions:
+.* Netty 4.1.42.Final -> 4.2.16.Final (peer now uses the `MultiThreadIoEventLoopGroup` API introduced in Netty 4.2)
+.* Kryo 5.5.0 -> 5.6.2
+.* Apache Commons Collections 4.1 -> 4.5.0
+.* SLF4J 1.6.6 -> 2.0.18
+.* Lombok 1.18.30 -> 1.18.46
+* Removed the obsolete Javassist dependency (modern Netty no longer uses it)
+* Replaced the hard dependency on the EOL Log4j 1.x binding (`slf4j-log4j12`) with `slf4j-api` only;
+  downstream users can now choose their own SLF4J binding. Tests log via `slf4j-simple`.
+* Migrated the test suite from JUnit 4 to JUnit 5 (Jupiter) and Hamcrest 1.3 to 3.0
+* Upgraded all Maven build plugins to current versions
+
 ## 0.3.3
 
 * Missing receiver id led to server sending specific message to all clients (only with ACK reliable mode)

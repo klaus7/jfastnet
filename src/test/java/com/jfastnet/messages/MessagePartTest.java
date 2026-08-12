@@ -20,12 +20,12 @@ import com.jfastnet.AbstractTest;
 import com.jfastnet.Config;
 import com.jfastnet.State;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 @Slf4j
@@ -77,10 +77,10 @@ public class MessagePartTest extends AbstractTest {
 		bigMessage.setState(state);
 		List<MessagePart> messageParts = MessagePart.createFromMessage(state, 0, bigMessage, 1024, Message.ReliableMode.ACK_PACKET);
 
-		assertNotNull("message parts are null", messageParts);
+		assertNotNull(messageParts, "message parts are null");
 		messageParts.forEach(messagePart -> messagePart.copyAttributesFrom(bigMessage));
 		MessagePart lastPart = messageParts.get(messageParts.size() - 1);
-		assertTrue("last messag part must have set last flag to true", lastPart.last);
+		assertTrue(lastPart.last, "last messag part must have set last flag to true");
 
 		lastPart.process(null);
 		assertFalse(bigMsgReceived);
@@ -101,9 +101,9 @@ public class MessagePartTest extends AbstractTest {
 		String input = "This is a compression test";
 		byte[] bytes = input.getBytes();
 		byte[] compressed = MessagePart.compress(bytes);
-		assertTrue("Check for compression failed.", MessagePart.isCompressed(compressed));
+		assertTrue(MessagePart.isCompressed(compressed), "Check for compression failed.");
 		byte[] decompressed = MessagePart.decompress(compressed);
-		assertFalse("Check for compression failed.", MessagePart.isCompressed(decompressed));
+		assertFalse(MessagePart.isCompressed(decompressed), "Check for compression failed.");
 		String decompressedString = new String(decompressed);
 		log.info("Decompressed message: " + decompressedString);
 		assertEquals(input, decompressedString);

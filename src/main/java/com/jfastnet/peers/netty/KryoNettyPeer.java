@@ -26,7 +26,7 @@ import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +56,7 @@ public class KryoNettyPeer implements IPeer {
 
 	@Override
 	public boolean start() {
-		group = new NioEventLoopGroup();
+		group = new MultiThreadIoEventLoopGroup(NioIoHandler.newFactory());
 		try {
 			Bootstrap b = new Bootstrap();
 			b.group(group)

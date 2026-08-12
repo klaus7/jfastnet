@@ -18,12 +18,12 @@ package com.jfastnet;
 
 import com.jfastnet.messages.Message;
 import com.jfastnet.processors.MessageLogProcessor;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /** @author Klaus Pfeiffer - klaus@allpiper.com */
 public class MessageLogTest {
@@ -85,7 +85,7 @@ public class MessageLogTest {
 			Message msg;
 
 			msg = messageLog.getSent(MessageKey.newKey(Message.ReliableMode.SEQUENCE_NUMBER, 0, j));
-			assertNotNull("msg id: " + j + ", i=" + i, msg);
+			assertNotNull(msg, "msg id: " + j + ", i=" + i);
 			assertThat(msg.getMsgId(), is((long) j));
 
 			int offset = 500;

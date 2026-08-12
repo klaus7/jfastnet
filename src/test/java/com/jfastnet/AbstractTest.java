@@ -26,8 +26,8 @@ import com.jfastnet.serialiser.KryoSerialiser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
-import org.junit.After;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.objenesis.strategy.StdInstantiatorStrategy;
 
 import java.util.ArrayList;
@@ -105,7 +105,7 @@ public abstract class AbstractTest {
 		clients.forEach(Client::blockingWaitUntilConnected);
 		long unconnectedClientCount = clients.stream().filter(client -> !client.isConnected()).count();
 		if (unconnectedClientCount > 0) {
-			Assert.fail(unconnectedClientCount + " clients could not connect!");
+			Assertions.fail(unconnectedClientCount + " clients could not connect!");
 		}
 		log.info("All clients connected successfully!");
 
@@ -209,7 +209,7 @@ public abstract class AbstractTest {
 		return messages;
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() {
 		if (server != null) {
 			server.stop();
@@ -304,7 +304,7 @@ public abstract class AbstractTest {
 //					log.info(out.call());
 					String outCallStr = out.call();
 					System.err.println(outCallStr);
-					Assert.fail(errorMsg + " [Condition didn't evaluate to true in time. Timeout was " + timeoutInSeconds + "] " + outCallStr);
+					Assertions.fail(errorMsg + " [Condition didn't evaluate to true in time. Timeout was " + timeoutInSeconds + "] " + outCallStr);
 				}
 			}
 		} catch (Exception e) {
@@ -315,7 +315,7 @@ public abstract class AbstractTest {
 				e1.printStackTrace();
 			}
 			e.printStackTrace();
-			Assert.fail(errorMsg);
+			Assertions.fail(errorMsg);
 		}
 	}
 

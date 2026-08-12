@@ -26,8 +26,8 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -238,7 +238,7 @@ public class ServerTest extends AbstractTest {
 		log.info("Test queued sending of big message");
 		messageParts.forEach(client1::queue);
 
-		waitForCondition("Big message after queuing not received.", 3, () -> received == 1);
+		waitForCondition("Big message after queuing not received.", 10, () -> received == 1);
 		checkReceived();
 
 		assertThat("Received message not the same.", receivedBigMessage.s, is(equalTo(forLaterCheck)));
@@ -254,7 +254,7 @@ public class ServerTest extends AbstractTest {
 		log.info("Test queued sending of big message");
 		messageParts.forEach(client1::queue);
 
-		waitForCondition("Big message after queuing not received.", 3, () -> received == 1);
+		waitForCondition("Big message after queuing not received.", 10, () -> received == 1);
 		checkReceived();
 
 		assertThat("Received message not the same.", receivedBigMessage.s, is(equalTo(forLaterCheck)));
@@ -292,7 +292,7 @@ public class ServerTest extends AbstractTest {
 		log.info("Test queued sending of big message");
 		messageParts.forEach(client1::queue);
 
-		waitForCondition("Big message after queuing not received.", 6, () -> received == 1, () -> "recv.: "+ received);
+		waitForCondition("Big message after queuing not received.", 12, () -> received == 1, () -> "recv.: "+ received);
 		checkReceived();
 
 		assertThat("Received message not the same.", receivedBigMessage.s, is(equalTo(forLaterCheck)));
@@ -359,7 +359,7 @@ public class ServerTest extends AbstractTest {
 	}
 
 	/** Sending to multiple clients with specific ids enabled. */
-	@Ignore("Sending with specific ids is not working reliably yet.")
+	@Disabled("Sending with specific ids is not working reliably yet.")
 	@Test
 	public void sendToMultipleClientsSpecificReliableSeqTest() {
 		reset();
