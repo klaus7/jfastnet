@@ -32,6 +32,7 @@
 		<snapshotDependencyAllowed>true</snapshotDependencyAllowed>
 		<slf4j.version>2.0.18</slf4j.version>
 		<junit.version>5.14.4</junit.version>
+		<lombok.version>1.18.46</lombok.version>
 	</properties>
 
 	<issueManagement>
@@ -80,7 +81,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.46</version>
+			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -147,6 +148,19 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.14.1</version>
+				<configuration>
+					<!-- Declare Lombok explicitly. JDK 23 and later no longer enable
+					     annotation processing just because a processor sits on the
+					     class path, so without this the generated getters and @Slf4j
+					     log fields are silently missing. -->
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>${lombok.version}</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
