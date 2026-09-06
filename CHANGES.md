@@ -4,6 +4,17 @@ The API of this library is subject to change.
 
 ## 0.3.9 (unreleased)
 
+* Added runnable examples for all sending modes to `src/test/java/com/jfastnet/examples` and linked
+  them in the README: `UnreliableExample`, `AckPacketExample`, `SequenceNumberExample`,
+  `StackedMessagesExample`, `BroadcastExample` and `BigMessageExample`. `ExamplesTest` runs every
+  example as part of the test suite and the `exec-maven-plugin` runs them from the command line.
+* Fixed the default serialiser of `Config` for Kryo 5, which requires class registration by default:
+  `new Config()` didn't work out of the box anymore, because not even JFastNet's own messages could be
+  serialised (`Class is not registered: com.jfastnet.messages.ConnectRequest`). The default now uses
+  `KryoSerialiser.newDefaultKryo()`, which doesn't require registration, and one Kryo instance per
+  thread, because Kryo isn't thread-safe and messages get serialised on the sending thread while they
+  get deserialised on the receiving thread.
+* `KryoSerialiser` logs the (de-)serialisation of every single message on `trace` instead of `info`.
 * Upgraded all dependencies to their latest stable versions:
   * Netty 4.1.42.Final -> 4.2.16.Final (peer now uses the `MultiThreadIoEventLoopGroup` API introduced in Netty 4.2)
   * Kryo 5.5.0 -> 5.6.2

@@ -16,7 +16,6 @@
 
 package com.jfastnet;
 
-import com.esotericsoftware.kryo.Kryo;
 import com.jfastnet.config.SerialiserConfig;
 import com.jfastnet.idprovider.ClientIdReliableModeIdProvider;
 import com.jfastnet.idprovider.IIdProvider;
@@ -114,8 +113,12 @@ public class Config {
 	public IMessageReceiver externalReceiver = DEFAULT_MESSAGE_RECEIVER;
 
 	/** Serialisation system. Some peers require specific serialisation
-	 * return types. */
-	public ISerialiser serialiser = new KryoSerialiser(new SerialiserConfig(), new Kryo());
+	 * return types. The default uses one Kryo instance per thread, because
+	 * Kryo is not thread-safe and messages get serialised on the sending
+	 * thread while they get deserialised on the receiving thread. It doesn't
+	 * require message classes to be registered, see
+	 * {@link KryoSerialiser#newDefaultKryo()}. */
+	public ISerialiser serialiser = new KryoSerialiser(new SerialiserConfig(), ThreadLocal.withInitial(KryoSerialiser::newDefaultKryo));
 
 	/** Compress MessagePart messages. */
 	public boolean compressBigMessages = false;

@@ -56,16 +56,30 @@ public class KryoSerialiser implements ISerialiser{
 		this.kryo = kryo;
 	}
 
+	/** Creates a Kryo instance configured like the one the default
+	 * {@link com.jfastnet.Config} serialiser uses: class registration is not
+	 * required, so any message class can be sent out of the box. Register
+	 * your message classes on top of it if you want to shave the class names
+	 * off the payload. Kryo is not thread-safe and JFastNet serialises on the
+	 * sending thread while it deserialises on the receiving thread, so use
+	 * one instance per thread, e.g. via {@link ThreadLocal#withInitial}.
+	 * @return new Kryo instance without mandatory class registration */
+	public static Kryo newDefaultKryo() {
+		Kryo kryo = new Kryo();
+		kryo.setRegistrationRequired(false);
+		return kryo;
+	}
+
 	@Override
 	public byte[] serialise(Message message) {
-		log.info("Serialising message: {}", message);
+		log.trace("Serialising message: {}", message);
 		Output output = outputs.get();
 		try {
 			output.reset();
 			getKryo().writeClassAndObject(output, message);
 			output.flush();
 			byte[] bytes = output.toBytes();
-			log.info("Serialised message to {} bytes", bytes.length);
+			log.trace("Serialised message to {} bytes", bytes.length);
 			return bytes;
 		} catch (Exception e) {
 			log.error("Couldn't create output byte array.", e);
@@ -80,11 +94,11 @@ public class KryoSerialiser implements ISerialiser{
 
 	@Override
 	public Message deserialise(byte[] byteArray, int offset, int length) {
-		log.info("Deserialising message from byte array with length: {}", length);
+		log.trace("Deserialising message from byte array with length: {}", length);
 		try (Input input = new Input(byteArray, offset, length)) {
 			Message message = (Message) getKryo().readClassAndObject(input);
 			if (message != null) {
-				log.info("Deserialised message: {}", message);
+				log.trace("Deserialised message: {}", message);
 				message.payload = byteArray;
 				return message;
 			}

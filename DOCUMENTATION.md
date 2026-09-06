@@ -247,6 +247,21 @@ The `Message` class provides a number of other features that you can use to cont
 
 ## Examples
 
-The following examples demonstrate how to use JFastNet in different scenarios.
+The following examples demonstrate how to use JFastNet in different scenarios. Every example is a
+small program with a `main` method that checks its own expectations, and
+[ExamplesTest.java](src/test/java/com/jfastnet/examples/ExamplesTest.java) runs all of them as part
+of the test suite.
 
 *   [HelloWorld.java](src/test/java/com/jfastnet/examples/HelloWorld.java): A simple example that shows how to set up a client and server and send messages between them.
+*   [UnreliableExample.java](src/test/java/com/jfastnet/examples/UnreliableExample.java): `UNRELIABLE` sending mode. Fire-and-forget position updates through a connection that loses packets.
+*   [AckPacketExample.java](src/test/java/com/jfastnet/examples/AckPacketExample.java): `ACK_PACKET` sending mode. Reliable but unordered delivery, resending of lost messages and the `ackCallback()`.
+*   [SequenceNumberExample.java](src/test/java/com/jfastnet/examples/SequenceNumberExample.java): `SEQUENCE_NUMBER` sending mode. Reliable and ordered delivery, missing messages are requested and later ones held back.
+*   [StackedMessagesExample.java](src/test/java/com/jfastnet/examples/StackedMessagesExample.java): Stackable messages. Lost packets are repaired by the following packets without a round trip.
+*   [BroadcastExample.java](src/test/java/com/jfastnet/examples/BroadcastExample.java): Relaying a client's message to all clients with `broadcast()` and sending to a single client.
+*   [BigMessageExample.java](src/test/java/com/jfastnet/examples/BigMessageExample.java): Automatic splitting and compression of messages that exceed the maximum UDP packet size.
+
+Run an example from the command line (or start its `main` method from your IDE):
+
+```bash
+mvn -q test-compile exec:java -Dexec.mainClass=com.jfastnet.examples.SequenceNumberExample
+```
